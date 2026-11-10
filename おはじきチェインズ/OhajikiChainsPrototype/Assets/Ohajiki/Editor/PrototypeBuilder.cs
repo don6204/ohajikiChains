@@ -75,7 +75,7 @@ public static class PrototypeBuilder
         EditorSceneManager.SaveScene(scene, scenePath);
         EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(scenePath, true) };
         PlayerSettings.productName = "Ohajiki Chains Prototype";
-        PlayerSettings.bundleVersion = "1.000";
+        PlayerSettings.bundleVersion = "1.001";
         PlayerSettings.companyName = "OhajikiPrototype";
         PlayerSettings.defaultScreenWidth = 540; PlayerSettings.defaultScreenHeight = 960;
         PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
@@ -195,6 +195,30 @@ public static class PrototypeBuilder
                     spirit.skillPower = variant == 0 ? new float[] {100,145,190,235,280} :
                         variant == 1 ? new float[] {65,100,140,180,230} :
                         variant == 2 ? new float[] {35,50,70,90,115} : new float[] {.04f,.06f,.08f,.10f,.13f};
+                    if (i == 4 || i == 5 || i == 7 || i == 8 || i == 10)
+                    {
+                        spirit.skill = i == 4 ? Skill.AttackUp : i == 5 ? Skill.SpeedUp : i == 7 ? Skill.Cleanse :
+                            i == 8 ? Skill.AttackDown : Skill.SpeedDown;
+                        spirit.skillName = i == 4 ? "勇気の炎" : i == 5 ? "風の加速" : i == 7 ? "清めの光" :
+                            i == 8 ? "衰弱の霧" : "束縛の蔦";
+                        spirit.statusTurns = 2;
+                        spirit.skillPower = i == 4 ? new[] {1.2f,1.3f,1.4f,1.5f,1.6f} :
+                            i == 5 ? new[] {1.2f,1.4f,1.6f,1.8f,2f} :
+                            i == 7 ? new[] {0f,0f,0f,0f,0f} : new[] {.9f,.8f,.7f,.6f,.5f};
+                    }
+                    if (i == 0 || i == 2)
+                    {
+                        spirit.actionSkill = ActionSkill.Trap;
+                        spirit.trapTargetElement = i == 0 ? Element.Water : Element.Fire;
+                        spirit.trapDamage = 100;
+                        spirit.trapOpponentTurns = 2;
+                    }
+                    if (i == 1)
+                    {
+                        spirit.actionSkill = ActionSkill.Split;
+                        spirit.splitContactThreshold = 3;
+                        spirit.splitTotalProjectiles = 3;
+                    }
                     AssetDatabase.CreateAsset(spirit,path);
                 }
                 tuning.playerDeck[i] = spirit;
@@ -232,10 +256,14 @@ public static class PrototypeBuilder
     public static void Build()
     {
         Setup();
-        Directory.CreateDirectory("Build/Windows-v7.2");
+        // D3D11 avoids the D3D12 scratch allocator crash reproduced on the target Windows PC.
+        PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.StandaloneWindows64, false);
+        PlayerSettings.SetGraphicsAPIs(BuildTarget.StandaloneWindows64,
+            new[] { UnityEngine.Rendering.GraphicsDeviceType.Direct3D11 });
+        Directory.CreateDirectory("Build/Windows-v8");
         var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
             scenes = new[] { Root + "Scenes/Prototype.unity" },
-            locationPathName = "Build/Windows-v7.2/OhajikiChains.exe",
+            locationPathName = "Build/Windows-v8/OhajikiChains.exe",
             target = BuildTarget.StandaloneWindows64, options = BuildOptions.None
         });
         if (report.summary.result != BuildResult.Succeeded) throw new System.Exception("Build failed: " + report.summary.result);

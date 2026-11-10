@@ -52,6 +52,21 @@ MonoBehaviour:
   minimumForwardSwipe: 15
   touchPadding: 22
   seed: 43
+  specialChargeProbabilities:
+  - 0.005
+  - 0.005
+  - 0.005
+  - 0.005
+  - 0.005
+  - 0.01
+  specialAttackMultiplier: 1.5
+  specialSpeedMultiplier: 2.5
+  specialSplitTotal: 3
+  maximumProjectiles: 12
+  maximumShotSpeed: 6000
+  maximumContactMultiplier: 8
+  maximumTraps: 12
+  trapRadius: 24
   boardColumns: 8
   boardRows: 6
   boardBottom: 0.27

@@ -146,13 +146,16 @@ namespace Ohajiki.Tests
             for(int i=0;i<1000 && sim.Moving;i++)sim.Tick(1f/30);
             Assert.AreEqual(1,sim.Collected); Assert.AreEqual(expected,sim.Matched);
         }
-        [Test] public void ResetReplacesEvenUntouchedCharges()
+        [Test] public void ResetRefillsOnlyClearedCharges()
         {
             var sim=new ShotSimulation(tuning);
             foreach(var c in sim.Charges)c.Element=Element.Neutral;
             tuning.elementWeights=new Vector4(1,0,0,0);
+            sim.Charges[0].Active=false;
             sim.ResetBoard();
-            Assert.IsTrue(sim.Charges.All(c=>c.Active && c.Element==Element.Fire));
+            Assert.IsTrue(sim.Charges.All(c=>c.Active));
+            Assert.AreEqual(Element.Fire,sim.Charges[0].Element);
+            Assert.IsTrue(sim.Charges.Skip(1).All(c=>c.Element==Element.Neutral));
             Assert.AreEqual(2,sim.ResetCount);
         }
         [Test] public void EnemyDirectionDoesNotDependOnPlayerSwipeSensitivity()

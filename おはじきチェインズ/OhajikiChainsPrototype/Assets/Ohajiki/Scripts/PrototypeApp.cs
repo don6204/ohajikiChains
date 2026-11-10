@@ -29,7 +29,7 @@ namespace Ohajiki
             Session=new PlayerSession(hubConfig,battleTuning);
             var args=Environment.GetCommandLineArgs();
             bool bypassTitle=Array.Exists(args,arg=>arg=="--smoke-test" || arg=="--feedback-smoke-test" ||
-                arg=="--hub-smoke-test" || arg=="--shop-smoke-test" || arg=="--gacha-smoke-test");
+                arg=="--hub-smoke-test" || arg=="--shop-smoke-test" || arg=="--gacha-smoke-test" || arg=="--spec-smoke-test");
             if(bypassTitle)StartGame();
             else
             {
@@ -44,6 +44,8 @@ namespace Ohajiki
                 gameObject.AddComponent<HubSmoke>().Run(this);
             if(Array.IndexOf(args,"--shop-smoke-test")>=0)
                 gameObject.AddComponent<ShopSmoke>().Run(this);
+            if(Array.IndexOf(args,"--spec-smoke-test")>=0)
+                gameObject.AddComponent<SpecificationSmoke>().Run(this);
             if(Array.IndexOf(args,"--gacha-smoke-test")>=0)
                 gameObject.AddComponent<GachaSmoke>().Run(this);
         }
@@ -75,6 +77,11 @@ namespace Ohajiki
             Battle=runtime.AddComponent<PrototypeBattle>();
             Battle.ConfigureSession(loadout.Tuning,japaneseFont,Session.Progress);
             Battle.HomeRequested+=ReturnHome;Battle.RetryRequested+=EnterBattle;
+            Battle.ExperienceEarned+=AwardSpiritExperience;
+        }
+        void AwardSpiritExperience(int experience)
+        {
+            if(loadout != null) Session.AwardBattleExperience(loadout.SpiritIds,experience);
         }
         public void ReturnHome()
         {
@@ -85,6 +92,7 @@ namespace Ohajiki
             if(Battle!=null)
             {
                 Battle.HomeRequested-=ReturnHome;Battle.RetryRequested-=EnterBattle;
+                Battle.ExperienceEarned-=AwardSpiritExperience;
                 Battle.gameObject.SetActive(false);Destroy(Battle.gameObject);Battle=null;
             }
             loadout?.Dispose();loadout=null;

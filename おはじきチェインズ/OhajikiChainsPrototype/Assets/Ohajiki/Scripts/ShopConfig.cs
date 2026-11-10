@@ -43,6 +43,7 @@ namespace Ohajiki
         public bool eventActive;
         public string eventFrom,eventUntil;
         [Min(1)] public int premiumDailyGems=2;
+        [TextArea(4,12)] public string legalNotice="販売事業者・連絡先・販売条件は未設定です。現在はテスト購入のみ利用できます。";
         public ShopProduct[] products=Array.Empty<ShopProduct>();
         public bool Validate(out string error)
         {

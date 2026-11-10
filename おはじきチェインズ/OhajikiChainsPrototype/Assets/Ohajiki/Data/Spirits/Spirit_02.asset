@@ -31,3 +31,7 @@ MonoBehaviour:
   - 235
   - 280
   guardTurns: 2
+  actionSkill: 1
+  trapTargetElement: 0
+  trapDamage: 100
+  trapOpponentTurns: 2

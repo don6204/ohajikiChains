@@ -8,7 +8,7 @@ using UnityEngine.InputSystem.UI;
 
 namespace Ohajiki
 {
-    public enum HubPage { Home, Spirits, Deck, UpgradeList, UpgradeDetail, Materials, Gacha, Banner, Shop }
+    public enum HubPage { Home, Spirits, Deck, UpgradeList, UpgradeDetail, Materials, Gacha, Banner, Shop, Settings }
     public sealed partial class HubView : MonoBehaviour
     {
         public event Action BattleRequested;
@@ -52,16 +52,16 @@ namespace Ohajiki
             navigation=new UnityEngine.UI.Button[5];
             navigationIcons=new RectTransform[5];
             string[] names={"ホーム","スピリター","ガチャ","ショップ","設定"};
-            HubPage[] routes={HubPage.Home,HubPage.Spirits,HubPage.Gacha,HubPage.Shop};
+            HubPage[] routes={HubPage.Home,HubPage.Spirits,HubPage.Gacha,HubPage.Shop,HubPage.Settings};
             for(int i=0;i<5;i++)
             {
                 int slot=i;
                 navigation[i]=ui.Button(screen,names[i],32+i*132,25,124,88,
-                    ()=>{if(slot<routes.Length)Navigate(routes[slot]);},i<4);
+                    ()=>{if(slot<routes.Length)Navigate(routes[slot]);},true);
                 var navLabel=navigation[i].GetComponentInChildren<TMP_Text>();navLabel.fontSize=18;
                 navLabel.rectTransform.anchoredPosition=new Vector2(6,4);navLabel.rectTransform.sizeDelta=new Vector2(112,30);
                 navigationIcons[i]=ui.Rect(navigation[i].transform,"Navigation art",0,3,124,76);
-                skin.NavigationIcon(navigationIcons[i],i,i<4?HubWidgets.Accent:HubWidgets.Muted);
+                skin.NavigationIcon(navigationIcons[i],i,HubWidgets.Accent);
             }
             ui.Label(screen,"試作版 / データは終了時にリセットされます",32,3,656,20,12,HubWidgets.Muted,true);
             Navigate(HubPage.Home); Resize();
@@ -107,8 +107,8 @@ namespace Ohajiki
             session.Shop?.RefreshCalendar();
             account.text=$"Rank {session.Progress.Rank}　EXP {session.Progress.RankExperience}/{session.Progress.Needed(battleTuning)}";
             resources.text=$"メダル {session.Progress.Coins:N0}　宝石 {session.Gems:N0}　エネルギー {session.Energy}/{session.Config.maximumEnergy}";
-            int active=Page==HubPage.Home?0:Page==HubPage.Shop?3:(Page==HubPage.Gacha||Page==HubPage.Banner)?2:1;
-            for(int i=0;i<4;i++)
+            int active=Page==HubPage.Settings?4:Page==HubPage.Home?0:Page==HubPage.Shop?3:(Page==HubPage.Gacha||Page==HubPage.Banner)?2:1;
+            for(int i=0;i<navigation.Length;i++)
             {
                 bool selected=i==active;Color fill=selected?HubWidgets.Accent:HubWidgets.PanelColor;
                 navigation[i].GetComponent<UnityEngine.UI.Image>().color=fill;
@@ -128,6 +128,7 @@ namespace Ohajiki
                 case HubPage.Gacha: Gacha(); break;
                 case HubPage.Banner: BannerDetail(); break;
                 case HubPage.Shop: ShopPage(); break;
+                case HubPage.Settings: SettingsPage(); break;
             }
         }
         void Heading(string title,string subtitle)
@@ -179,10 +180,48 @@ namespace Ohajiki
         }
         void Filters()
         {
-            ui.Button(content,"属性："+(elementFilter<0?"すべて":elementNames[elementFilter]),0,754,210,52,()=>{elementFilter=elementFilter==2?-1:elementFilter+1;Render();});
-            ui.Button(content,"レア："+(rarityFilter==0?"すべて":new string('★',rarityFilter)),222,754,210,52,()=>{rarityFilter=(rarityFilter+1)%6;Render();});
+            string element=elementFilter<0?"すべて":elementNames[elementFilter];
+            string rarity=rarityFilter==0?"すべて":"★"+rarityFilter;
+            ui.Button(content,$"フィルター\n{element} / {rarity}",0,754,320,64,()=>OpenFilters(elementFilter,rarityFilter)).name="Button_フィルター";
             string[] sorts={"名前順","属性順","レア順"};
-            ui.Button(content,sorts[sort],444,754,212,52,()=>{sort=(sort+1)%3;Render();});
+            ui.Button(content,"ソート\n"+sorts[sort],336,754,320,64,OpenSort).name="Button_ソート";
+        }
+        void OpenFilters(int selectedElement,int selectedRarity)
+        {
+            OpenModal("InventoryFilters",new Color(.025f,.07f,.1f,1));
+            ui.Label(modal,"フィルター",48,1080,624,70,34,null,true);
+            ui.Label(modal,"属性",48,982,624,45,25);
+            for(int i=-1;i<3;i++)
+            {
+                int value=i;
+                ui.Button(modal,i<0?"全属性":elementNames[i],48+(i+1)*156,894,144,68,
+                    ()=>OpenFilters(value,selectedRarity),true,i==selectedElement?HubWidgets.Accent:HubWidgets.PanelColor);
+            }
+            ui.Label(modal,"レアリティ",48,798,624,45,25);
+            for(int i=0;i<=5;i++)
+            {
+                int value=i;
+                ui.Button(modal,i==0?"全レアリティ":"★"+i,48+(i%3)*208,704-(i/3)*90,196,72,
+                    ()=>OpenFilters(selectedElement,value),true,i==selectedRarity?HubWidgets.Accent:HubWidgets.PanelColor);
+            }
+            ui.Button(modal,"条件をリセット",48,482,624,64,()=>OpenFilters(-1,0));
+            ui.Button(modal,"戻る",48,340,288,76,CloseModal);
+            ui.Button(modal,"決定",360,340,312,76,()=>{
+                elementFilter=selectedElement;rarityFilter=selectedRarity;Render();
+            },true,HubWidgets.Accent);
+        }
+        void OpenSort()
+        {
+            OpenModal("InventorySort",new Color(.025f,.07f,.1f,1));
+            ui.Label(modal,"ソート",48,1080,624,70,34,null,true);
+            string[] names={"名前順","属性順","レア順"};
+            for(int i=0;i<names.Length;i++)
+            {
+                int value=i;
+                ui.Button(modal,names[i],72,880-i*116,576,88,()=>{sort=value;Render();},
+                    true,i==sort?HubWidgets.Accent:HubWidgets.PanelColor);
+            }
+            ui.Button(modal,"戻る",160,420,400,76,CloseModal);
         }
         void Inventory(float y,float height,Action<int> action,bool select=false)
         {
@@ -232,6 +271,9 @@ namespace Ohajiki
             ui.Portrait(content,spirit.portrait,138,415,380,390);
             ui.Label(content,$"{new string('★',spirit.rarity)}　{elementNames[(int)spirit.element]}属性　Lv{session.Level(selectedSpirit)} / {session.Config.maxSpiritLevel}",0,355,656,50,28,null,true);
             ui.Label(content,$"HP {session.Hp(selectedSpirit)}　攻撃 {session.Attack(selectedSpirit)}　速度 {session.Speed(selectedSpirit):0}",0,289,656,44,24,HubWidgets.Muted,true);
+            long needed = session.ExperienceToNextLevel(selectedSpirit);
+            ui.Label(content,needed == 0 ? "EXP MAX" : $"EXP {session.SpiritExperience(selectedSpirit)} / {needed}",
+                0,244,656,34,20,HubWidgets.Muted,true);
             bool available=session.Level(selectedSpirit)<session.Config.maxSpiritLevel;
             ui.Button(content,available?"強化アイテムを選択　→":"レベル上限です",0,160,656,80,()=>{selectedMaterial=(int)spirit.element;quantity=1;Open(HubPage.Materials);},available,HubWidgets.Accent);
             ui.Button(content,"戻る",0,32,200,64,()=>Navigate(HubPage.UpgradeList));
@@ -277,7 +319,7 @@ namespace Ohajiki
                 ui.Label(card,banner.description,24,58,330,72,19,HubWidgets.Muted);
                 ui.Label(card,session.BannerOpen(i)?"詳細を見る　→":"開催期間外",24,15,330,36,22);
             }
-            Message(session.FirstSingleUsed?"1連：宝石5個 / 10連：50個＋宝石1個おまけ":"初回1連は全ガチャ共通で宝石1個！");
+            Message("初回1連は各ガチャで宝石1個！");
         }
         void BannerDetail()
         {

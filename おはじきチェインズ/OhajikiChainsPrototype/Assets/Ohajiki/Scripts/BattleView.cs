@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -23,13 +24,13 @@ namespace Ohajiki
         readonly Color[] colors = { new Color(1, .3f, .08f), new Color(.1f, .65f, 1), new Color(.3f, .82f, .2f), new Color(.73f, .37f, 1) };
         SpiritUiSkin skin;
         BattleTuning tuning;
-        TMP_Text enemyName, enemyIconLabel, progressText, launchHint, detailText, cutInText, impactText;
+        TMP_Text enemyName, enemyIconLabel, enemyStatusText, progressText, launchHint, detailText, cutInText, impactText;
         UnityEngine.UI.Image enemyIconImage, cutInArt;
         RectTransform detailPanel, energy, cutInPanel;
         UnityEngine.UI.Button[] cardButtons;
         public bool DetailsVisible => detailPanel.gameObject.activeSelf;
         readonly string[] elements = { "火", "水", "木", "無" };
-        readonly string[] skills = { "固定攻撃", "固定回復", "固定防御", "割合攻撃", "割合回復", "割合防御" };
+        readonly string[] skills = { "固定攻撃", "固定回復", "固定防御", "割合攻撃", "割合回復", "割合防御", "攻撃アップ", "速度アップ", "悪効果解除", "攻撃ダウン", "速度ダウン" };
         RectTransform root, overlay, projectile, aim;
         RectTransform[] charges;
         UnityEngine.UI.Image[] chargeImages, cardImages;
@@ -48,6 +49,11 @@ namespace Ohajiki
         UnityEngine.UI.Image targetFlash;
         float chainSlide;
         bool chainVisible;
+        readonly List<RectTransform> cloneVisuals = new List<RectTransform>();
+        readonly List<SpiritBallVisual> cloneArt = new List<SpiritBallVisual>();
+        readonly List<RectTransform> trapVisuals = new List<RectTransform>();
+        readonly List<TMP_Text> trapLabels = new List<TMP_Text>();
+        readonly string[] specialLabels = { "", "攻", "速", "分", "縦", "横", "転" };
         Canvas canvas;
         int lastWidth, lastHeight;
 
@@ -67,17 +73,30 @@ namespace Ohajiki
             Label(root, "<color=#ED5518>おはじき</color><color=#127890>チェインズ</color>", 32, 1171, 520, 60, 31, ink);
             Button(root, "再挑戦", 574, 1218, 114, 42, () => Restarted?.Invoke());
             Button(root, "一時停止", 574, 1168, 114, 42, () => PausePressed?.Invoke());
-            var enemy = Panel(root, "Enemy", 32, 1018, 344, 138, panel);
-            var enemyIcon = Panel(enemy, "EnemyIcon", 18, 35, 72, 72, colors[2], true);
+            var enemy = Rect("Enemy", root, 36, 1088, 656, 70);
+            Image(enemy, new Color(.06f,.18f,.22f));
+            Image(Rect("Enemy panel fill", enemy, 3, 3, 650, 64), new Color(.94f,.90f,.58f));
+            var enemyIcon = Panel(enemy, "EnemyIcon", 44, 6, 60, 60, colors[2], true);
             enemyIconImage = enemyIcon.GetComponent<UnityEngine.UI.Image>();
-            enemyIconLabel = Label(enemyIcon, "", 0, 0, 72, 72, 34, Color.white, TextAlignmentOptions.Center);skin.Text(enemyIconLabel,true);
+            enemyIconLabel = Label(enemyIcon, "", 0, 0, 60, 60, 28, Color.white, TextAlignmentOptions.Center);skin.Text(enemyIconLabel,true);
             enemyIconLabel.gameObject.SetActive(false);
             enemyBallArt=enemyIcon.gameObject.AddComponent<SpiritBallVisual>();enemyBallArt.Initialize(skin);
-            enemyName = Label(enemy, "", 108, 88, 218, 32, 21, ink);
-            enemyName.enableAutoSizing=true; enemyName.fontSizeMin=15; enemyName.fontSizeMax=21;
-            enemyText = Label(enemy, "", 108, 40, 218, 45, 17, muted);
-            Panel(enemy, "EnemyBar", 108, 24, 210, 12, new Color(.45f,.32f,.15f));
-            enemyFill = Image(Rect("EnemyFill", enemy, 108, 24, 210, 12), colors[2]);
+            enemyName = Label(enemy, "", 128, 14, 220, 44, 28, ink);
+            enemyName.textWrappingMode = TextWrappingModes.NoWrap;
+            enemyName.enableAutoSizing=true; enemyName.fontSizeMin=18; enemyName.fontSizeMax=28;
+            Image(Rect("Enemy HP area", enemy, 360, 4, 284, 62), new Color(.98f,.94f,.76f));
+            enemyText = Label(enemy, "", 374, 35, 250, 30, 20, muted);
+            enemyText.textWrappingMode = TextWrappingModes.NoWrap;
+            enemyText.enableAutoSizing = true;
+            enemyText.fontSizeMin = 12;
+            enemyText.fontSizeMax = 20;
+            enemyStatusText = Label(enemy, "", 374, 20, 246, 15, 10, muted);
+            enemyStatusText.textWrappingMode = TextWrappingModes.NoWrap;
+            enemyStatusText.enableAutoSizing = true;
+            enemyStatusText.fontSizeMin = 8;
+            enemyStatusText.fontSizeMax = 10;
+            Image(Rect("EnemyBar", enemy, 374, 7, 246, 12), new Color(.45f,.32f,.15f));
+            enemyFill = Image(Rect("EnemyFill", enemy, 374, 7, 246, 12), colors[2]);
             turnText = Label(root, "", 36, 969, 300, 40, 20, muted);
             deckText = Label(root, "", 330, 975, 350, 28, 18, muted, TextAlignmentOptions.Right);
             Panel(root, "BoardFrame", 38, 308, 644, 670, new Color(1,.75f,.32f));
@@ -103,10 +122,24 @@ namespace Ohajiki
             projectile = Panel(Board, "SpiritBall", 0, 0, 40, 40, Color.white, true);
             skin.Image(projectile,"Spirit glow",skin.Glow,20,20,68,68,new Color(1,1,.7f,.6f),true);
             shotArt=projectile.gameObject.AddComponent<SpiritBallVisual>();shotArt.Initialize(skin);
-            chainPanel = Panel(Board, "EffectLevel", 8, 600, 350, 42, new Color(1,.94f,.71f,.95f));
-            chainText = Label(chainPanel, "", 12, 0, 335, 42, 19, ink);
+            var chainViewport = Rect("EffectLevelViewport", root, 0, 989, 286, 86);
+            chainViewport.gameObject.AddComponent<UnityEngine.UI.RectMask2D>();
+            chainPanel = Rect("EffectLevel", chainViewport, 6, 0, 280, 86);
+            Image(chainPanel, new Color(.06f,.18f,.22f));
+            Image(Rect("Skill panel fill", chainPanel, 3, 3, 274, 80), new Color(.99f,.89f,.84f));
+            var chainTitle = Label(chainPanel, "ノーマルスキル", 20, 58, 164, 25, 17, Color.black);
+            chainTitle.fontStyle = FontStyles.Bold;
+            chainText = Label(chainPanel, "", 130, 4, 132, 78, 60, Color.black, TextAlignmentOptions.Right);
+            if(TMP_Settings.defaultFontAsset!=null)chainText.font=TMP_Settings.defaultFontAsset;
+            chainText.textWrappingMode = TextWrappingModes.NoWrap;
+            chainText.enableAutoSizing = true;
+            chainText.fontSizeMin = 40;
+            chainText.fontSizeMax = 60;
             Panel(root,"PartyStatus",24,246,672,62,new Color(1,.98f,.86f,.92f));
-            playerText = Label(root, "", 36, 274, 500, 30, 20, ink);
+            playerText = Label(root, "", 36, 274, 648, 30, 20, ink);
+            playerText.enableAutoSizing = true;
+            playerText.fontSizeMin = 14;
+            playerText.fontSizeMax = 20;
             Panel(root, "PlayerBar", 36, 254, 648, 10, new Color(.45f,.32f,.15f));
             playerFill = Image(Rect("PlayerFill", root, 36, 254, 648, 10), new Color(.08f,.68f,.44f));
             cardButtons = new UnityEngine.UI.Button[4];
@@ -140,12 +173,15 @@ namespace Ohajiki
                 var portrait = Image(Rect("Hero", overlay, 50 + i * 210, 688 + (i % 2) * 25, 200, 270), Color.white);
                 portrait.sprite = portraits[i]; portrait.preserveAspect = true;
             }
-            overlayBody = Label(overlay, "", 70, 336, 580, 310, 25, ink, TextAlignmentOptions.Center);
+            overlayBody = Label(overlay, "", 58, 314, 604, 366, 25, ink, TextAlignmentOptions.Center);
+            overlayBody.enableAutoSizing = true;
+            overlayBody.fontSizeMin = 22;
+            overlayBody.fontSizeMax = 25;
             var start = Button(overlay, "", 160, 226, 400, 76, () => { overlay.gameObject.SetActive(false); Restarted?.Invoke(); });
             start.GetComponent<UnityEngine.UI.Image>().color = SpiritUiSkin.Accent;
             overlayButtonText = Label(start, "", 0, 0, 400, 76, 26, Color.white, TextAlignmentOptions.Center);
             Label(overlay, $"火 → 木 → 水 → 火　有利 ×{tuning.advantage} / 不利 ×{tuning.disadvantage}\n無属性はチャージのみ / 手札長押しで詳細", 60, 110, 600, 85, 20, muted, TextAlignmentOptions.Center);
-            ShowOverlay("おはじきチェインズ", "選ぶ。はじく。つなげる。\n\n① 下の4枚からスピリターを選ぶ\n② 発射位置をタップで調整\n③ ボールから飛ばす方向へスワイプ\n\n敵もショット！双方の攻撃後に盤面リセット", "バトルをはじめる");
+            ShowOverlay("おはじきチェインズ", "選ぶ。はじく。つなげる。\n\n① 下の4枚からスピリターを選ぶ\n② 発射位置をタップで調整\n③ ボールから飛ばす方向へスワイプ\n\n敵もショット！双方の攻撃後に消えたボールを補充", "バトルをはじめる");
             Resize();
         }
         public void EnableHomeButton(Action action)
@@ -157,8 +193,8 @@ namespace Ohajiki
         {
             Resize();
             if (chainPanel == null) return;
-            chainSlide = Mathf.MoveTowards(chainSlide, chainVisible ? 8 : -370, Time.unscaledDeltaTime * tuning.levelSlideSpeed);
-            chainPanel.anchoredPosition = new Vector2(chainSlide, 600);
+            chainSlide = Mathf.MoveTowards(chainSlide, chainVisible ? 6 : -286, Time.unscaledDeltaTime * tuning.levelSlideSpeed);
+            chainPanel.anchoredPosition = new Vector2(chainSlide, 0);
         }
         void Resize()
         {
@@ -170,26 +206,34 @@ namespace Ohajiki
             bool showChain, SpiritDefinition active, SpiritDefinition enemy, BattlePhase phase, bool paused, PlayerProgress progress)
         {
             // Keep the accumulated amount through resolution; no idle or result counter.
-            Feedback.SetDamageBankVisible(phase==BattlePhase.PlayerShot || phase==BattlePhase.EnemyShot ||
+            bool feedbackVisible=phase==BattlePhase.PlayerShot || phase==BattlePhase.EnemyShot ||
                 phase==BattlePhase.Charging || phase==BattlePhase.DamageFlight || phase==BattlePhase.NormalImpact ||
-                phase==BattlePhase.CutIn || phase==BattlePhase.Impact);
+                phase==BattlePhase.CutIn || phase==BattlePhase.Impact;
+            Feedback.SetDamageBankVisible(feedbackVisible);
+            // Avoid showing fragments of these secondary labels behind the shot feedback.
+            turnText.gameObject.SetActive(!feedbackVisible);
+            deckText.gameObject.SetActive(!feedbackVisible);
             for (int i = 0; i < charges.Length; i++)
             {
                 var c = sim.Charges[i]; charges[i].gameObject.SetActive(c.Active);
                 charges[i].sizeDelta = Vector2.one * tuning.chargeRadius * 2;
                 charges[i].anchoredPosition = c.Position - Vector2.one * tuning.chargeRadius;
-                chargeImages[i].color = colors[(int)c.Element]; chargeLabels[i].text = elements[(int)c.Element];
+                chargeImages[i].color = colors[(int)c.Element];
+                bool special = c.Special != SpecialCharge.None;
+                chargeLabels[i].fontSize = special ? 16 : 22;
+                chargeLabels[i].text = elements[(int)c.Element] + (special ? "\n" + specialLabels[(int)c.Special] : "");
             }
             projectile.sizeDelta = Vector2.one * tuning.shotRadius * 2;
-            MoveProjectile(sim.Position,tuning.shotRadius);
+            UpdateSimulationVisuals(sim,active);
             projectile.GetComponent<UnityEngine.UI.Image>().color = colors[(int)active.element];
             shotArt.Show(active);enemyBallArt.Show(enemy);
             playerText.text = $"味方 HP {state.Player.Hp}/{state.Player.MaxHp}" + GuardText(state.Player);
             enemyName.text = enemy.displayName;
             enemyIconImage.color = colors[(int)enemy.element]; enemyIconLabel.text = elements[(int)enemy.element];
-            enemyText.text = $"HP {state.Enemy.Hp}/{state.Enemy.MaxHp}" + GuardText(state.Enemy);
+            enemyText.text = $"HP {state.Enemy.Hp}/{state.Enemy.MaxHp}";
+            enemyStatusText.text = GuardText(state.Enemy).TrimStart(' ', '/');
             playerFill.rectTransform.sizeDelta = new Vector2(648f * state.Player.Hp / state.Player.MaxHp,10);
-            enemyFill.rectTransform.sizeDelta = new Vector2(210f * state.Enemy.Hp / state.Enemy.MaxHp,12);
+            enemyFill.rectTransform.sizeDelta = new Vector2(246f * state.Enemy.Hp / state.Enemy.MaxHp,12);
             string phaseText = paused ? "一時停止" : PhaseName(phase);
             turnText.text = $"TURN {state.Turn:00} / {phaseText}";
             deckText.text = $"手スピ 4 / 12　山札 {deck.DrawCount}";
@@ -203,12 +247,60 @@ namespace Ohajiki
                 cardLabels[i].text = $"{elements[e]} {spirit.displayName}\n{skills[(int)spirit.skill]}";
                 cardButtons[i].interactable = !paused && phase == BattlePhase.Ready;
             }
+            if(showChain && !chainVisible)
+            {
+                chainSlide = -286;
+                chainPanel.anchoredPosition = new Vector2(chainSlide, 0);
+            }
             chainVisible = showChain;
             chainPanel.gameObject.SetActive(showChain && (phase==BattlePhase.PlayerShot || phase==BattlePhase.EnemyShot || phase==BattlePhase.Charging));
-            chainText.text = $"接触 {sim.Collected} / 同属性 {sim.Matched} / Lv{BattleRules.EffectLevel(sim.Matched,tuning)}";
+            chainText.text = $"LV{BattleRules.EffectLevel(sim.Matched,tuning)}";
             launchHint.text = sim.EnemySide ? "敵のショット / 下向きにランダム発射" : "タップで位置調整 → ボールから上へスワイプ";
         }
-        static string GuardText(Combatant side) => side.GuardTurns > 0 ? $" / 防御 あと{side.GuardTurns}回" : "";
+        static string GuardText(Combatant side)
+        {
+            string text = side.GuardTurns > 0 ? $" / 防御{side.GuardTurns}回" : "";
+            if(!Mathf.Approximately(side.AttackMultiplier,1)) text += $" 攻×{side.AttackMultiplier:0.##}";
+            if(!Mathf.Approximately(side.SpeedMultiplier,1)) text += $" 速×{side.SpeedMultiplier:0.##}";
+            return text;
+        }
+        public void UpdateSimulationVisuals(ShotSimulation simulation,SpiritDefinition spirit)
+        {
+            MoveProjectile(simulation.Position,tuning.shotRadius);
+            int cloneCount = Mathf.Max(0,simulation.Projectiles.Count - 1);
+            while(cloneVisuals.Count < cloneCount)
+            {
+                var visual = Panel(Board,"SplitSpirit",0,0,tuning.shotRadius*2,tuning.shotRadius*2,Color.white,true);
+                visual.gameObject.AddComponent<UnityEngine.CanvasGroup>().alpha = .5f;
+                var art = visual.gameObject.AddComponent<SpiritBallVisual>();
+                art.Initialize(skin);
+                cloneVisuals.Add(visual);
+                cloneArt.Add(art);
+            }
+            for(int i=0;i<cloneVisuals.Count;i++)
+            {
+                bool visible = i<cloneCount && simulation.Projectiles[i+1].Active;
+                cloneVisuals[i].gameObject.SetActive(visible);
+                if(!visible) continue;
+                cloneVisuals[i].anchoredPosition = simulation.Projectiles[i+1].Position - Vector2.one*tuning.shotRadius;
+                cloneArt[i].Show(spirit);
+            }
+            while(trapVisuals.Count < simulation.Traps.Count)
+            {
+                var visual = Panel(Board,"Trap",0,0,56,56,new Color(.4f,.15f,.6f,.8f),true);
+                trapLabels.Add(Label(visual,"",0,0,56,56,14,Color.white,TextAlignmentOptions.Center));
+                trapVisuals.Add(visual);
+            }
+            for(int i=0;i<trapVisuals.Count;i++)
+            {
+                bool visible = i<simulation.Traps.Count;
+                trapVisuals[i].gameObject.SetActive(visible);
+                if(!visible) continue;
+                var trap = simulation.Traps[i];
+                trapVisuals[i].anchoredPosition = trap.Position - Vector2.one*28;
+                trapLabels[i].text = (trap.EnemyOwner ? "敵罠" : "味方罠") + "\n" + elements[(int)trap.TargetElement];
+            }
+        }
         public static string PhaseName(BattlePhase phase)
         {
             switch(phase) {
@@ -251,7 +343,7 @@ namespace Ohajiki
             cutInArt = Image(Rect("Art",cutInPanel,330,0,270,330),Color.white); cutInArt.preserveAspect = true;
             cutInText = Label(cutInPanel,"",28,50,320,210,30,ink,TextAlignmentOptions.Center);
             cutInPanel.gameObject.SetActive(false);
-            targetFlash=skin.Image(root,"Target damage flash",skin.Burst,190,1070,370,200,Color.clear,true);
+            targetFlash=skin.Image(root,"Target damage flash",skin.Burst,530,1115,370,200,Color.clear,true);
             impactPanel=Panel(root,"Impact readout",80,789,560,190,new Color(.12f,.18f,.21f,.96f));
             impactPanel.pivot=new Vector2(.5f,.5f);
             skin.Image(impactPanel,"Impact accent",skin.Shard,18,95,16,145,SpiritUiSkin.Gold,true);
@@ -265,17 +357,30 @@ namespace Ohajiki
             impactPanel.gameObject.SetActive(false);
             detailPanel = Panel(root,"SkillDetails",50,330,620,520,SpiritUiSkin.Paper);
             detailText = Label(detailPanel,"",30,25,560,470,24,ink,TextAlignmentOptions.Center);
+            detailText.enableAutoSizing = true;
+            detailText.fontSizeMin = 16;
+            detailText.fontSizeMax = 24;
             detailPanel.gameObject.SetActive(false);
         }
         public void ShowDetails(SpiritDefinition spirit)
         {
             string powers = "";
             for(int i=0;i<spirit.skillPower.Length;i++)
-                powers += $"Lv{i+1}: " + ((int)spirit.skill >= (int)Skill.PercentAttack ? $"{spirit.skillPower[i]*100:0.#}%" : $"{spirit.skillPower[i]:0}") + "  ";
+                powers += $"Lv{i+1}: " + (spirit.skill != Skill.Cleanse && (int)spirit.skill >= (int)Skill.PercentAttack ? $"{spirit.skillPower[i]*100:0.#}%" : $"{spirit.skillPower[i]:0}") + "  ";
             detailText.text = $"{elements[(int)spirit.element]} {spirit.displayName}  Lv{spirit.level}\nHP {spirit.Hp} / 攻撃 {spirit.Attack} / 速度 {spirit.Speed:0}\n\n{spirit.skillName} / {skills[(int)spirit.skill]}\n{powers}\n" +
                 (spirit.skill == Skill.Guard || spirit.skill == Skill.PercentGuard ? $"防御は相手の行動{spirit.guardTurns}回分\n" : "") +
-                $"\n通常攻撃 = 攻撃 × 全接触数 × {tuning.contactAttackFactor}\n無属性も通常攻撃の接触数に含む\n\n指・ボタンを離すと閉じます";
+                ActionDescription(spirit) +
+                ((int)spirit.skill >= (int)Skill.AttackUp && spirit.skill != Skill.Cleanse ? $"能力変化は対象の行動{spirit.statusTurns}回分\n" : "") +
+                $"\n通常攻撃 = 攻撃 × 接触数（強化込み） × {tuning.contactAttackFactor}\n無属性も通常攻撃の接触数に含む\n\n指・ボタンを離すと閉じます";
             detailPanel.gameObject.SetActive(true);
+        }
+        string ActionDescription(SpiritDefinition spirit)
+        {
+            if(spirit.actionSkill == ActionSkill.Trap)
+                return $"追加スキル 罠 / 対象 {elements[(int)spirit.trapTargetElement]}\n威力{spirit.trapDamage} / 相手{spirit.trapOpponentTurns}行動まで\n";
+            if(spirit.actionSkill == ActionSkill.Split)
+                return $"追加スキル 分裂 / 接触{spirit.splitContactThreshold}個で{spirit.splitTotalProjectiles}体\n";
+            return "";
         }
         public void HideDetails() => detailPanel.gameObject.SetActive(false);
         public void HideOverlay() => overlay.gameObject.SetActive(false);
@@ -319,7 +424,7 @@ namespace Ohajiki
             impactText.text=$"{result.appliedNormalDamage:N0}";
             impactText.color=new Color(1,.85f,.43f);
             impactPanel.anchoredPosition=new Vector2(360,result.enemy?410:866);
-            targetFlash.rectTransform.anchoredPosition=result.enemy?new Vector2(360,278):new Vector2(190,1070);
+            targetFlash.rectTransform.anchoredPosition=result.enemy?new Vector2(360,278):new Vector2(530,1115);
             Feedback.Impact(false,result.enemy,false);
         }
         public void ShowSkillImpact(ActionResult result,SpiritDefinition spirit)
@@ -328,12 +433,18 @@ namespace Ohajiki
             string effect=$"{result.appliedSkillDamage:N0}";impactUnit.text="DAMAGE";
             if(spirit.skill==Skill.Heal || spirit.skill==Skill.PercentHeal){effect=$"+{result.healing:N0}";impactUnit.text="HEAL";}
             if(result.guarding){effect="GUARD";impactUnit.text=$"相手の行動 {spirit.guardTurns}回";}
+            if(!string.IsNullOrEmpty(result.statusEffect))
+            {
+                effect = result.statusEffect;
+                impactUnit.text = spirit.skill == Skill.Cleanse ? "解除" : $"対象の行動 {spirit.statusTurns}回";
+            }
             impactCaption.text=$"{spirit.skillName} / Lv{result.level}";impactText.text=effect;
             impactText.color=supportImpact?new Color(.45f,1,.74f):new Color(1,.85f,.43f);
-            bool bottom=supportImpact?!result.enemy:result.enemy;
+            bool affectsSelf = supportImpact && spirit.skill != Skill.AttackDown && spirit.skill != Skill.SpeedDown;
+            bool bottom=affectsSelf?!result.enemy:result.enemy;
             impactPanel.anchoredPosition=new Vector2(360,bottom?410:866);
-            targetFlash.rectTransform.anchoredPosition=bottom?new Vector2(360,278):new Vector2(190,1070);
-            Feedback.Impact(true,result.enemy,supportImpact);
+            targetFlash.rectTransform.anchoredPosition=bottom?new Vector2(360,278):new Vector2(530,1115);
+            Feedback.Impact(true,result.enemy,affectsSelf);
         }
         RectTransform Rect(string name, Transform parent, float x, float y, float w, float h)
         {

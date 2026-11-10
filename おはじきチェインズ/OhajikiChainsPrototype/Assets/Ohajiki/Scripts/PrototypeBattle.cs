@@ -16,6 +16,7 @@ namespace Ohajiki
         public PlayerProgress Progress { get; private set; } = new PlayerProgress();
         public event System.Action HomeRequested;
         public event System.Action RetryRequested;
+        public event System.Action<int> ExperienceEarned;
         bool embedded;
         public BattlePhase Phase { get; private set; }
         public int SelectedSlot { get; private set; }
@@ -54,8 +55,15 @@ namespace Ohajiki
         }
         public void Restart()
         {
-            if(Simulation != null) Simulation.CollectedCharge -= OnCollected;
+            if(Simulation != null)
+            {
+                Simulation.CollectedCharge -= OnCollected;
+                Simulation.TrapTriggered -= OnTrapTriggered;
+                Simulation.SpecialTriggered -= OnSpecialTriggered;
+            }
             Simulation = new ShotSimulation(tuning); Simulation.CollectedCharge += OnCollected;
+            Simulation.TrapTriggered += OnTrapTriggered;
+            Simulation.SpecialTriggered += OnSpecialTriggered;
             State = new BattleState(tuning); Deck = new SpiritDeck(tuning.seed); EnemyDeck = new SpiritDeck(tuning.seed+1);
             enemyRandom = new System.Random(tuning.seed+2);
             SelectedSlot = 0; dragging = paused = showChain = enemyActing = rewardGranted = false;
@@ -78,7 +86,7 @@ namespace Ohajiki
         {
             if(View.OverlayVisible || paused || Phase != BattlePhase.Ready || View.DetailsVisible) return false;
             actingSpirit = PlayerCard;
-            if(!Simulation.Launch(direction,actingSpirit)) return false;
+            if(!Simulation.Launch(direction,actingSpirit,State.Player.SpeedMultiplier)) return false;
             State.Player.Element = actingSpirit.element; enemyActing = false; showChain = true;
             View.Feedback.BeginShot(false,actingSpirit.element);
             View.SetStatus("全接触数で通常攻撃 / 同属性数でスキル強化");
@@ -111,7 +119,14 @@ namespace Ohajiki
             if(Phase == BattlePhase.Ready) { ReadPointer(); return; }
             if(Phase == BattlePhase.PlayerShot || Phase == BattlePhase.EnemyShot)
             {
-                Simulation.Tick(dt); View.MoveProjectile(Simulation.Position,tuning.shotRadius);
+                Simulation.Tick(dt);
+                View.UpdateSimulationVisuals(Simulation,actingSpirit);
+                if(State.Finished)
+                {
+                    Simulation.CancelShot();
+                    Finish();
+                    return;
+                }
                 if(!Simulation.Moving)
                 {
                     View.Feedback.LockTotal(CurrentNormalDamage());
@@ -128,7 +143,7 @@ namespace Ohajiki
                 case BattlePhase.Charging:
                     Enter(BattlePhase.DamageFlight);View.SetStatus("ためた力を、相手へ！");break;
                 case BattlePhase.DamageFlight:
-                    LastAction=State.ResolveNormal(enemyActing,actingSpirit,Simulation.Collected,Simulation.Matched,tuning);
+                    LastAction=State.ResolveNormal(enemyActing,actingSpirit,Simulation.Collected,Simulation.Matched,tuning,Simulation.WeightedContacts);
                     View.ShowNormalImpact(LastAction); View.SetStatus("接触でためたダメージを解放！");
                     Enter(BattlePhase.NormalImpact); break;
                 case BattlePhase.NormalImpact: Enter(BattlePhase.CutIn); break;
@@ -159,14 +174,14 @@ namespace Ohajiki
             enemyActing = true; actingSpirit = EnemyCard;
             Simulation.Prepare(true,Mathf.Lerp(50,ShotSimulation.Width-50,(float)enemyRandom.NextDouble()));
             float angle = Mathf.Lerp(tuning.enemyMinimumAngle*Mathf.PI,(1-tuning.enemyMinimumAngle)*Mathf.PI,(float)enemyRandom.NextDouble());
-            if(!Simulation.Launch(new Vector2(Mathf.Cos(angle),-Mathf.Sin(angle))*300,actingSpirit)) throw new System.InvalidOperationException("Enemy launch failed");
+            if(!Simulation.Launch(new Vector2(Mathf.Cos(angle),-Mathf.Sin(angle))*300,actingSpirit,State.Enemy.SpeedMultiplier)) throw new System.InvalidOperationException("Enemy launch failed");
             View.Feedback.BeginShot(true,actingSpirit.element);
             showChain = true; View.SetStatus("敵がショット！相手も接触数と同属性で攻撃");
             Enter(BattlePhase.EnemyShot);
         }
         void CompleteAction()
         {
-            // Confirmed by the user: reset every charge after EACH side's action.
+            // Refill only the slots cleared during this action.
             Simulation.ResetBoard();
             if(enemyActing) EnemyDeck.Replace(enemySlot); else Deck.Replace(SelectedSlot);
             if(State.Finished) { Finish(); return; }
@@ -174,23 +189,28 @@ namespace Ohajiki
             if(!enemyActing)
             {
                 actingSpirit = EnemyCard; Simulation.Prepare(true,ShotSimulation.Width/2);
-                View.SetStatus("盤面リセット / 敵のターン"); Enter(BattlePhase.EnemyThinking);
+                View.SetStatus("盤面補充 / 敵のターン"); Enter(BattlePhase.EnemyThinking);
             }
             else
             {
                 enemyActing = false; PrepareEnemyCard(); actingSpirit = PlayerCard;
                 Simulation.Prepare(false,ShotSimulation.Width/2);
-                View.SetStatus("盤面リセット / あなたのターン"); Enter(BattlePhase.Ready);
+                View.SetStatus("盤面補充 / あなたのターン"); Enter(BattlePhase.Ready);
             }
         }
         void Finish()
         {
             int xp = State.Won || tuning.rewardOnDefeat ? tuning.rewardExperience : 0;
             int coins = State.Won || tuning.rewardOnDefeat ? tuning.rewardCoins : 0;
-            if(!rewardGranted) { Progress.Award(xp,coins,tuning); rewardGranted = true; }
+            if(!rewardGranted)
+            {
+                rewardGranted = true;
+                Progress.Award(xp,coins,tuning);
+                ExperienceEarned?.Invoke(xp);
+            }
             Enter(BattlePhase.Finished);
             View.ShowOverlay(State.Won ? "VICTORY!" : "もう一度、挑戦！",
-                $"バトル終了\n\n報酬 EXP +{xp} / Coin +{coins}\nRank {Progress.Rank}  累計EXP {Progress.TotalExperience}\n\n同属性でスキル、全接触で通常攻撃\n手札と反射角を変えて再挑戦！\n※報酬はアプリ終了まで保持","もう一度バトル");
+                $"バトル終了\n\n報酬 EXP +{xp} / Coin +{coins}\nRank {Progress.Rank}  累計EXP {Progress.TotalExperience}\n参加スピリターにも経験値を獲得\n\n同属性でスキル、全接触で通常攻撃\n手札と反射角を変えて再挑戦！\n※報酬はアプリ終了まで保持","もう一度バトル");
         }
         void ReadPointer()
         {
@@ -209,8 +229,23 @@ namespace Ohajiki
                 if(!Shoot(point-Simulation.Position)) View.SetStatus("ボールから上方向へ、少し長めにスワイプしてください");
             }
         }
-        int CurrentNormalDamage() => BattleRules.ContactDamage(actingSpirit.Attack,Simulation.Collected,actingSpirit.element,
+        int CurrentNormalDamage() => BattleRules.ContactDamage(
+            actingSpirit.Attack * (enemyActing ? State.Enemy.AttackMultiplier : State.Player.AttackMultiplier),
+            Simulation.WeightedContacts,actingSpirit.element,
             enemyActing?State.Player.Element:State.Enemy.Element,tuning);
+        void OnSpecialTriggered(int index,SpecialCharge effect)
+        {
+            string[] names = { "", "攻撃力アップ", "速度アップ", "分裂", "縦ミサイル", "横ミサイル", "ワープ" };
+            View.SetStatus(names[(int)effect] + "！");
+        }
+        void OnTrapTriggered(bool enemyOwner,int rawDamage)
+        {
+            var target = enemyOwner ? State.Player : State.Enemy;
+            int damage = target.ReceiveTrap(rawDamage);
+            View.SetStatus($"罠が発動！ {(enemyOwner ? "味方" : "敵")}に {damage} ダメージ");
+            if(State.Finished) Simulation.CancelShot();
+            Refresh();
+        }
         void OnCollected(int index,bool same)
         {
             var charge=Simulation.Charges[index];
@@ -218,7 +253,12 @@ namespace Ohajiki
             Refresh();
         }
         void Refresh() => View.Refresh(Simulation,Deck,State,tuning,SelectedSlot,showChain,actingSpirit,EnemyCard,Phase,paused,Progress);
-        void OnDestroy() { if(Simulation != null) Simulation.CollectedCharge -= OnCollected; }
+        void OnDestroy() { if(Simulation != null)
+            {
+                Simulation.CollectedCharge -= OnCollected;
+                Simulation.TrapTriggered -= OnTrapTriggered;
+                Simulation.SpecialTriggered -= OnSpecialTriggered;
+            } }
 
         IEnumerator RunSmoke()
         {
@@ -250,7 +290,7 @@ namespace Ohajiki
             ScreenCapture.CaptureScreenshot(System.IO.Path.Combine(directory,"cycle-v2.png"));
             Restart();
             if(State.Turn != 1 || State.Player.Hp != BattleRules.TotalHp(tuning.playerDeck)) { Debug.LogError("SMOKE: retry failed"); Application.Quit(6); yield break; }
-            Debug.Log("SMOKE V2 PASS: hold details, pause, player shot, charge, cut-in, enemy shot, two full board resets, next turn, retry.");
+            Debug.Log("SMOKE V2 PASS: hold details, pause, player shot, charge, cut-in, enemy shot, two board refills, next turn, retry.");
             yield return new WaitForSeconds(.5f);
             Application.Quit(0);
         }

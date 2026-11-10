@@ -40,10 +40,14 @@ namespace Ohajiki
         [Min(0)] public int battleEnergyCost = 1;
         [Min(0)] public int startingMaterials = 20;
         [Header("仮の強化値 / 1素材で1レベル、コスト = 現在Lv × 単価")]
-        [Min(1)] public int maxSpiritLevel = 60;
+        [Range(1, 60)] public int maxSpiritLevel = 60;
         [Min(0)] public int upgradeCoinUnit = 50;
+        [Header("バトル経験値 / 出撃した各スピリターへ付与する仮設定")]
+        [Min(1)] public int spiritExperienceBase = 100;
+        [Min(0)] public int spiritExperiencePerLevel = 25;
+        [Min(0)] public float battleSpiritExperienceMultiplier = 1;
         public GachaBanner[] banners;
-        [Header("ガチャ / 初回1連は全バナー共通で1回")]
+        [Header("ガチャ / 初回1連は各バナーで1回")]
         [Min(0)] public int firstSingleGems=1;
         [Min(0)] public int singleGems=5;
         [Min(0)] public int tenGems=50;
@@ -61,7 +65,8 @@ namespace Ohajiki
             if (startingOwnedCount < SpiritDeck.Size || startingOwnedCount > catalog.Length)
             { error = "初期所持数は12体以上、カタログ数以下が必要です"; return false; }
             if (deckSlots < 1 || maximumEnergy < 1 || battleEnergyCost < 0 || battleEnergyCost > maximumEnergy ||
-                maxSpiritLevel < 1 || upgradeCoinUnit < 0 || startingCoins < 0 || startingMaterials < 0 || startingGems<0 ||
+                maxSpiritLevel < 1 || maxSpiritLevel > 60 || spiritExperienceBase < 1 || spiritExperiencePerLevel < 0 ||
+                battleSpiritExperienceMultiplier < 0 || float.IsNaN(battleSpiritExperienceMultiplier) || float.IsInfinity(battleSpiritExperienceMultiplier) || upgradeCoinUnit < 0 || startingCoins < 0 || startingMaterials < 0 || startingGems<0 ||
                 firstSingleGems<0 || singleGems<0 || tenGems<0 || tenBonusGems<0 || featuredCycleSeconds<.5f)
             { error = "ホームの初期値・強化値が不正です"; return false; }
             if (banners == null) { error = "ガチャバナーの一覧が未設定です"; return false; }

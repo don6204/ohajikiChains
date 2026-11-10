@@ -95,7 +95,8 @@ namespace Ohajiki
             ui.Label(box,RewardText(product),30,355,564,105,23,HubWidgets.Muted,true);
             ui.Label(box,PriceText(product),24,282,576,60,31,null,true);
             ui.Label(box,LimitText(product),24,228,576,46,19,HubWidgets.Muted,true);
-            ui.Label(box,cash?"テスト購入 / 実際の請求はありません\n正式な販売情報は未設定です":"表示された通貨・アイテムを消費します。",24,128,576,90,21,HubWidgets.Muted,true);
+            ui.Label(box,cash?"テスト購入 / 実際の請求はありません\n正式な販売情報は未設定です":"表示された通貨・アイテムを消費します。",24,151,576,69,18,HubWidgets.Muted,true);
+            if(cash)ui.Button(box,"特定商取引法に基づく表記",80,106,464,40,()=>ShowLegalNotice(()=>ShowShopConfirmation(id)));
             ui.Button(box,"いいえ",28,28,250,76,CloseModal);
             ui.Button(box,"はい",304,28,292,76,()=>{
                 DismissModal(false);

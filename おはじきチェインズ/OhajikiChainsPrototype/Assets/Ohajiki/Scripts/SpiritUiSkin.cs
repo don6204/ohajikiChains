@@ -14,7 +14,9 @@ namespace Ohajiki
         public static readonly Color Accent=new Color(.08f,.53f,.58f);
         public static readonly Color Edge=new Color(.72f,.42f,.13f);
         public static readonly Color Paper=new Color(1,.98f,.90f);
-        public Sprite Plate,Border,Ball,Ring,Glow,Star,Shard,Burst,Fade,DamageBurst;
+        public Sprite Plate,Border,Ball,Ring,Glow,Star,Shard,Burst,Fade;
+        Sprite damageBurst;
+        public Sprite DamageBurst => damageBurst!=null ? damageBurst : (damageBurst=MakeDamageBurst());
         Material outlineMaterial;
         readonly List<Sprite> sprites=new List<Sprite>();
         readonly List<Texture2D> textures=new List<Texture2D>();
@@ -24,7 +26,6 @@ namespace Ohajiki
             outlineMaterial=Resources.Load<Material>("UI/FeedbackOutline");
             Plate=Make(0,64);Border=Make(1,64);Ball=Make(2,128);Ring=Make(3,128);
             Glow=Make(4,128);Star=Make(5,64);Shard=Make(6,64);Burst=Make(7,256);Fade=Make(8,32);
-            DamageBurst=Make(9,256);
         }
         Sprite Make(int kind,int size)
         {
@@ -54,13 +55,12 @@ namespace Ohajiki
                 if(kind==4)a=Mathf.Pow(Mathf.Max(0,1-r),2.2f);
                 if(kind==5)a=Mathf.Clamp01((.15f-Mathf.Abs(px*py)-.12f*(px*px+py*py))*size);
                 if(kind==6)a=Mathf.Clamp01((1-Mathf.Abs(px)-Mathf.Abs(py))*size*.5f);
-                if(kind==7 || kind==9)
+                if(kind==7)
                 {
                     float angle=Mathf.Atan2(py,px),sector=Mathf.Repeat(angle/(2*Mathf.PI)*14,1);
                     float limit=Mathf.Lerp(.62f,.98f,Mathf.Abs(sector*2-1))*(.96f+.04f*Mathf.Sin(angle*5));
                     a=Mathf.Clamp01((limit-r)*size*.5f);
-                    color=kind==7?Color.Lerp(new Color(1,.49f,.08f),new Color(1,.95f,.46f),Mathf.Clamp01((py+1)*.65f)):
-                        Color.Lerp(new Color(.87f,.87f,.87f),Color.white,Mathf.Clamp01((py+1)*.65f));
+                    color=Color.Lerp(new Color(1,.49f,.08f),new Color(1,.95f,.46f),Mathf.Clamp01((py+1)*.65f));
                 }
                 if(kind==8)a=(py+1)*.5f;
                 pixels[y*size+x]=new Color(color.r*v,color.g*v,color.b*v,a);
@@ -68,6 +68,44 @@ namespace Ohajiki
             texture.SetPixels(pixels);texture.Apply(false,true);textures.Add(texture);
             var sprite=Sprite.Create(texture,new Rect(0,0,size,size),new Vector2(.5f,.5f),100,0,SpriteMeshType.FullRect,
                 kind<2?new Vector4(18,18,18,18):Vector4.zero);
+            sprites.Add(sprite);return sprite;
+        }
+        Sprite MakeDamageBurst()
+        {
+            // Irregular comic burst in local UI coordinates, with a constant dark outline.
+            // Generated once per canvas and released with the other skin textures.
+            const int width=720,height=520;
+            var points=new Vector2[] {
+                new Vector2(46,250),new Vector2(145,175),new Vector2(175,210),new Vector2(202,164),
+                new Vector2(280,202),new Vector2(259,150),new Vector2(326,139),new Vector2(293,117),
+                new Vector2(353,86),new Vector2(295,82),new Vector2(337,33),new Vector2(270,63),
+                new Vector2(278,7),new Vector2(226,61),new Vector2(197,16),new Vector2(171,75),
+                new Vector2(119,24),new Vector2(125,82),new Vector2(72,78),new Vector2(98,112),
+                new Vector2(8,134),new Vector2(74,144),new Vector2(28,192),new Vector2(104,178)
+            };
+            var texture=new Texture2D(width,height,TextureFormat.RGBA32,false) {
+                name="Comic damage burst",filterMode=FilterMode.Bilinear,wrapMode=TextureWrapMode.Clamp
+            };
+            var pixels=new Color[width*height];
+            Color fill=new Color(.97f,.78f,.69f),edge=new Color(.035f,.14f,.18f);
+            for(int y=0;y<height;y++)for(int x=0;x<width;x++)
+            {
+                var sample=new Vector2((x+.5f)*.5f,(y+.5f)*.5f);
+                bool inside=false;float distanceSquared=float.MaxValue;
+                for(int i=0,j=points.Length-1;i<points.Length;j=i++)
+                {
+                    Vector2 a=points[j],b=points[i],segment=b-a;
+                    if((a.y>sample.y)!=(b.y>sample.y) && sample.x<(b.x-a.x)*(sample.y-a.y)/(b.y-a.y)+a.x)inside=!inside;
+                    float t=Mathf.Clamp01(Vector2.Dot(sample-a,segment)/segment.sqrMagnitude);
+                    distanceSquared=Mathf.Min(distanceSquared,(sample-(a+t*segment)).sqrMagnitude);
+                }
+                float distance=Mathf.Sqrt(distanceSquared);
+                Color color=Color.Lerp(edge,fill,Mathf.Clamp01((distance-2.5f)*2));
+                color.a=inside?1:Mathf.Clamp01(1-distance*2);
+                pixels[y*width+x]=color;
+            }
+            texture.SetPixels(pixels);texture.Apply(false,true);textures.Add(texture);
+            var sprite=Sprite.Create(texture,new Rect(0,0,width,height),new Vector2(.5f,.5f),100,0,SpriteMeshType.FullRect);
             sprites.Add(sprite);return sprite;
         }
         public static RectTransform Rect(Transform parent,string name,float x,float y,float w,float h)

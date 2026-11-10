@@ -15,15 +15,16 @@ namespace Ohajiki
     }
     public sealed partial class PlayerSession
     {
-        public bool FirstSingleUsed { get; private set; }
-        public int GachaCost(int count) => count==1?(FirstSingleUsed?Config.singleGems:Config.firstSingleGems):
+        readonly HashSet<int> usedSingleDiscounts = new HashSet<int>();
+        public bool FirstSingleUsed(int banner) => usedSingleDiscounts.Contains(banner);
+        public int GachaCost(int banner,int count) => count==1?(FirstSingleUsed(banner)?Config.singleGems:Config.firstSingleGems):
             count==10?Config.tenGems:throw new ArgumentOutOfRangeException(nameof(count));
         public bool CanDraw(int banner,int count,out string error)
         {
             error=null;
             if(count!=1 && count!=10){error="1連または10連を選んでください";return false;}
             if(!BannerOpen(banner)){error="ガチャ開催期間外です";return false;}
-            int cost=GachaCost(count),bonus=count==10?Config.tenBonusGems:0;
+            int cost=GachaCost(banner,count),bonus=count==10?Config.tenBonusGems:0;
             if(Gems<cost){error=$"宝石が不足しています（必要 {cost} / 所持 {Gems}）";return false;}
             if((long)Gems-cost+bonus>int.MaxValue){error="宝石の所持上限です";return false;}
             return true;
@@ -32,7 +33,7 @@ namespace Ohajiki
         {
             receipt=null;
             if(!CanDraw(banner,count,out error))return false;
-            int cost=GachaCost(count),bonus=count==10?Config.tenBonusGems:0;
+            int cost=GachaCost(banner,count),bonus=count==10?Config.tenBonusGems:0;
             var ids=new int[count];var fresh=new bool[count];var additions=new Dictionary<int,int>();
             for(int i=0;i<count;i++)
             {
@@ -44,7 +45,7 @@ namespace Ohajiki
             // All validation precedes this one synchronous commit.
             Gems=Gems-cost+bonus;
             foreach(var pair in additions)copies[pair.Key]+=pair.Value;
-            if(count==1)FirstSingleUsed=true;
+            if(count==1)usedSingleDiscounts.Add(banner);
             receipt=new GachaReceipt(banner,ids,fresh,cost,bonus);return true;
         }
     }

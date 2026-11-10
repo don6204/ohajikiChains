@@ -46,7 +46,7 @@ namespace Ohajiki
             yield return new WaitForSeconds(.7f);
             var session=app.Session;var hub=app.Hub;
             Require(hub.Page==HubPage.Home,"home startup");
-            Require(hub.GetComponentsInChildren<Button>().Count(b=>!b.interactable)==1,"settings placeholder");
+            Click("設定");Require(hub.Page==HubPage.Settings,"settings opens");Click("ホームへ");Require(hub.Page==HubPage.Home,"settings returns home");
             yield return Capture("01-home");
             Screen.SetResolution(480,800,FullScreenMode.Windowed);yield return new WaitForSeconds(.3f);yield return Capture("01-home-480x800");
             Screen.SetResolution(720,900,FullScreenMode.Windowed);yield return new WaitForSeconds(.3f);yield return Capture("01-home-720x900");
@@ -78,6 +78,17 @@ namespace Ohajiki
             Require(newId>=0,"gacha unlock with fixed test seed");
             Require(session.Progress.Coins==coins && session.Gems==gems-spent,"gacha currency costs");
             Click("スピリター");Click("デッキ編成　→");yield return null;
+            Click("フィルター");Require(hub.HasModal,"filter selection screen");
+            Click("火");Click("★1");yield return Capture("05a-filter");
+            Click("決定");Require(!hub.HasModal && hub.Page==HubPage.Deck,"filter applies to deck editor");
+            var filterButton=hub.GetComponentsInChildren<Button>().First(b=>b.name=="Button_フィルター");
+            Require(filterButton.GetComponentInChildren<TMP_Text>().text.Contains("火 / ★1"),"selected filter summary");
+            Click("フィルター");Click("水");Click("戻る");
+            Require(filterButton.GetComponentInChildren<TMP_Text>().text.Contains("火 / ★1"),"cancel preserves filters");
+            Click("ソート");Click("レア順");
+            Require(hub.GetComponentsInChildren<Button>().First(b=>b.name=="Button_ソート").GetComponentInChildren<TMP_Text>().text.Contains("レア順"),"sort selection");
+            Click("フィルター");Click("条件をリセット");Click("決定");
+            Click("ソート");Click("名前順");
             int oldId=session.DeckCopy()[0];
             hub.ToggleDraft(oldId);hub.ToggleDraft(newId);
             Click("ホーム");Require(hub.HasModal,"discard confirmation");Click("戻る");

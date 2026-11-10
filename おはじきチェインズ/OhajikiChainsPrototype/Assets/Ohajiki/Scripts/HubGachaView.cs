@@ -33,9 +33,9 @@ namespace Ohajiki
             }
             ui.Label(content,banner.description,32,250,592,65,20,HubWidgets.Muted,true);
             bool open=session.BannerOpen(selectedBanner);
-            string single=(session.FirstSingleUsed?"1連":"初回1連")+$"\n宝石 {session.GachaCost(1)}個";
+            string single=(session.FirstSingleUsed(selectedBanner)?"1連":"初回1連")+$"\n宝石 {session.GachaCost(selectedBanner,1)}個";
             ui.Button(content,single,14,137,300,96,()=>RequestGacha(1),open,HubWidgets.Accent).name="Button_GachaSingle";
-            ui.Button(content,$"10連　宝石 {session.GachaCost(10)}個\nおまけ 宝石{session.Config.tenBonusGems}個",342,137,300,96,()=>RequestGacha(10),open,new Color(.96f,.68f,.18f)).name="Button_GachaTen";
+            ui.Button(content,$"10連　宝石 {session.GachaCost(selectedBanner,10)}個\nおまけ 宝石{session.Config.tenBonusGems}個",342,137,300,96,()=>RequestGacha(10),open,new Color(.96f,.68f,.18f)).name="Button_GachaTen";
             ui.Button(content,"戻る",14,49,190,66,()=>Navigate(HubPage.Gacha));
             ui.Button(content,"排出率・排出内容",224,49,418,66,ShowRates);
             Message(open?$"所持宝石 {session.Gems}個 / 初回割引は全ガチャ共通1回":"開催期間外です");
@@ -63,7 +63,7 @@ namespace Ohajiki
             {
                 Message(error);return;
             }
-            int quotedCost=session.GachaCost(count),banner=selectedBanner;
+            int banner=selectedBanner; int quotedCost=session.GachaCost(banner,count);
             bool confirmed=false;
             Confirm($"{count}連ガチャを引きますか？",$"宝石 {quotedCost}個を使います。\n所持 {session.Gems}個"+
                 (count==10?$"\nおまけ：宝石{session.Config.tenBonusGems}個":""),()=>
@@ -71,7 +71,7 @@ namespace Ohajiki
                 if(confirmed || GachaMovie!=null)return;
                 confirmed=true;
                 // Recheck at confirmation: closed banners or a stale quote must not spend.
-                if(session.GachaCost(count)!=quotedCost){Render();Message("宝石数が変わりました。もう一度確認してください。");return;}
+                if(session.GachaCost(banner,count)!=quotedCost){Render();Message("宝石数が変わりました。もう一度確認してください。");return;}
                 if(!session.TryDraw(banner,count,out var receipt,out var failure)){Render();Message(failure);return;}
                 OpenModal("SummonMovie",new Color(.04f,.12f,.18f,.94f));
                 GachaMovie=modal.gameObject.AddComponent<GachaSequence>();

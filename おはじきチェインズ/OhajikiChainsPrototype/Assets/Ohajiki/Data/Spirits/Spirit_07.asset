@@ -22,12 +22,13 @@ MonoBehaviour:
   attackPerLevel: 12
   baseSpeed: 1250
   speedPerLevel: 8
-  skillName: "\u5B88\u308A\u306E\u7D50\u754C"
-  skill: 2
+  skillName: "清らかな水"
+  skill: 8
   skillPower:
-  - 35
-  - 50
-  - 70
-  - 90
-  - 115
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
   guardTurns: 2
+  statusTurns: 2

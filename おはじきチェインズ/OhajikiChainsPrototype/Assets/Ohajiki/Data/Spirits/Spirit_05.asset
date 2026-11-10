@@ -22,12 +22,13 @@ MonoBehaviour:
   attackPerLevel: 12
   baseSpeed: 1250
   speedPerLevel: 8
-  skillName: "\u3044\u3084\u3057\u306E\u5149"
-  skill: 1
+  skillName: "追い風"
+  skill: 7
   skillPower:
-  - 65
-  - 100
-  - 140
-  - 180
-  - 230
+  - 1.2
+  - 1.4
+  - 1.6
+  - 1.8
+  - 2
   guardTurns: 2
+  statusTurns: 2

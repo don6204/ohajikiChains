@@ -30,6 +30,18 @@ namespace Ohajiki
         [Min(1)] public float minimumForwardSwipe = 15;
         [Min(0)] public float touchPadding = 22;
         public int seed = 43;
+        [Header("特殊チャージ / 攻撃・速度・分裂・縦・横・ワープの順")]
+        [Tooltip("各枠の出現確率。通常チャージは残りの確率。合計1以下")]
+        public float[] specialChargeProbabilities = { .005f, .005f, .005f, .005f, .005f, .01f };
+        [Min(1)] public float specialAttackMultiplier = 1.5f;
+        [Min(1)] public float specialSpeedMultiplier = 2.5f;
+        [Min(2)] public int specialSplitTotal = 3;
+        [Header("特殊効果の上限 / 仮の調整値")]
+        [Range(3, 32)] public int maximumProjectiles = 12;
+        [Min(1)] public float maximumShotSpeed = 6000;
+        [Min(1)] public float maximumContactMultiplier = 8;
+        [Range(1, 24)] public int maximumTraps = 12;
+        [Min(1)] public float trapRadius = 24;
         [Header("盤面・AI / 位置は盤面幅高さに対する割合")]
         [Range(3, 8)] public int boardColumns = 8;
         [Range(3, 6)] public int boardRows = 6;
@@ -51,7 +63,7 @@ namespace Ohajiki
         [Range(4,32)] public int contactEffectPoolSize=16;
         [Range(0,.6f)] public float damageNumberPunch=.23f;
         [Min(1)] public float damageCounterSpeed=14;
-        [Tooltip("ダメージ加算UIが黄→オレンジ→コーラルになる表示上の基準。計算には影響しません")]
+        [Tooltip("ダメージ加算UIの数字が黄→オレンジ→赤になる表示上の基準。計算には影響しません")]
         [Min(1)] public int damageColorFullAt=600;
         [Range(0,1)] public float trailOpacity=.38f;
         [Range(0,24)] public float damageBankShake=17;
@@ -84,6 +96,20 @@ namespace Ohajiki
             { error = "チャージボールの属性比率が不正です"; return false; }
             if (rankBands == null || rankBands.Length == 0 || rankBands[rankBands.Length-1].throughRank < maxRank)
             { error = "最大ランクまでの経験値テーブルが必要です"; return false; }
+            if (specialChargeProbabilities == null || specialChargeProbabilities.Length != 6)
+            { error = "特殊チャージ6種類の確率が必要です"; return false; }
+            float specialTotal = 0;
+            foreach (float chance in specialChargeProbabilities)
+            {
+                if (float.IsNaN(chance) || float.IsInfinity(chance) || chance < 0 || chance > 1)
+                { error = "特殊チャージの確率は0〜1で指定してください"; return false; }
+                specialTotal += chance;
+            }
+            if (specialTotal > 1 || maximumProjectiles < 3 || maximumTraps < 1 || maximumShotSpeed <= 0 ||
+                specialAttackMultiplier < 1 || specialSpeedMultiplier < 1 || specialSplitTotal < 2 ||
+                maximumContactMultiplier < 1 || trapRadius <= 0 || boardColumns < 2 || boardRows < 2 ||
+                shotRadius <= 0 || maximumShotSeconds <= 0)
+            { error = "特殊効果または盤面の調整値が不正です"; return false; }
             error = null; return true;
         }
     }

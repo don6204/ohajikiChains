@@ -1,105 +1,308 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 namespace Ohajiki
 {
+    public enum SpecialCharge { None, AttackBoost, SpeedBoost, Split, VerticalMissile, HorizontalMissile, Warp }
+
     public sealed class ShotSimulation
     {
-        public sealed class Charge { public Vector2 Position; public Element Element; public bool Active = true; }
+        public sealed class Charge
+        {
+            public Vector2 Position;
+            public Element Element;
+            public SpecialCharge Special;
+            public bool Active = true;
+        }
+        public sealed class Projectile
+        {
+            public Vector2 Position { get; internal set; }
+            public Vector2 Velocity { get; internal set; }
+            public bool Active { get; internal set; }
+            public bool IsClone { get; internal set; }
+            internal float AttackMultiplier = 1;
+        }
+        public sealed class Trap
+        {
+            public Vector2 Position { get; internal set; }
+            public bool EnemyOwner { get; internal set; }
+            public Element TargetElement { get; internal set; }
+            public int Damage { get; internal set; }
+            public int OpponentTurns { get; internal set; }
+        }
         public const float Width = 624, Height = 650;
         public readonly Charge[] Charges;
-        public Vector2 Position { get; private set; }
-        public Vector2 Velocity { get; private set; }
+        public Vector2 Position => primary.Position;
+        public Vector2 Velocity => primary.Velocity;
         public int Matched { get; private set; }
         public int Collected { get; private set; }
+        public float WeightedContacts { get; private set; }
         public int ResetCount { get; private set; }
         public bool Moving { get; private set; }
         public bool EnemySide { get; private set; }
+        public IReadOnlyList<Projectile> Projectiles => projectileView;
+        public IReadOnlyList<Trap> Traps => trapView;
         public event Action<int, bool> CollectedCharge;
+        public event Action<int, SpecialCharge> SpecialTriggered;
+        // Owner side and raw damage. The battle owns HP and mitigation.
+        public event Action<bool, int> TrapTriggered;
+        readonly List<Projectile> projectiles = new List<Projectile>();
+        readonly List<Trap> traps = new List<Trap>();
+        readonly IReadOnlyList<Projectile> projectileView;
+        readonly IReadOnlyList<Trap> trapView;
+        readonly Projectile primary = new Projectile();
         readonly BattleTuning tuning;
         readonly System.Random random;
+        SpiritDefinition actingSpirit;
         Element shotElement;
         float elapsed;
+        bool actionSplitUsed;
+
         public ShotSimulation(BattleTuning tuning)
         {
-            this.tuning = tuning; random = new System.Random(tuning.seed);
+            this.tuning = tuning;
+            random = new System.Random(tuning.seed);
+            projectileView = projectiles.AsReadOnly();
+            trapView = traps.AsReadOnly();
+            projectiles.Add(primary);
             Charges = new Charge[tuning.boardColumns * tuning.boardRows];
             for (int row = 0; row < tuning.boardRows; row++)
                 for (int col = 0; col < tuning.boardColumns; col++)
                     Charges[row * tuning.boardColumns + col] = new Charge {
-                        Position = new Vector2(Mathf.Lerp(52, Width-52, col/(float)(tuning.boardColumns-1)),
-                        Mathf.Lerp(Height*tuning.boardBottom, Height*tuning.boardTop, row/(float)(tuning.boardRows-1))) };
-            ResetBoard(); Prepare(false, Width/2);
+                        Position = new Vector2(Mathf.Lerp(52, Width - 52, col / (float)(tuning.boardColumns - 1)),
+                            Mathf.Lerp(Height * tuning.boardBottom, Height * tuning.boardTop, row / (float)(tuning.boardRows - 1))),
+                        Active = false
+                    };
+            ResetBoard();
+            Prepare(false, Width / 2);
         }
         Element RandomElement()
         {
             var weights = tuning.elementWeights;
-            float value = (float)random.NextDouble() * (weights.x+weights.y+weights.z+weights.w);
-            for (int i = 0; i < 3; i++) { if (value < weights[i]) return (Element)i; value -= weights[i]; }
+            float value = (float)random.NextDouble() * (weights.x + weights.y + weights.z + weights.w);
+            for (int i = 0; i < 3; i++)
+            {
+                if (value < weights[i]) return (Element)i;
+                value -= weights[i];
+            }
             return Element.Neutral;
+        }
+        SpecialCharge RandomSpecial()
+        {
+            float roll = (float)random.NextDouble();
+            for (int i = 0; i < tuning.specialChargeProbabilities.Length; i++)
+            {
+                roll -= Mathf.Max(0, tuning.specialChargeProbabilities[i]);
+                if (roll < 0) return (SpecialCharge)(i + 1);
+            }
+            return SpecialCharge.None;
         }
         public void Prepare(bool enemySide, float x)
         {
             if (Moving) throw new InvalidOperationException("Cannot reposition a moving shot");
             EnemySide = enemySide;
-            Position = new Vector2(Mathf.Clamp(x, tuning.shotRadius+18, Width-tuning.shotRadius-18),
-                Height * (enemySide ? 1-tuning.launchInset : tuning.launchInset));
+            primary.Position = new Vector2(Mathf.Clamp(x, tuning.shotRadius + 18, Width - tuning.shotRadius - 18),
+                Height * (enemySide ? 1 - tuning.launchInset : tuning.launchInset));
         }
-        public void SetLaunchX(float x) { if (!Moving) Prepare(false,x); }
-        public bool Launch(Vector2 direction, SpiritDefinition spirit)
+        public void SetLaunchX(float x) { if (!Moving) Prepare(false, x); }
+        public bool Launch(Vector2 direction, SpiritDefinition spirit, float speedMultiplier = 1)
         {
             float forward = EnemySide ? -direction.y : direction.y;
             if (Moving || spirit == null || !spirit.IsValid || direction.sqrMagnitude <= 0 || forward <= 0) return false;
-            // Gesture sensitivity belongs to human input. AI chooses a direction directly.
             if (!EnemySide && (direction.magnitude < tuning.minimumSwipe || forward < tuning.minimumForwardSwipe)) return false;
-            shotElement = spirit.element; Matched = Collected = 0; elapsed = 0;
-            Velocity = direction.normalized * spirit.Speed; Moving = true; return true;
+            actingSpirit = spirit;
+            shotElement = spirit.element;
+            Matched = Collected = 0;
+            WeightedContacts = elapsed = 0;
+            actionSplitUsed = false;
+            projectiles.Clear();
+            primary.AttackMultiplier = 1;
+            primary.Velocity = direction.normalized * Mathf.Min(tuning.maximumShotSpeed, spirit.Speed * Mathf.Max(.01f, speedMultiplier));
+            primary.Active = true;
+            projectiles.Add(primary);
+            Moving = true;
+            return true;
         }
         public void ResetBoard()
         {
-            foreach (var charge in Charges) { charge.Active = true; charge.Element = RandomElement(); }
+            foreach (var charge in Charges)
+            {
+                if (charge.Active) continue;
+                charge.Element = RandomElement();
+                charge.Special = RandomSpecial();
+                charge.Active = true;
+            }
             ResetCount++;
         }
         public void Tick(float dt)
         {
-            if (!Moving || dt <= 0) return;
-            int steps = Mathf.Max(1, Mathf.CeilToInt(dt * Velocity.magnitude / (tuning.shotRadius * .4f)));
-            float step = dt / steps;
-            for (int i = 0; i < steps && Moving; i++) Advance(step);
-        }
-        void Advance(float dt)
-        {
-            elapsed += dt; Position += Velocity * dt; float r = tuning.shotRadius;
-            if (Position.x < r) { Position = new Vector2(r,Position.y); Velocity = new Vector2(Mathf.Abs(Velocity.x),Velocity.y); }
-            if (Position.x > Width-r) { Position = new Vector2(Width-r,Position.y); Velocity = new Vector2(-Mathf.Abs(Velocity.x),Velocity.y); }
-            if (Position.y < r) { Position = new Vector2(Position.x,r); Velocity = new Vector2(Velocity.x,Mathf.Abs(Velocity.y)); }
-            if (Position.y > Height-r) { Position = new Vector2(Position.x,Height-r); Velocity = new Vector2(Velocity.x,-Mathf.Abs(Velocity.y)); }
-            float distance = r + tuning.chargeRadius;
-            for (int i = 0; i < Charges.Length; i++)
+            if (!Moving || dt <= 0 || float.IsNaN(dt) || float.IsInfinity(dt)) return;
+            float remaining = Mathf.Min(dt, Mathf.Max(0, tuning.maximumShotSeconds - elapsed));
+            while (Moving && remaining > .000001f)
             {
-                var charge = Charges[i]; if (!charge.Active) continue;
-                Vector2 delta = Position-charge.Position;
+                float fastest = 1;
+                foreach (var projectile in projectiles)
+                    if (projectile.Active) fastest = Mathf.Max(fastest, projectile.Velocity.magnitude);
+                float step = Mathf.Min(remaining, Mathf.Max(.001f, tuning.shotRadius) * .4f / fastest);
+                elapsed += step;
+                remaining -= step;
+                int count = projectiles.Count;
+                for (int i = 0; i < count && Moving; i++)
+                    if (projectiles[i].Active) Advance(projectiles[i], step);
+                if (!Moving) return;
+                bool anyActive = false;
+                foreach (var projectile in projectiles) anyActive |= projectile.Active;
+                if (!anyActive || elapsed >= tuning.maximumShotSeconds - .000001f) FinishShot();
+            }
+            if (Moving && elapsed >= tuning.maximumShotSeconds - .000001f) FinishShot();
+        }
+        void Advance(Projectile projectile, float dt)
+        {
+            projectile.Position += projectile.Velocity * dt;
+            ReflectWalls(projectile);
+            float distance = tuning.shotRadius + tuning.chargeRadius;
+            for (int i = 0; i < Charges.Length && Moving; i++)
+            {
+                var charge = Charges[i];
+                if (!charge.Active) continue;
+                Vector2 delta = projectile.Position - charge.Position;
                 Vector2 normal;
-                if(tuning.squareHitboxes)
+                if (tuning.squareHitboxes)
                 {
-                    if(Mathf.Abs(delta.x)>distance || Mathf.Abs(delta.y)>distance)continue;
-                    // The least penetration axis is the impacted face. Ties use incoming motion.
-                    bool horizontal=Mathf.Abs(delta.x)>Mathf.Abs(delta.y) ||
-                        (Mathf.Approximately(Mathf.Abs(delta.x),Mathf.Abs(delta.y)) && Mathf.Abs(Velocity.x)>Mathf.Abs(Velocity.y));
-                    normal=horizontal?new Vector2(delta.x==0?-Mathf.Sign(Velocity.x):Mathf.Sign(delta.x),0):
-                        new Vector2(0,delta.y==0?-Mathf.Sign(Velocity.y):Mathf.Sign(delta.y));
+                    if (Mathf.Abs(delta.x) > distance || Mathf.Abs(delta.y) > distance) continue;
+                    bool horizontal = Mathf.Abs(delta.x) > Mathf.Abs(delta.y) ||
+                        (Mathf.Approximately(Mathf.Abs(delta.x), Mathf.Abs(delta.y)) && Mathf.Abs(projectile.Velocity.x) > Mathf.Abs(projectile.Velocity.y));
+                    normal = horizontal
+                        ? new Vector2(delta.x == 0 ? -Mathf.Sign(projectile.Velocity.x) : Mathf.Sign(delta.x), 0)
+                        : new Vector2(0, delta.y == 0 ? -Mathf.Sign(projectile.Velocity.y) : Mathf.Sign(delta.y));
                 }
                 else
                 {
-                    if(delta.sqrMagnitude>distance*distance)continue;
-                    normal=delta.sqrMagnitude<.0001f?-Velocity.normalized:delta.normalized;
+                    if (delta.sqrMagnitude > distance * distance) continue;
+                    normal = delta.sqrMagnitude < .0001f ? -projectile.Velocity.normalized : delta.normalized;
                 }
-                charge.Active = false; Collected++;
-                bool same = charge.Element == shotElement; if (same) Matched++;
-                if (Vector2.Dot(Velocity,normal) < 0) Velocity = Vector2.Reflect(Velocity,normal);
-                CollectedCharge?.Invoke(i,same);
+                if (Vector2.Dot(projectile.Velocity, normal) < 0)
+                    projectile.Velocity = Vector2.Reflect(projectile.Velocity, normal);
+                Collect(i, projectile);
             }
-            Velocity = Vector2.MoveTowards(Velocity,Vector2.zero,tuning.deceleration*dt);
-            if (Velocity.magnitude < tuning.stopSpeed || elapsed >= tuning.maximumShotSeconds) { Velocity = Vector2.zero; Moving = false; }
+            CheckTraps(projectile);
+            projectile.Velocity = Vector2.MoveTowards(projectile.Velocity, Vector2.zero, tuning.deceleration * dt);
+            if (projectile.Velocity.magnitude < tuning.stopSpeed)
+            {
+                projectile.Velocity = Vector2.zero;
+                projectile.Active = false;
+            }
+        }
+        void ReflectWalls(Projectile projectile)
+        {
+            float r = tuning.shotRadius;
+            Vector2 position = projectile.Position;
+            Vector2 velocity = projectile.Velocity;
+            if (position.x < r) { position.x = r; velocity.x = Mathf.Abs(velocity.x); }
+            if (position.x > Width - r) { position.x = Width - r; velocity.x = -Mathf.Abs(velocity.x); }
+            if (position.y < r) { position.y = r; velocity.y = Mathf.Abs(velocity.y); }
+            if (position.y > Height - r) { position.y = Height - r; velocity.y = -Mathf.Abs(velocity.y); }
+            projectile.Position = position;
+            projectile.Velocity = velocity;
+        }
+        void Collect(int index, Projectile projectile)
+        {
+            var charge = Charges[index];
+            if (!charge.Active || !Moving) return;
+            charge.Active = false;
+            Collected++;
+            WeightedContacts += projectile.AttackMultiplier;
+            bool same = charge.Element == shotElement;
+            if (same) Matched++;
+            CollectedCharge?.Invoke(index, same);
+            switch (charge.Special)
+            {
+                case SpecialCharge.AttackBoost:
+                    projectile.AttackMultiplier = Mathf.Min(tuning.maximumContactMultiplier, projectile.AttackMultiplier * tuning.specialAttackMultiplier);
+                    break;
+                case SpecialCharge.SpeedBoost:
+                    projectile.Velocity = Vector2.ClampMagnitude(projectile.Velocity * tuning.specialSpeedMultiplier, tuning.maximumShotSpeed);
+                    break;
+                case SpecialCharge.Split:
+                    Split(projectile, tuning.specialSplitTotal);
+                    break;
+                case SpecialCharge.VerticalMissile:
+                case SpecialCharge.HorizontalMissile:
+                    for (int i = 0; i < Charges.Length; i++)
+                    {
+                        bool sameLine = charge.Special == SpecialCharge.VerticalMissile
+                            ? i % tuning.boardColumns == index % tuning.boardColumns
+                            : i / tuning.boardColumns == index / tuning.boardColumns;
+                        if (sameLine) Collect(i, projectile);
+                    }
+                    break;
+                case SpecialCharge.Warp:
+                    float r = tuning.shotRadius;
+                    projectile.Position = new Vector2(Mathf.Lerp(r, Width - r, (float)random.NextDouble()),
+                        Mathf.Lerp(r, Height - r, (float)random.NextDouble()));
+                    break;
+            }
+            if (charge.Special != SpecialCharge.None) SpecialTriggered?.Invoke(index, charge.Special);
+            if (!actionSplitUsed && actingSpirit.actionSkill == ActionSkill.Split &&
+                Collected >= Mathf.Max(1, actingSpirit.splitContactThreshold))
+            {
+                actionSplitUsed = true;
+                Split(projectile, actingSpirit.splitTotalProjectiles);
+            }
+        }
+        void Split(Projectile source, int total)
+        {
+            int count = Mathf.Clamp(total, 1, tuning.maximumProjectiles);
+            for (int i = 1; i < count && projectiles.Count < tuning.maximumProjectiles; i++)
+            {
+                float angle = 2 * Mathf.PI * i / count;
+                Vector2 velocity = source.Velocity;
+                projectiles.Add(new Projectile {
+                    Position = source.Position,
+                    Velocity = new Vector2(velocity.x * Mathf.Cos(angle) - velocity.y * Mathf.Sin(angle),
+                        velocity.x * Mathf.Sin(angle) + velocity.y * Mathf.Cos(angle)),
+                    Active = true,
+                    IsClone = true,
+                    AttackMultiplier = source.AttackMultiplier
+                });
+            }
+        }
+        void CheckTraps(Projectile projectile)
+        {
+            float radius = tuning.shotRadius + tuning.trapRadius;
+            for (int i = traps.Count - 1; i >= 0 && Moving; i--)
+            {
+                var trap = traps[i];
+                if (trap.EnemyOwner == EnemySide || trap.TargetElement != shotElement) continue;
+                Vector2 delta = projectile.Position - trap.Position;
+                if (Mathf.Abs(delta.x) > radius || Mathf.Abs(delta.y) > radius) continue;
+                traps.RemoveAt(i);
+                TrapTriggered?.Invoke(trap.EnemyOwner, trap.Damage);
+            }
+        }
+        void FinishShot()
+        {
+            CancelShot();
+            for (int i = traps.Count - 1; i >= 0; i--)
+                if (traps[i].EnemyOwner != EnemySide && --traps[i].OpponentTurns <= 0) traps.RemoveAt(i);
+            if (actingSpirit.actionSkill != ActionSkill.Trap) return;
+            if (traps.Count >= tuning.maximumTraps) traps.RemoveAt(0);
+            traps.Add(new Trap {
+                Position = primary.Position,
+                EnemyOwner = EnemySide,
+                TargetElement = actingSpirit.trapTargetElement,
+                Damage = Mathf.Max(0, actingSpirit.trapDamage),
+                OpponentTurns = Mathf.Max(1, actingSpirit.trapOpponentTurns)
+            });
+        }
+        public void CancelShot()
+        {
+            Moving = false;
+            foreach (var projectile in projectiles)
+            {
+                projectile.Active = false;
+                projectile.Velocity = Vector2.zero;
+            }
         }
     }
 }

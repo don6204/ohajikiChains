@@ -71,19 +71,19 @@ namespace Ohajiki.Tests
             CollectionAssert.AreEqual(elementOrder.OrderBy(e=>e),elementOrder);
             Assert.AreEqual(12,session.FindSpirits(-1,0,2)[0]);
         }
-        [Test] public void FirstSingleDiscountIsSharedAcrossAllBanners()
+        [Test] public void FirstSingleDiscountIsAvailableOncePerBanner()
         {
             config.banners=new[]{config.banners[0],config.banners[0]};
             Assert.IsTrue(session.TryDraw(0,1,out var first,out _));Assert.AreEqual(1,first.Cost);
-            Assert.IsTrue(session.TryDraw(1,1,out var second,out _));Assert.AreEqual(5,second.Cost);
-            Assert.AreEqual(194,session.Gems);Assert.IsTrue(session.FirstSingleUsed);
+            Assert.IsTrue(session.TryDraw(1,1,out var second,out _));Assert.AreEqual(1,second.Cost);
+            Assert.AreEqual(198,session.Gems);Assert.AreEqual(5,session.GachaCost(0,1));Assert.AreEqual(5,session.GachaCost(1,1));
         }
         [Test] public void TenDrawGrantsExactlyTenCopiesAndOneBonusWithoutUsingFirstSingle()
         {
             Assert.IsTrue(session.TryDraw(0,10,out var receipt,out _));
             Assert.AreEqual(10,receipt.SpiritIds.Count);Assert.AreEqual(10,session.Copies(12));
             Assert.AreEqual(50,receipt.Cost);Assert.AreEqual(1,receipt.Bonus);Assert.AreEqual(151,session.Gems);
-            Assert.IsFalse(session.FirstSingleUsed);Assert.AreEqual(1,session.GachaCost(1));
+            Assert.IsFalse(session.FirstSingleUsed(0));Assert.AreEqual(1,session.GachaCost(0,1));
             Assert.IsTrue(receipt.NewSpirits[0]);Assert.IsTrue(receipt.NewSpirits.Skip(1).All(x=>!x));
             Assert.Throws<NotSupportedException>(()=>((System.Collections.Generic.IList<int>)receipt.SpiritIds)[0]=0);
         }
@@ -91,18 +91,18 @@ namespace Ohajiki.Tests
         {
             config.startingGems=49;session=new PlayerSession(config,tuning);
             Assert.IsFalse(session.TryDraw(0,10,out var receipt,out _));Assert.IsNull(receipt);
-            Assert.AreEqual(49,session.Gems);Assert.AreEqual(0,session.Copies(12));Assert.IsFalse(session.FirstSingleUsed);
+            Assert.AreEqual(49,session.Gems);Assert.AreEqual(0,session.Copies(12));Assert.IsFalse(session.FirstSingleUsed(0));
         }
         [TestCase(-1,1)] [TestCase(0,0)] [TestCase(0,2)] [TestCase(1,10)]
         public void InvalidGachaRequestDoesNotSpendOrConsumeDiscount(int banner,int count)
         {
             Assert.IsFalse(session.TryDraw(banner,count,out _,out _));
-            Assert.AreEqual(200,session.Gems);Assert.AreEqual(0,session.Copies(12));Assert.IsFalse(session.FirstSingleUsed);
+            Assert.AreEqual(200,session.Gems);Assert.AreEqual(0,session.Copies(12));Assert.IsFalse(session.FirstSingleUsed(0));
         }
         [Test] public void ExpiredBannerCannotConsumeFirstSingleDiscount()
         {
             config.banners[0].availableUntil="2000-01-01";
-            Assert.IsFalse(session.TryDraw(0,1,out _,out _));Assert.AreEqual(200,session.Gems);Assert.IsFalse(session.FirstSingleUsed);
+            Assert.IsFalse(session.TryDraw(0,1,out _,out _));Assert.AreEqual(200,session.Gems);Assert.IsFalse(session.FirstSingleUsed(0));
         }
         [Test] public void PresentationConfigurationRejectsInvalidReferencesAndPrices()
         {

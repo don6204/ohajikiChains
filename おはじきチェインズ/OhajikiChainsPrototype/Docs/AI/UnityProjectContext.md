@@ -1,3 +1,25 @@
+## Current specification update — 2026-11-11
+
+The 2026-11-10 spreadsheet and user approval override historical decisions below.
+Current implementation is version 1.001. See ../2026-11-11_仕様対応と検証.txt for the current coverage and validation record.
+
+- Refill only cleared charge slots after each side's action. Preserve active slots and their element/special kind.
+- First-single discount is once per banner, session-scoped. GachaCost and FirstSingleUsed now receive the banner index.
+- All six special charge effects are implemented in ShotSimulation, including weighted normal contacts, independent translucent split projectiles, missile cascades, warp, and action traps/splits.
+- PrototypeBattle uses weighted contacts and combatant buffs, handles lethal traps before staged resolution, and grants character XP once via PrototypeApp and captured BattleLoadout.SpiritIds.
+- Added AttackUp, SpeedUp, Cleanse, AttackDown, SpeedDown with durations measured in the affected side's completed actions. Existing enum IDs are preserved.
+- PlayerSession tracks character XP. Provisional requirement is 100 + 25*(level-1), full battle reward for each unique participant, cap60. Inspector-configurable in HubConfig.
+- Initial catalog examples are configured in Spirit_00/01/02/04/05/07/08/10 assets. Original stats, artwork and GUIDs are retained.
+- Latest screenshot request (2026-11-11): the upper-right damage bank is a pink irregular comic burst with a dark border and red, clockwise-tilted digits only. Its center is fixed; displayed damage below 500 uses 55% size, 500–999 uses 78%, and 1000+ uses the reference maximum (380×280). Each shot resets to small. Digits still shake/scale; fixed red supersedes the earlier yellow/orange/red transition. The upper-left pink rectangle shows ノーマルスキル and a large black LV using the existing effect-level calculation and left slide. Enemy information is now a wide horizontal bar with separate HP/status rows; damage flights and flashes target the new HP position. The updated Windows build and FeedbackSmoke passed with exit 0, including 499/500/999/1000 boundaries and 540×960, 480×800, 720×900 layout checks. See ../2026-11-11_戦闘UI修正.txt and Logs/ReferenceUI-*.log. No shot trail.
+- Filter and sort have explicit selection dialogs. Settings shows gameplay/special-ball information. Legal Notice is configurable and reachable from Settings and purchase confirmation.
+- User explicitly approved simulated purchases on 2026-11-11. Shared gems and session-only progress remain the current prototype model. Apple/Google linking stays disabled as explicitly allowed in the specification.
+- New StatusProgressTests and SpecialChargeTests cover status duration, weighted damage, XP, special effects, traps, knockout cancellation, and preserved refill slots.
+- Unity Hub was authenticated and native EditMode tests passed119/119 on both6000.3.14f1 and6000.3.21f1. The old engine reproduced a Windows UIAutomation shutdown crash (UUM-146676) and a D3D12 allocator crash. Installed6000.3.21f1 side by side under C:/Users/yutoi/AppData/Local/Unity/Editors and use D3D11 for Windows builds. See current validation report for final runtime results.
+- PrototypeBuilder.Build successfully produced Build/Windows-v8/OhajikiChains.exe with Unity 6000.3.21f1 and D3D11. All six final runtime smokes (feedback, spec, hub, title, shop, gacha) passed and exited 0. Normal title-to-home click and Alt+F4 also exited 0. Final review enlarged the result body to fix UI OVERFLOW; rebuilt and reran the affected hub/spec smokes with PASS, exit 0, and no overflow, then visually checked the result screenshot. See Logs/Final-*.log and the current validation report. A ComputeBuffer GC disposal warning remains at shutdown; no first-party code uses ComputeBuffer directly. Mobile devices remain untested.
+- Editor upgrade migrated bundled 2D/Input/Rider packages and Unity project settings; URP remains 17.3.0. Session state resets on application exit; billing is simulated as approved.
+
+The remainder records the previous version and historical validation.
+
 # Unity project context
 
 Analyzed: 2026-11-09. Updated local prototype, no source-control commit created.
@@ -63,4 +85,3 @@ UiSmokeChecks verifies active visible button centers using EventSystem.RaycastAl
 Damage-bank visibility patch (2026-11-09, v7.1): BattleView.Refresh shows the bank only from PlayerShot/EnemyShot through Impact, including total lock, flight and cut-in. Ready, EnemyThinking, Finished and ResetFeedback hide it. Pausing an in-progress action retains its frozen bank. FeedbackSmoke and HubSmoke check start/next turn/retry/enemy wait/result visibility.
 
 Title/color patch (2026-11-09, v7.2): Bank background follows the rolling displayed pre-guard damage: yellow → orange → soft coral, capped at BattleTuning.damageColorFullAt (provisional 600, midpoint 300). Both sides start yellow each shot. Golden rim and white/cream digits remain; no damage/phase changes. SpiritUiSkin.DamageBurst is a separate neutral-shaded sprite, preserving other burst art. FeedbackSmoke uses an isolated presentation fixture for color progression/cap/reset, then validates the actual battle as before. Title and feedback smoke runs passed with exit 0; build has no compiler errors. See ../2026-11-09_タイトル画面とダメージ色.txt. No new EditMode test run for this presentation-only patch.
-

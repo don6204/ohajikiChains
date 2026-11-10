@@ -283,3 +283,6 @@ MonoBehaviour:
   gachaPresentationVersion: 20261109
   shop: {fileID: 11400000, guid: d487d2df4154504449fdde72be860006, type: 2}
   specificationVersion: 20261106
+  spiritExperienceBase: 100
+  spiritExperiencePerLevel: 25
+  battleSpiritExperienceMultiplier: 1

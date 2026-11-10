@@ -22,12 +22,13 @@ MonoBehaviour:
   attackPerLevel: 12
   baseSpeed: 1250
   speedPerLevel: 8
-  skillName: "\u5B88\u308A\u306E\u7D50\u754C"
-  skill: 2
+  skillName: "力を奪う蔓"
+  skill: 9
   skillPower:
-  - 35
-  - 50
-  - 70
-  - 90
-  - 115
+  - 0.9
+  - 0.8
+  - 0.7
+  - 0.6
+  - 0.5
   guardTurns: 2
+  statusTurns: 2

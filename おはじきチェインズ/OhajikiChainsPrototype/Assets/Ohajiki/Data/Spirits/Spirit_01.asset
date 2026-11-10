@@ -31,3 +31,6 @@ MonoBehaviour:
   - 235
   - 280
   guardTurns: 2
+  actionSkill: 2
+  splitContactThreshold: 3
+  splitTotalProjectiles: 3

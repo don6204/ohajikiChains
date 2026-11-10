@@ -22,12 +22,13 @@ MonoBehaviour:
   attackPerLevel: 12
   baseSpeed: 1250
   speedPerLevel: 8
-  skillName: "\u30A8\u30EC\u30E1\u30F3\u30C8\u30D6\u30EC\u30A4\u30AF"
-  skill: 3
+  skillName: "凍える波"
+  skill: 10
   skillPower:
-  - 0.04
-  - 0.06
-  - 0.08
-  - 0.1
-  - 0.13
+  - 0.9
+  - 0.8
+  - 0.7
+  - 0.6
+  - 0.5
   guardTurns: 2
+  statusTurns: 2
