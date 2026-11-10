@@ -1,0 +1,6 @@
+{
+  "name": "Ohajiki.Tests",
+  "references": ["Ohajiki.Runtime"],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

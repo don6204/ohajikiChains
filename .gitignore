@@ -1,0 +1,8 @@
+# Local review logs, generated previews, backups and installers
+/おはじきチェインズ/Review/
+
+# Local version-control and editor data
+.svn/
+.DS_Store
+Thumbs.db
+~$*

@@ -1,0 +1,100 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a343fd10f5999f49b5a5afef3cc09b5, type: 3}
+  m_Name: BattleTuning
+  m_EditorClassIdentifier: Ohajiki.Runtime::Ohajiki.BattleTuning
+  playerDeck:
+  - {fileID: 11400000, guid: aa0956786c566d44aaf27d58dc0076b1, type: 2}
+  - {fileID: 11400000, guid: 46af4961c1d350b41a7db7bc673cdffc, type: 2}
+  - {fileID: 11400000, guid: 724a98f75845095468767365e043e294, type: 2}
+  - {fileID: 11400000, guid: 3ab0d8812e12a6d4eb341e146aac32ed, type: 2}
+  - {fileID: 11400000, guid: a16d6b56c83532e43ab29c0a37746691, type: 2}
+  - {fileID: 11400000, guid: 1345a71e4775ddd40be5a54d439b7af6, type: 2}
+  - {fileID: 11400000, guid: e6560a827ca8e4440ab5e55a5eac22a3, type: 2}
+  - {fileID: 11400000, guid: 967425aeaf1bed041ac6a2172c8dd400, type: 2}
+  - {fileID: 11400000, guid: 9e82f0993b5be6843a09619e32ebdd04, type: 2}
+  - {fileID: 11400000, guid: 83b9eccd074aacf42a6cbd45332817cf, type: 2}
+  - {fileID: 11400000, guid: 6c58449c4a431e14983b46dbf97b0251, type: 2}
+  - {fileID: 11400000, guid: d7c269636f6d14244b2afb00d7b0b124, type: 2}
+  enemyDeck:
+  - {fileID: 11400000, guid: 715c9e090c190e64787208bf32964fcc, type: 2}
+  - {fileID: 11400000, guid: 13e56810e576cd14f914cc46c35d7609, type: 2}
+  - {fileID: 11400000, guid: d75241c21710e7342ac1890fcc8e73e8, type: 2}
+  - {fileID: 11400000, guid: e950754eb2a9b7242b8d5f7ca5ca30d7, type: 2}
+  - {fileID: 11400000, guid: 21230b9d93ecfa4489362c73dee6db30, type: 2}
+  - {fileID: 11400000, guid: 238f74d4dce894c4dada2a79d1106a33, type: 2}
+  - {fileID: 11400000, guid: ee67ad117550693418bc71c732d2f906, type: 2}
+  - {fileID: 11400000, guid: ed7a807898261ae4faad04903159f10b, type: 2}
+  - {fileID: 11400000, guid: d3c4efc0c9977ac4dab297f15472a7a7, type: 2}
+  - {fileID: 11400000, guid: 1089522409305214d8a608af44b0e5d5, type: 2}
+  - {fileID: 11400000, guid: c8dd3144da46c194c944e369a1933c71, type: 2}
+  - {fileID: 11400000, guid: 627a7c615b73b7243aa773ad37a4b8c7, type: 2}
+  effectThresholds: 0100000003000000050000000a000000
+  contactAttackFactor: 0.15
+  advantage: 1.2
+  disadvantage: 0.8
+  deceleration: 200
+  shotRadius: 20
+  chargeRadius: 27
+  squareHitboxes: 1
+  maximumShotSeconds: 8
+  stopSpeed: 35
+  minimumSwipe: 25
+  minimumForwardSwipe: 15
+  touchPadding: 22
+  seed: 43
+  boardColumns: 8
+  boardRows: 6
+  boardBottom: 0.27
+  boardTop: 0.76
+  elementWeights: {x: 1, y: 1, z: 1, w: 1}
+  launchInset: 0.1
+  enemyMinimumAngle: 0.18
+  enemyThinkSeconds: 0.8
+  chargeSeconds: 0.85
+  cutInSeconds: 0.8
+  impactSeconds: 0.85
+  normalImpactSeconds: 0.9
+  damageFlightSeconds: 0.48
+  contactEffectIntensity: 1.15
+  contactEffectSeconds: 0.64
+  contactEffectPoolSize: 16
+  damageNumberPunch: 0.5
+  damageCounterSpeed: 24
+  damageColorFullAt: 600
+  trailOpacity: 0.65
+  damageBankShake: 17
+  damageBankTilt: 8
+  presentationVersion: 20261109
+  contactCelebrationThresholds: 050000000a00000014000000
+  longPressSeconds: 0.55
+  effectMaxDiameter: 160
+  hitShake: 19
+  levelSlideSpeed: 950
+  rewardExperience: 50
+  rewardCoins: 500
+  rewardOnDefeat: 1
+  maxRank: 50
+  rankTwoExperience: 100
+  rankBands:
+  - throughRank: 10
+    baseExperience: 450
+    perCurrentRank: 50
+  - throughRank: 20
+    baseExperience: 600
+    perCurrentRank: 60
+  - throughRank: 30
+    baseExperience: 800
+    perCurrentRank: 75
+  - throughRank: 50
+    baseExperience: 1000
+    perCurrentRank: 100

@@ -1,0 +1,285 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c159861f34bc7445b8db3eca11ee62b, type: 3}
+  m_Name: HubConfig
+  m_EditorClassIdentifier: Ohajiki.Runtime::Ohajiki.HubConfig
+  catalog:
+  - {fileID: 11400000, guid: aa0956786c566d44aaf27d58dc0076b1, type: 2}
+  - {fileID: 11400000, guid: 46af4961c1d350b41a7db7bc673cdffc, type: 2}
+  - {fileID: 11400000, guid: 724a98f75845095468767365e043e294, type: 2}
+  - {fileID: 11400000, guid: 3ab0d8812e12a6d4eb341e146aac32ed, type: 2}
+  - {fileID: 11400000, guid: a16d6b56c83532e43ab29c0a37746691, type: 2}
+  - {fileID: 11400000, guid: 1345a71e4775ddd40be5a54d439b7af6, type: 2}
+  - {fileID: 11400000, guid: e6560a827ca8e4440ab5e55a5eac22a3, type: 2}
+  - {fileID: 11400000, guid: 967425aeaf1bed041ac6a2172c8dd400, type: 2}
+  - {fileID: 11400000, guid: 9e82f0993b5be6843a09619e32ebdd04, type: 2}
+  - {fileID: 11400000, guid: 83b9eccd074aacf42a6cbd45332817cf, type: 2}
+  - {fileID: 11400000, guid: 6c58449c4a431e14983b46dbf97b0251, type: 2}
+  - {fileID: 11400000, guid: d7c269636f6d14244b2afb00d7b0b124, type: 2}
+  - {fileID: 11400000, guid: f53743eaf62f47f4db5881c7927cd553, type: 2}
+  - {fileID: 11400000, guid: cf0cb861fd9272f42ac0da656091eb41, type: 2}
+  - {fileID: 11400000, guid: cf080a47b4d3cd845979c0685bb5dd9f, type: 2}
+  - {fileID: 11400000, guid: 27eb48c9d85d6c341882d8b4fdb7bbb7, type: 2}
+  - {fileID: 11400000, guid: 59bad111bd7e4bb43a39949bc82fe023, type: 2}
+  - {fileID: 11400000, guid: 003a4e3a3f1bc52459bc3b1f0fdc11f2, type: 2}
+  - {fileID: 11400000, guid: a637da7ec3068d248ae939bc1dda755c, type: 2}
+  - {fileID: 11400000, guid: cfcfe2ba7e21e3043a046ae904a7db4b, type: 2}
+  - {fileID: 11400000, guid: e629fcd6117622e4aa57d7eba80f74c7, type: 2}
+  - {fileID: 11400000, guid: ac6d0a8b4dac49d47a457cf789a2034a, type: 2}
+  - {fileID: 11400000, guid: 03df1792ef1f7064bade754dd38c9cf0, type: 2}
+  - {fileID: 11400000, guid: cd309ad7162802242a0e30a96cfad015, type: 2}
+  startingOwnedCount: 12
+  deckSlots: 3
+  startingCoins: 5000
+  startingGems: 0
+  maximumEnergy: 5
+  battleEnergyCost: 1
+  startingMaterials: 20
+  maxSpiritLevel: 60
+  upgradeCoinUnit: 50
+  banners:
+  - title: "\u6052\u5E38\u30AC\u30C1\u30E3"
+    description: "\u3044\u3064\u3067\u3082\u51FA\u4F1A\u3048\u308B\u30B9\u30D4\u30EA\u30BF\u30FC\u305F\u3061\u3002"
+    featuredIndex: 21
+    featuredIndices: 150000001600000017000000
+    pool:
+    - spiritIndex: 0
+      weight: 1
+    - spiritIndex: 1
+      weight: 1
+    - spiritIndex: 2
+      weight: 1
+    - spiritIndex: 3
+      weight: 1
+    - spiritIndex: 4
+      weight: 1
+    - spiritIndex: 5
+      weight: 1
+    - spiritIndex: 6
+      weight: 1
+    - spiritIndex: 7
+      weight: 1
+    - spiritIndex: 8
+      weight: 1
+    - spiritIndex: 9
+      weight: 1
+    - spiritIndex: 10
+      weight: 1
+    - spiritIndex: 11
+      weight: 1
+    - spiritIndex: 12
+      weight: 1
+    - spiritIndex: 13
+      weight: 1
+    - spiritIndex: 14
+      weight: 1
+    - spiritIndex: 15
+      weight: 1
+    - spiritIndex: 16
+      weight: 1
+    - spiritIndex: 17
+      weight: 1
+    - spiritIndex: 18
+      weight: 1
+    - spiritIndex: 19
+      weight: 1
+    - spiritIndex: 20
+      weight: 1
+    - spiritIndex: 21
+      weight: 1
+    - spiritIndex: 22
+      weight: 1
+    - spiritIndex: 23
+      weight: 1
+    kind: 0
+    rarityWeights: 320000001e0000000a0000000700000003000000
+    availableFrom: 
+    availableUntil: 
+  - title: "\u30A4\u30D9\u30F3\u30C8\u30AC\u30C1\u30E3"
+    description: "\u30A4\u30D9\u30F3\u30C8\u3067\u6D3B\u8E8D\u3059\u308B\u4EF2\u9593\u3092\u63A2\u305D\u3046\u3002"
+    featuredIndex: 22
+    featuredIndices: 160000001500000017000000
+    pool:
+    - spiritIndex: 0
+      weight: 1
+    - spiritIndex: 1
+      weight: 1
+    - spiritIndex: 2
+      weight: 1
+    - spiritIndex: 3
+      weight: 1
+    - spiritIndex: 4
+      weight: 1
+    - spiritIndex: 5
+      weight: 1
+    - spiritIndex: 6
+      weight: 1
+    - spiritIndex: 7
+      weight: 1
+    - spiritIndex: 8
+      weight: 1
+    - spiritIndex: 9
+      weight: 1
+    - spiritIndex: 10
+      weight: 1
+    - spiritIndex: 11
+      weight: 1
+    - spiritIndex: 12
+      weight: 1
+    - spiritIndex: 13
+      weight: 1
+    - spiritIndex: 14
+      weight: 1
+    - spiritIndex: 15
+      weight: 1
+    - spiritIndex: 16
+      weight: 1
+    - spiritIndex: 17
+      weight: 1
+    - spiritIndex: 18
+      weight: 1
+    - spiritIndex: 19
+      weight: 1
+    - spiritIndex: 20
+      weight: 1
+    - spiritIndex: 21
+      weight: 1
+    - spiritIndex: 22
+      weight: 1
+    - spiritIndex: 23
+      weight: 1
+    kind: 1
+    rarityWeights: 00000000320000001b0000001400000003000000
+    availableFrom: 
+    availableUntil: 
+  - title: "\u9650\u5B9A\u30AC\u30C1\u30E3"
+    description: "\u9AD8\u30EC\u30A2\u30EA\u30C6\u30A3\u306E\u30B9\u30D4\u30EA\u30BF\u30FC\u304C\u767B\u5834\u3002"
+    featuredIndex: 23
+    featuredIndices: 170000001500000016000000
+    pool:
+    - spiritIndex: 0
+      weight: 1
+    - spiritIndex: 1
+      weight: 1
+    - spiritIndex: 2
+      weight: 1
+    - spiritIndex: 3
+      weight: 1
+    - spiritIndex: 4
+      weight: 1
+    - spiritIndex: 5
+      weight: 1
+    - spiritIndex: 6
+      weight: 1
+    - spiritIndex: 7
+      weight: 1
+    - spiritIndex: 8
+      weight: 1
+    - spiritIndex: 9
+      weight: 1
+    - spiritIndex: 10
+      weight: 1
+    - spiritIndex: 11
+      weight: 1
+    - spiritIndex: 12
+      weight: 1
+    - spiritIndex: 13
+      weight: 1
+    - spiritIndex: 14
+      weight: 1
+    - spiritIndex: 15
+      weight: 1
+    - spiritIndex: 16
+      weight: 1
+    - spiritIndex: 17
+      weight: 1
+    - spiritIndex: 18
+      weight: 1
+    - spiritIndex: 19
+      weight: 1
+    - spiritIndex: 20
+      weight: 1
+    - spiritIndex: 21
+      weight: 1
+    - spiritIndex: 22
+      weight: 1
+    - spiritIndex: 23
+      weight: 1
+    kind: 2
+    rarityWeights: 00000000320000001b0000001600000001000000
+    availableFrom: 
+    availableUntil: 
+  - title: "\u6709\u511F\u30AC\u30C1\u30E3\uFF08\u8A66\u4F5C\uFF09"
+    description: "\u26053\u4EE5\u4E0A\u306E\u30B9\u30D4\u30EA\u30BF\u30FC\u304C\u767B\u5834\u3002\u5171\u901A\u306E\u5B9D\u77F3\u3067\u8A66\u4F5C\u4E2D\u3002"
+    featuredIndex: 21
+    featuredIndices: 150000001600000017000000
+    pool:
+    - spiritIndex: 0
+      weight: 1
+    - spiritIndex: 1
+      weight: 1
+    - spiritIndex: 2
+      weight: 1
+    - spiritIndex: 3
+      weight: 1
+    - spiritIndex: 4
+      weight: 1
+    - spiritIndex: 5
+      weight: 1
+    - spiritIndex: 6
+      weight: 1
+    - spiritIndex: 7
+      weight: 1
+    - spiritIndex: 8
+      weight: 1
+    - spiritIndex: 9
+      weight: 1
+    - spiritIndex: 10
+      weight: 1
+    - spiritIndex: 11
+      weight: 1
+    - spiritIndex: 12
+      weight: 1
+    - spiritIndex: 13
+      weight: 1
+    - spiritIndex: 14
+      weight: 1
+    - spiritIndex: 15
+      weight: 1
+    - spiritIndex: 16
+      weight: 1
+    - spiritIndex: 17
+      weight: 1
+    - spiritIndex: 18
+      weight: 1
+    - spiritIndex: 19
+      weight: 1
+    - spiritIndex: 20
+      weight: 1
+    - spiritIndex: 21
+      weight: 1
+    - spiritIndex: 22
+      weight: 1
+    - spiritIndex: 23
+      weight: 1
+    kind: 3
+    rarityWeights: 0000000000000000370000002800000005000000
+    availableFrom: 
+    availableUntil: 
+  firstSingleGems: 1
+  singleGems: 5
+  tenGems: 50
+  tenBonusGems: 1
+  featuredCycleSeconds: 5
+  gachaPresentationVersion: 20261109
+  shop: {fileID: 11400000, guid: d487d2df4154504449fdde72be860006, type: 2}
+  specificationVersion: 20261106

@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb5312973e5cdbe438d099486fe8ea97, type: 3}
+  m_Name: Spirit_01
+  m_EditorClassIdentifier: Ohajiki.Runtime::Ohajiki.SpiritDefinition
+  displayName: "\u30B7\u30BA\u30CD1"
+  portrait: {fileID: 21300000, guid: be429e16247aa3d498d13f604d7400ed, type: 3}
+  element: 1
+  level: 1
+  baseHp: 120
+  hpPerLevel: 10
+  baseAttack: 220
+  attackPerLevel: 12
+  baseSpeed: 1250
+  speedPerLevel: 8
+  skillName: "\u30B9\u30D4\u30EA\u30C3\u30C8\u30D0\u30FC\u30B9\u30C8"
+  skill: 0
+  skillPower:
+  - 100
+  - 145
+  - 190
+  - 235
+  - 280
+  guardTurns: 2

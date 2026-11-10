@@ -1,0 +1,77 @@
+UI・バトル演出改修 2026-11-08
+
+依頼と参照
+・SEを除去し、明るく楽しいダンジョンの世界観へ全体のUIを変更。
+・バトルの接触・連鎖・ダメージ加算を強く演出。
+・企画書.pdf 全3ページを確認。表紙の青空、緑、明るい石造りの遺跡、鮮やかなボールを基準にした。
+  p.2〜3の「直感的な爽快感」「感覚的なショットでも楽しい」という方向を見た目に反映。
+・仕様書.xlsx Sheet1 AT149「ダメージ加算UI」、AX154「ダメージが加算するたびに震えるUI」を確認。
+  その付近に置かれた2つの不規則な衝撃形（irregularSeal1）と数字1090を参考にした。
+・戦闘ルールは最新の仕様書・以前の確定事項を優先。企画書に残る4属性スピリター等へは戻さない。
+
+共通デザイン
+青空と緑のある遺跡の背景、明るい石畳、クリーム色のパネル、金色〜茶色の縁。
+文字は濃い茶色、主な決定ボタンは青緑、注目する数字は白〜金色と濃い輪郭。
+ホーム、デッキ、強化、ガチャ、ショップ、確認・結果画面に同じスキンを使用。
+ボタンに押し込みと軽いホバー拡大を付け、フッターには文字付きのナビゲーション記号を追加。
+既存の画面遷移、確認/キャンセル、設定の未実装Buttonは維持。
+既存のキャラクター画像を使用し、キャラ周囲には光輪と小さな飾りを追加。
+
+バトル
+・石畳の盤面と、立体感のあるつや・反射・縁を持つボール。
+・接触点に二重リング、衝撃形、12個の星/破片、浮き上がる加算数字。
+・接触で生まれた4個の光が右上へ飛び、ショットボールには短い光の軌跡。
+・右上のダメージは四角い箱から衝撃形へ。数字と背景を拡大し、位置と角度を揺らす。
+・加算量を跳ね上げ、枠の周囲に星を放出。同属性・スキルLv上昇で強く演出。
+・5/10/20接触の節目でCHAIN表示、スキルLv上昇時にUP表示。
+・停止するとボールから右上へ光を集め、合計確定の直前にもう一度強く跳ねる。
+・通常/スキル着弾に大きな数字、衝撃形、放射状の光線、画面振動。
+・既存のキャラスライドは明るい背景と光輪に変更し、登場時にキャラをわずかに拡大。
+
+順序と計算
+接触中の加算表示 → 停止・合計確定 → 通常ダメージ → キャラスライド → スキル発動。
+右上は防御前の通常攻撃。着弾時は実際のHP変化量を表示。
+通常とスキルは別のタイミングでHPを変更し、防御の持続は1行動につき1回だけ消費。
+当たり判定、属性相性、攻撃倍率、スキル効果、盤面リセット、ガチャ/購入のルールは変更しない。
+演出は戦闘状態を書き換えない。
+
+SE
+BattleFeedbackAudio.csとそのmetaを削除。
+AudioClip生成、AudioSource生成、再生・音量・音程設定を取り除いた。
+BattleTuningからSE用フィールドを除去。音量ゼロで残す方式ではなく、SEを作成しない。
+自動実行でAudioSourceが0個であることも確認対象にしている。
+
+Inspector：Assets/Ohajiki/BattleTuning.asset
+Contact Effect Intensity / Seconds：接触演出の強度/寿命。
+Contact Effect Pool Size：同時エフェクト上限。既定16、上限時は古い演出を再使用。
+Damage Number Punch：数字の拡大率。
+Damage Bank Shake / Tilt：加算UIの位置の振れ幅/角度。
+Damage Counter Speed：数値の追従速度。
+Trail Opacity：光の軌跡の濃度。
+Contact Celebration Thresholds：CHAINを強調する接触数（戦闘倍率には影響しない）。
+Charge / Normal Impact / Cut In / Impact Seconds：確定、通常、スライド、スキルの時間。
+Hit Shake：着弾時の画面振動。
+初回のv6セットアップで演出値を移行。presentationVersion=20261108以降の再ビルドはInspector編集を保持。
+
+主な実装
+SpiritUiSkin：既存の作業途中のスキンクラスを明るい配色へ調整し、各画面に接続。
+  9スライス用パネル、縁、球、光輪、星、破片、衝撃形はコード生成し、所有Canvasとともに破棄。
+HubWidgets / HubView / HubShopView：共通スキン、ナビ、背景、キャラ周囲、確認/結果画面。
+BattleView：盤面/ボール/手札/着弾文字/キャラスライド。
+BattleFeedback：固定上限の粒子プール、加算UIの揺れ、連鎖の節目、集約・解放。
+UiButtonMotion：既存ボタンのクリック/ホバーにだけ反応する視覚効果。
+FeedbackOutline.mat：WindowsビルドでもTMPの縁取りを保持するマテリアル。
+UiSmokeChecks：明示的なテストモードでボタンの入力判定、文字のはみ出し、SEなしを検査。
+
+追加イラスト
+組み込みimage_genツールで生成。既存のキャラクターや企画書を画像編集していない。
+アセットはこのプロジェクトへコピーし、UnityでSpriteとして取り込む。
+絶対パス：
+C:/Users/yutoi/OneDrive/Desktop/don/HAL_4-3/個人制作/おはじきチェインズ/OhajikiChainsPrototype/Assets/Ohajiki/Resources/UI/SunnyRuins.png
+C:/Users/yutoi/OneDrive/Desktop/don/HAL_4-3/個人制作/おはじきチェインズ/OhajikiChainsPrototype/Assets/Ohajiki/Resources/UI/SandstoneBoard.png
+
+SunnyRuinsの生成プロンプト：
+Create a production-ready vertical 9:16 background illustration for a Japanese cheerful fantasy puzzle-action mobile game. A bright sunlit magical dungeon courtyard opening onto a vibrant blue sky with fluffy clouds and distant fairytale castle towers. Warm honey sandstone ancient arches and broken columns frame the left and right edges, lush ivy and rounded green foliage, a few tiny cyan magic crystals, soft gold particles in sunbeams. A welcoming adventure atmosphere, playful and lively, high-quality polished anime game environment painting, crisp appealing shapes, richly rendered textures and warm sunlight, saturated turquoise/leaf green/gold palette. The middle 55 percent must remain visually calm and low-detail with pale warm stone and airy sky because game characters and interface will be overlaid there; interesting architecture and foliage concentrate at margins. Foreground bottom is a broad sandstone terrace with gentle carved stone circles, no deep perspective hole. At upper 15 percent primarily blue sky behind future header. No characters, no balls, no words, no letters, no numbers, no icons, no buttons, no interface, no border frame. Single full-bleed scene, no split panels. It should feel like an inviting sunny fantasy dungeon, never dark or ominous.
+
+SandstoneBoardの生成プロンプト：
+A square, straight-down orthographic texture of the floor of a sunny cheerful fantasy dungeon courtyard, for the playable board underneath colorful marble puzzle pieces in a Japanese mobile game. Warm pale honey beige sandstone slabs, subtle handpainted texture, sparse tiny weathered carvings and soft cracks. Very low contrast, uniform even bright lighting, extremely clear and quiet central 85 percent. At the very outer edges only a little soft green moss in cracks and a few tiny ivy leaves. Polished friendly anime fantasy game environment art, appealing clean stones, no deep shadows. Flat 2D overhead surface only, no perspective, no horizon, no camera angle. No balls, no characters, no icons, no interface, no text, no numbers, no central emblem, no borders, no raised obstacles, no checkerboard. Entire image filled with sandstone floor; must remain visually subtle so bright jewel-like game balls will stand out clearly on top.

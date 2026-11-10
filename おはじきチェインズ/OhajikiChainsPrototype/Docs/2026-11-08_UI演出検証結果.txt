@@ -1,0 +1,70 @@
+UI・演出更新版の検証 2026-11-08
+
+成果物
+Build/Windows-v6/OhajikiChains.exe（Unity 6000.3.14f1 / Windows x64）
+旧版Windows〜Windows-v5は維持。
+参照・実装詳細：Docs/2026-11-08_UI演出改修.txt
+確認用動画：../Review/2026-11-07-ui-v6/battle-preview.gif
+ソース更新前：../Review/2026-11-07-ui-v6/before-v6-source.zip
+
+自動テスト
+EditMode：87 / 87成功、失敗0、スキップ0。
+今回の実装後に実施。後続の修正は文字領域、文字の描画、演出位置、UI検査対象の調整。
+戦闘計算・デッキ・ガチャ・購入ルールのコードは変更していない。
+結果：Review/2026-11-07-ui-v6/test-results.xml
+
+Windowsビルド
+最終build-release.log：成功、Unity終了コード0、コンパイルエラー0。
+Editor側だけでなく、Windowsプレイヤーで文字の縁取り表示を確認。
+TMP Mobile SDFのOUTLINE_ONを有効にし、Resources内のマテリアルでビルド時にも維持。
+
+Windows実行
+最終の配布版：
+・hub-smoke-test-release.log：HUB SMOKE PASS、終了コード0。
+  ホーム、スクロール、排出率、無料抽選、デッキ確認/取消、強化確認/取消、
+  バトル開始、勝利結果、報酬反映、ホーム帰還、複数回の画面破棄、エネルギー不足を確認。
+  540×960、480×800、720×900でホームを撮影。
+  表示中の操作可能ボタンの中心にEventSystem.RaycastAllを行い、装飾が入力を遮らないことを確認。
+  対象画面でTMP文字はみ出し警告0、AudioSource 0。
+・feedback-smoke-test-release.log：FEEDBACK SMOKE PASS、終了コード0。
+  接触数、加算表示、エフェクトプール、一時停止、合計確定、通常攻撃、キャラスライド、
+  スキル、敵の同じ流れ、双方の盤面リセット、再挑戦、帰還後の演出破棄を確認。
+  味方側：Charging時 敵HP1440 → 通常攻撃978 → スライド中978 → スキル908。
+  敵側：Charging時 味方HP1440 → 通常攻撃879 → スライド中879 → スキル879。
+  表示検査用の攻撃スキルは実行時の複製にだけ設定。元のキャラアセットは変更しない。
+  SE生成コードを削除済み。実行中・帰還後にAudioSourceが0個であることも検査。
+
+直前の同じv6ビルド（最終変更はバトルの文字枠3箇所と手札画像の配置のみ）：
+・shop-smoke-test-final.log：SHOP SMOKE PASS、終了コード0。
+  非開催イベント、交換/購入の確認と取消、宝石/メダル/素材残高、記念パックの共通上限、
+  プレミアムと当日ボーナス、有償枠の無料抽選、ホーム帰還を確認。
+  ボタンの入力判定、文字はみ出し警告0、AudioSource 0。
+・smoke-test-final.log：SMOKE V2 PASS、終了コード0。
+  手札長押し、停止、味方ショット、確定、スライド、敵ショット、2回の盤面リセット、
+  次ターン、再挑戦を確認。
+
+実画面の確認と修正
+ホーム、ガチャ一覧、デッキ、強化、ショップ、確認/結果、バトルの画像を確認。
+明るい遺跡とクリーム/金のUI、つやのあるボール、手札、接触/確定/着弾/スライドを確認。
+検査中に判明した以下を修正：
+・非表示のホームを検査していたテスト対象の誤り（実際のUI入力障害ではない）。
+・見出し/手札/ターン/HIT文字の領域不足。
+・加算UIの右端余白と、Windowsで出ていなかった文字の縁取り。
+ショットのフレーム記録をGIF化。映像は実行ファイルの自動操作による実画面で、モックではない。
+
+原本・既存データの確認
+source-audit.jsonとsource-changes.diffに更新前ソースとの比較を保存。
+仕様書xlsx・企画書pdfのSHA-256は更新前と同一。
+元キャラ画像、キャラ/敵データ、ShopConfig、HubConfig、BattleRules、ShotSimulation、
+Packages、ProjectSettings、Prototypeシーンは更新前と同一。
+BattleTuningは演出値/移行フラグ追加とSE項目削除のみ。旧SEクラスとmetaの2ファイルを除去。
+作業開始時点で存在したSpiritUiSkinとSpiritSanctuary画像は保持し、Skinを今回のUIへ接続。
+新たなmetaはUnityに生成させた。
+
+検証範囲・残件
+これはWindows上の自動操作と画像確認。人がマウス/指で遊んだ感触、実機モバイルの性能は未検証。
+今回の各プレイヤーは正常終了したが、以前報告した終了時異常の原因解消は確認していない。
+終了時に既存のComputeBuffer破棄警告が残る。プレイヤーのゲームコード例外は検出していない。
+ビルドログにはUnity.AspNetCore.NamedPipeServerの接続受付時のIOException警告があるが、
+その後のコンパイルとビルドは成功し、最終プレイヤーも正常終了した。
+保存、実決済、正式ガチャ費用など、以前からの試作制約は遊び方.txtを参照。

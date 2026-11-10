@@ -1,0 +1,41 @@
+おはじきチェインズ 更新版 検証結果 / 2026-11-05
+
+対象
+Unity 6000.3.14f1 / URP 17.3.0 / Windows x64 / Mono / Development build。
+新規出力：Build/Windows-v2/OhajikiChains.exe。
+旧版Build/Windowsと、変更前ソースのzipを保持。
+
+確認済み
+・Unity C#コンパイル成功。
+・EditModeテスト38件成功、失敗0、スキップ0。
+  効果Lv境界、全属性相性、通常攻撃0.15式、Inspector設定反映、山札循環、
+  12体の合計HPと成長、交互行動、勝敗、固定/割合防御、割合回復、
+  無属性キャラ拒否、双方の反射・停止、無属性チャージの通常接触加算、
+  生存ボールも含めた全リセット、ランク帯境界、ランク上限拡張を検証。
+・PrototypeBuilder.BuildによるWindowsビルド成功、終了コード0。
+・実行ファイルの --smoke-test 成功、終了コード0。
+  長押し時間経過の詳細表示、一時停止中に座標が不変であること、味方ショット、
+  溜め→カットイン、敵ショット、味方・敵それぞれの行動後の全リセット、
+  次の味方ターン、再挑戦時HP復帰を実行。
+  マウス入力をOSから注入するテストではなく、実行中のゲームAPIを使うスモークテスト。
+・味方12体、敵12体の独立アセットを作成。必要な.metaの欠損なし。
+・既存Prototype.unityのGUIDを保持してUnity APIで設定を更新。
+
+証拠
+../../Review/2026-11-05/test-results.xml
+../../Review/2026-11-05/build.log
+../../Review/2026-11-05/runtime-smoke.log
+この文書があるDocsフォルダーからの相対パス。ReviewはUnityプロジェクトの親にある。
+
+未確認・注意
+・非表示起動のScreenCaptureは今回も黒画像。Smoke内の画像を見た目の証拠に使用しない。
+・表示起動時にWindowsファイアウォールの許可確認が出たため、キャンセル操作をユーザーに依頼。
+  セキュリティ画面はエージェントから操作していない。現時点では最終の目視・OSマウス操作確認は未完了。
+・終了ログに前回同様ComputeBuffer解放の警告。実行中の例外は観測していない。
+・長時間バランス、Android/iOS実機、永続保存は未検証/未実装。
+・罠・バフ/デバフ・編成UI・育成UI・ガチャ等は更新設計文書の範囲外一覧を参照。
+
+再現
+unity test <project> --editor-version 6000.3.14f1 --mode EditMode --output <results.xml>
+unity build <project> --editor-version 6000.3.14f1 --target StandaloneWindows64 --execute-method PrototypeBuilder.Build
+OhajikiChains.exe --smoke-test -logFile <runtime.log>

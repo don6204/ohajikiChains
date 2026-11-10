@@ -1,0 +1,58 @@
+おはじきチェインズ / SVN管理の準備
+更新: 2026-11-10
+
+状態
+用途は別PC・他の人との共有。接続先リポジトリは未作成で、共有サーバーを選定中。
+このプロジェクトはまだSVNの作業コピーにはなっていない。
+svn-ignore.txtは除外ルールの入力用ファイルであり、置くだけでは適用されない。
+作業コピーを作成して、ルートのsvn:ignoreプロパティに設定する必要がある。
+
+管理するフォルダー
+OhajikiChainsPrototype
+
+登録する内容
+・Assets（すべての.metaファイルと、フォルダーに対応する.metaも含む）
+・Packages（manifest.json、packages-lock.json）
+・ProjectSettings
+・Docs
+・遊び方.txt、svn-ignore.txt、.vsconfig、既存の.gitignore
+
+除外する内容
+Library、Temp、Obj、Build、Builds、Logs、UserSettings、生成されたIDEファイルなど。
+詳しくはルートのsvn-ignore.txtを参照。
+除外してもローカルの実行ファイルやキャッシュは削除しない。
+Assets内の画像、DLL、.metaを拡張子で一括除外しない。
+親フォルダーの仕様書.xlsx、企画書.pdf、Review、元画像の保管場所はこの管理範囲の外。
+
+確認済みのUnity設定
+Unity 6000.3.14f1
+Version Control: Visible Meta Files
+Asset Serialization: Force Text
+どちらも設定済み。UnityへのSVNパッケージ追加は不要。
+
+初回登録の流れ（リポジトリ準備後）
+1. 他のPCから接続できる共有サーバーにリポジトリを用意する。
+2. 登録先のプロジェクト用ディレクトリが空であることを確認する。
+   既存のファイルがある場合は、その内容を確認してから統合方法を決める。
+3. 空の登録先を現在のOhajikiChainsPrototypeへチェックアウトし、作業コピーにする。
+   別のプロジェクトが入ったURLを現在のフォルダーへチェックアウトしない。
+4. ルートのTortoiseSVNのプロパティからsvn:ignoreを追加し、
+   svn-ignore.txtの内容を改行を保って設定する。再帰的な適用はしない。
+   既存のsvn:ignoreがあれば、そのルールも保持する。
+5. 登録対象だけをAddし、Commit画面で一覧を確認する。
+   Library、Build、Logs、UserSettingsが含まれていないことを確認する。
+6. 初回コミットを実行する。
+
+日々の作業
+・作業前: SVN Update。
+・作業後: Unityで保存し、SVN Commitで変更内容と.metaのペアを確認してコミット。
+・プロジェクト内でアセットを移動・改名するときは、対応する.metaも一緒に扱う。
+・別PCでは空のフォルダーへCheckoutし、Unity Hubからプロジェクトを追加する。
+
+公式資料
+TortoiseSVN / Import in Place:
+https://www.tortoisesvn.net/docs/release/TortoiseSVN_en/tsvn-dug-import.html
+TortoiseSVN / Ignoring Files And Directories:
+https://www.tortoisesvn.net/docs/release/TortoiseSVN_en/tsvn-dug-ignore.html
+Unity / Asset metadata:
+https://docs.unity.com/en-us/engine/6000.3/manual/assets-and-media/import-assets/asset-metadata
