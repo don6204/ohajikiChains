@@ -1,0 +1,740 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e1c2213e89488b40996545b70c4ebbe, type: 3}
+  m_Name: QuestCatalog
+  m_EditorClassIdentifier: Ohajiki.Runtime::Ohajiki.QuestCatalog
+  quests:
+  - id: main_01
+    groupId: 
+    title: "1-1 \u306F\u3058\u307E\u308A\u306E\u907A\u8DE1"
+    description: "\u907A\u8DE1\u3092\u3081\u3050\u308A\u3001\u4EF2\u9593\u3068\u6210\u9577\u3059\u308B\u5192\u967A\u3002"
+    category: 0
+    difficulty: 0
+    order: 1
+    prerequisiteId: 
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 1
+    enemyDeck: []
+    enemyElement: 0
+    enemyLevel: 1
+    hpMultiplier: 0.65
+    attackMultiplier: 0.6
+    speedMultiplier: 1
+    experience: 120
+    medals: 500
+    gems: 0
+    shiningStones: 0
+    eventPoints: 0
+    materialCount: 0
+    materialType: 3
+    rewardSpiritIndex: -1
+    spiritDropChance: 0
+    firstClearSpirit: 0
+    firstClearGems: 1
+  - id: event_01
+    groupId: 
+    title: "\u706F\u706B\u796D\u30FB\u706B\u82B1\u306E\u5165\u53E3"
+    description: "\u706F\u706B\u796D\u306E\u4EEE\u30A4\u30D9\u30F3\u30C8\u3002\u958B\u50AC\u671F\u9593\u306F\u5F8C\u304B\u3089\u8A2D\u5B9A\u3067\u304D\u307E\u3059\u3002"
+    category: 1
+    difficulty: 0
+    order: 1
+    prerequisiteId: 
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 1
+    enemyDeck: []
+    enemyElement: 0
+    enemyLevel: 1
+    hpMultiplier: 0.8
+    attackMultiplier: 0.7
+    speedMultiplier: 1
+    experience: 50
+    medals: 400
+    gems: 0
+    shiningStones: 0
+    eventPoints: 30
+    materialCount: 0
+    materialType: 3
+    rewardSpiritIndex: -1
+    spiritDropChance: 0
+    firstClearSpirit: 0
+    firstClearGems: 1
+  - id: showdown_01_easy
+    groupId: showdown_01
+    title: "\u708E\u306E\u5B88\u8B77\u8005 \u6C7A\u6226"
+    description: "\u5B88\u8B77\u8005\u306B\u6311\u6226\u3002\u5404\u96E3\u6613\u5EA6\u306E\u521D\u56DE\u306F\u30B9\u30D4\u30EA\u30BF\u30FC\u3092\u78BA\u5B9A\u7372\u5F97\u3002"
+    category: 2
+    difficulty: 1
+    order: 1
+    prerequisiteId: 
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 1
+    enemyDeck: []
+    enemyElement: 0
+    enemyLevel: 1
+    hpMultiplier: 0.8
+    attackMultiplier: 0.65
+    speedMultiplier: 1
+    experience: 50
+    medals: 500
+    gems: 0
+    shiningStones: 0
+    eventPoints: 0
+    materialCount: 0
+    materialType: 3
+    rewardSpiritIndex: 12
+    spiritDropChance: 0.15
+    firstClearSpirit: 1
+    firstClearGems: 1
+  - id: showdown_01_normal
+    groupId: showdown_01
+    title: "\u708E\u306E\u5B88\u8B77\u8005 \u6C7A\u6226"
+    description: "\u5B88\u8B77\u8005\u306B\u6311\u6226\u3002\u5404\u96E3\u6613\u5EA6\u306E\u521D\u56DE\u306F\u30B9\u30D4\u30EA\u30BF\u30FC\u3092\u78BA\u5B9A\u7372\u5F97\u3002"
+    category: 2
+    difficulty: 2
+    order: 1
+    prerequisiteId: 
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 2
+    enemyDeck: []
+    enemyElement: 0
+    enemyLevel: 1
+    hpMultiplier: 1.5
+    attackMultiplier: 1.05
+    speedMultiplier: 1.08
+    experience: 70
+    medals: 900
+    gems: 0
+    shiningStones: 0
+    eventPoints: 0
+    materialCount: 0
+    materialType: 3
+    rewardSpiritIndex: 12
+    spiritDropChance: 0.4
+    firstClearSpirit: 1
+    firstClearGems: 1
+  - id: showdown_01_hard
+    groupId: showdown_01
+    title: "\u708E\u306E\u5B88\u8B77\u8005 \u6C7A\u6226"
+    description: "\u5B88\u8B77\u8005\u306B\u6311\u6226\u3002\u5404\u96E3\u6613\u5EA6\u306E\u521D\u56DE\u306F\u30B9\u30D4\u30EA\u30BF\u30FC\u3092\u78BA\u5B9A\u7372\u5F97\u3002"
+    category: 2
+    difficulty: 3
+    order: 1
+    prerequisiteId: 
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 3
+    enemyDeck: []
+    enemyElement: 0
+    enemyLevel: 1
+    hpMultiplier: 2.7
+    attackMultiplier: 1.65
+    speedMultiplier: 1.16
+    experience: 90
+    medals: 1300
+    gems: 0
+    shiningStones: 0
+    eventPoints: 0
+    materialCount: 0
+    materialType: 3
+    rewardSpiritIndex: 12
+    spiritDropChance: 1
+    firstClearSpirit: 1
+    firstClearGems: 1
+  - id: main_02
+    groupId: 
+    title: "1-2 \u6C34\u97F3\u306E\u56DE\u5ECA"
+    description: "\u907A\u8DE1\u3092\u3081\u3050\u308A\u3001\u4EF2\u9593\u3068\u6210\u9577\u3059\u308B\u5192\u967A\u3002"
+    category: 0
+    difficulty: 0
+    order: 2
+    prerequisiteId: main_01
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 1
+    enemyDeck: []
+    enemyElement: 1
+    enemyLevel: 1
+    hpMultiplier: 0.84999996
+    attackMultiplier: 0.75
+    speedMultiplier: 1
+    experience: 170
+    medals: 650
+    gems: 0
+    shiningStones: 0
+    eventPoints: 0
+    materialCount: 0
+    materialType: 3
+    rewardSpiritIndex: -1
+    spiritDropChance: 0
+    firstClearSpirit: 0
+    firstClearGems: 1
+  - id: event_02
+    groupId: 
+    title: "\u706F\u706B\u796D\u30FB\u6C34\u93E1\u306E\u5EAD"
+    description: "\u706F\u706B\u796D\u306E\u4EEE\u30A4\u30D9\u30F3\u30C8\u3002\u958B\u50AC\u671F\u9593\u306F\u5F8C\u304B\u3089\u8A2D\u5B9A\u3067\u304D\u307E\u3059\u3002"
+    category: 1
+    difficulty: 0
+    order: 2
+    prerequisiteId: 
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 1
+    enemyDeck: []
+    enemyElement: 1
+    enemyLevel: 1
+    hpMultiplier: 1.1
+    attackMultiplier: 0.9
+    speedMultiplier: 1
+    experience: 60
+    medals: 600
+    gems: 0
+    shiningStones: 0
+    eventPoints: 50
+    materialCount: 0
+    materialType: 3
+    rewardSpiritIndex: -1
+    spiritDropChance: 0
+    firstClearSpirit: 0
+    firstClearGems: 1
+  - id: showdown_02_easy
+    groupId: showdown_02
+    title: "\u6C34\u306E\u5B88\u8B77\u8005 \u6C7A\u6226"
+    description: "\u5B88\u8B77\u8005\u306B\u6311\u6226\u3002\u5404\u96E3\u6613\u5EA6\u306E\u521D\u56DE\u306F\u30B9\u30D4\u30EA\u30BF\u30FC\u3092\u78BA\u5B9A\u7372\u5F97\u3002"
+    category: 2
+    difficulty: 1
+    order: 2
+    prerequisiteId: 
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 1
+    enemyDeck: []
+    enemyElement: 1
+    enemyLevel: 1
+    hpMultiplier: 0.8
+    attackMultiplier: 0.65
+    speedMultiplier: 1
+    experience: 50
+    medals: 500
+    gems: 0
+    shiningStones: 0
+    eventPoints: 0
+    materialCount: 0
+    materialType: 3
+    rewardSpiritIndex: 13
+    spiritDropChance: 0.15
+    firstClearSpirit: 1
+    firstClearGems: 1
+  - id: showdown_02_normal
+    groupId: showdown_02
+    title: "\u6C34\u306E\u5B88\u8B77\u8005 \u6C7A\u6226"
+    description: "\u5B88\u8B77\u8005\u306B\u6311\u6226\u3002\u5404\u96E3\u6613\u5EA6\u306E\u521D\u56DE\u306F\u30B9\u30D4\u30EA\u30BF\u30FC\u3092\u78BA\u5B9A\u7372\u5F97\u3002"
+    category: 2
+    difficulty: 2
+    order: 2
+    prerequisiteId: 
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 2
+    enemyDeck: []
+    enemyElement: 1
+    enemyLevel: 1
+    hpMultiplier: 1.5
+    attackMultiplier: 1.05
+    speedMultiplier: 1.08
+    experience: 70
+    medals: 900
+    gems: 0
+    shiningStones: 0
+    eventPoints: 0
+    materialCount: 0
+    materialType: 3
+    rewardSpiritIndex: 13
+    spiritDropChance: 0.4
+    firstClearSpirit: 1
+    firstClearGems: 1
+  - id: showdown_02_hard
+    groupId: showdown_02
+    title: "\u6C34\u306E\u5B88\u8B77\u8005 \u6C7A\u6226"
+    description: "\u5B88\u8B77\u8005\u306B\u6311\u6226\u3002\u5404\u96E3\u6613\u5EA6\u306E\u521D\u56DE\u306F\u30B9\u30D4\u30EA\u30BF\u30FC\u3092\u78BA\u5B9A\u7372\u5F97\u3002"
+    category: 2
+    difficulty: 3
+    order: 2
+    prerequisiteId: 
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 3
+    enemyDeck: []
+    enemyElement: 1
+    enemyLevel: 1
+    hpMultiplier: 2.7
+    attackMultiplier: 1.65
+    speedMultiplier: 1.16
+    experience: 90
+    medals: 1300
+    gems: 0
+    shiningStones: 0
+    eventPoints: 0
+    materialCount: 0
+    materialType: 3
+    rewardSpiritIndex: 13
+    spiritDropChance: 1
+    firstClearSpirit: 1
+    firstClearGems: 1
+  - id: main_03
+    groupId: 
+    title: "1-3 \u82BD\u5439\u304D\u306E\u796D\u58C7"
+    description: "\u907A\u8DE1\u3092\u3081\u3050\u308A\u3001\u4EF2\u9593\u3068\u6210\u9577\u3059\u308B\u5192\u967A\u3002"
+    category: 0
+    difficulty: 0
+    order: 3
+    prerequisiteId: main_02
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 1
+    enemyDeck: []
+    enemyElement: 2
+    enemyLevel: 1
+    hpMultiplier: 1.05
+    attackMultiplier: 0.90000004
+    speedMultiplier: 1
+    experience: 220
+    medals: 800
+    gems: 0
+    shiningStones: 0
+    eventPoints: 0
+    materialCount: 0
+    materialType: 3
+    rewardSpiritIndex: -1
+    spiritDropChance: 0
+    firstClearSpirit: 0
+    firstClearGems: 1
+  - id: event_03
+    groupId: 
+    title: "\u706F\u706B\u796D\u30FB\u5927\u6A39\u306E\u5E83\u5834"
+    description: "\u706F\u706B\u796D\u306E\u4EEE\u30A4\u30D9\u30F3\u30C8\u3002\u958B\u50AC\u671F\u9593\u306F\u5F8C\u304B\u3089\u8A2D\u5B9A\u3067\u304D\u307E\u3059\u3002"
+    category: 1
+    difficulty: 0
+    order: 3
+    prerequisiteId: 
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 1
+    enemyDeck: []
+    enemyElement: 2
+    enemyLevel: 1
+    hpMultiplier: 1.4000001
+    attackMultiplier: 1.1
+    speedMultiplier: 1
+    experience: 70
+    medals: 800
+    gems: 0
+    shiningStones: 0
+    eventPoints: 70
+    materialCount: 0
+    materialType: 3
+    rewardSpiritIndex: -1
+    spiritDropChance: 0
+    firstClearSpirit: 0
+    firstClearGems: 1
+  - id: showdown_03_easy
+    groupId: showdown_03
+    title: "\u68EE\u306E\u5B88\u8B77\u8005 \u6C7A\u6226"
+    description: "\u5B88\u8B77\u8005\u306B\u6311\u6226\u3002\u5404\u96E3\u6613\u5EA6\u306E\u521D\u56DE\u306F\u30B9\u30D4\u30EA\u30BF\u30FC\u3092\u78BA\u5B9A\u7372\u5F97\u3002"
+    category: 2
+    difficulty: 1
+    order: 3
+    prerequisiteId: 
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 1
+    enemyDeck: []
+    enemyElement: 2
+    enemyLevel: 1
+    hpMultiplier: 0.8
+    attackMultiplier: 0.65
+    speedMultiplier: 1
+    experience: 50
+    medals: 500
+    gems: 0
+    shiningStones: 0
+    eventPoints: 0
+    materialCount: 0
+    materialType: 3
+    rewardSpiritIndex: 14
+    spiritDropChance: 0.15
+    firstClearSpirit: 1
+    firstClearGems: 1
+  - id: showdown_03_normal
+    groupId: showdown_03
+    title: "\u68EE\u306E\u5B88\u8B77\u8005 \u6C7A\u6226"
+    description: "\u5B88\u8B77\u8005\u306B\u6311\u6226\u3002\u5404\u96E3\u6613\u5EA6\u306E\u521D\u56DE\u306F\u30B9\u30D4\u30EA\u30BF\u30FC\u3092\u78BA\u5B9A\u7372\u5F97\u3002"
+    category: 2
+    difficulty: 2
+    order: 3
+    prerequisiteId: 
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 2
+    enemyDeck: []
+    enemyElement: 2
+    enemyLevel: 1
+    hpMultiplier: 1.5
+    attackMultiplier: 1.05
+    speedMultiplier: 1.08
+    experience: 70
+    medals: 900
+    gems: 0
+    shiningStones: 0
+    eventPoints: 0
+    materialCount: 0
+    materialType: 3
+    rewardSpiritIndex: 14
+    spiritDropChance: 0.4
+    firstClearSpirit: 1
+    firstClearGems: 1
+  - id: showdown_03_hard
+    groupId: showdown_03
+    title: "\u68EE\u306E\u5B88\u8B77\u8005 \u6C7A\u6226"
+    description: "\u5B88\u8B77\u8005\u306B\u6311\u6226\u3002\u5404\u96E3\u6613\u5EA6\u306E\u521D\u56DE\u306F\u30B9\u30D4\u30EA\u30BF\u30FC\u3092\u78BA\u5B9A\u7372\u5F97\u3002"
+    category: 2
+    difficulty: 3
+    order: 3
+    prerequisiteId: 
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 3
+    enemyDeck: []
+    enemyElement: 2
+    enemyLevel: 1
+    hpMultiplier: 2.7
+    attackMultiplier: 1.65
+    speedMultiplier: 1.16
+    experience: 90
+    medals: 1300
+    gems: 0
+    shiningStones: 0
+    eventPoints: 0
+    materialCount: 0
+    materialType: 3
+    rewardSpiritIndex: 14
+    spiritDropChance: 1
+    firstClearSpirit: 1
+    firstClearGems: 1
+  - id: material_01
+    groupId: 
+    title: "\u706B\u306E\u529B\u3092\u96C6\u3081\u3088\u3046"
+    description: "\u30B9\u30D4\u30EA\u30C3\u30C8\u30D1\u30EF\u30FC\u3092\u96C6\u3081\u308B\u80B2\u6210\u30AF\u30A8\u30B9\u30C8\u3002"
+    category: 3
+    difficulty: 0
+    order: 1
+    prerequisiteId: 
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 1
+    enemyDeck: []
+    enemyElement: 0
+    enemyLevel: 1
+    hpMultiplier: 0.9
+    attackMultiplier: 0.7
+    speedMultiplier: 1
+    experience: 30
+    medals: 250
+    gems: 0
+    shiningStones: 0
+    eventPoints: 0
+    materialCount: 5
+    materialType: 0
+    rewardSpiritIndex: -1
+    spiritDropChance: 0
+    firstClearSpirit: 0
+    firstClearGems: 0
+  - id: material_02
+    groupId: 
+    title: "\u6C34\u306E\u529B\u3092\u96C6\u3081\u3088\u3046"
+    description: "\u30B9\u30D4\u30EA\u30C3\u30C8\u30D1\u30EF\u30FC\u3092\u96C6\u3081\u308B\u80B2\u6210\u30AF\u30A8\u30B9\u30C8\u3002"
+    category: 3
+    difficulty: 0
+    order: 2
+    prerequisiteId: 
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 1
+    enemyDeck: []
+    enemyElement: 1
+    enemyLevel: 1
+    hpMultiplier: 0.9
+    attackMultiplier: 0.7
+    speedMultiplier: 1
+    experience: 30
+    medals: 250
+    gems: 0
+    shiningStones: 0
+    eventPoints: 0
+    materialCount: 5
+    materialType: 1
+    rewardSpiritIndex: -1
+    spiritDropChance: 0
+    firstClearSpirit: 0
+    firstClearGems: 0
+  - id: material_03
+    groupId: 
+    title: "\u6728\u306E\u529B\u3092\u96C6\u3081\u3088\u3046"
+    description: "\u30B9\u30D4\u30EA\u30C3\u30C8\u30D1\u30EF\u30FC\u3092\u96C6\u3081\u308B\u80B2\u6210\u30AF\u30A8\u30B9\u30C8\u3002"
+    category: 3
+    difficulty: 0
+    order: 3
+    prerequisiteId: 
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 1
+    enemyDeck: []
+    enemyElement: 2
+    enemyLevel: 1
+    hpMultiplier: 0.9
+    attackMultiplier: 0.7
+    speedMultiplier: 1
+    experience: 30
+    medals: 250
+    gems: 0
+    shiningStones: 0
+    eventPoints: 0
+    materialCount: 5
+    materialType: 2
+    rewardSpiritIndex: -1
+    spiritDropChance: 0
+    firstClearSpirit: 0
+    firstClearGems: 0
+  - id: material_04
+    groupId: 
+    title: "\u5168\u306E\u529B\u3092\u96C6\u3081\u3088\u3046"
+    description: "\u30B9\u30D4\u30EA\u30C3\u30C8\u30D1\u30EF\u30FC\u3092\u96C6\u3081\u308B\u80B2\u6210\u30AF\u30A8\u30B9\u30C8\u3002"
+    category: 3
+    difficulty: 0
+    order: 4
+    prerequisiteId: 
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 1
+    enemyDeck: []
+    enemyElement: 0
+    enemyLevel: 1
+    hpMultiplier: 0.9
+    attackMultiplier: 0.7
+    speedMultiplier: 1
+    experience: 30
+    medals: 250
+    gems: 0
+    shiningStones: 0
+    eventPoints: 0
+    materialCount: 3
+    materialType: 3
+    rewardSpiritIndex: -1
+    spiritDropChance: 0
+    firstClearSpirit: 0
+    firstClearGems: 0
+  - id: challenge_01
+    groupId: 
+    title: "\u6311\u6226\u306E\u5854 \u7B2C1\u5C64"
+    description: "\u524D\u306E\u968E\u5C64\u3092\u30AF\u30EA\u30A2\u3057\u3066\u6B21\u306E\u968E\u5C64\u3078\u3002\u5965\u307B\u3069\u5F37\u6575\u3068\u8C6A\u83EF\u306A\u521D\u56DE\u5831\u916C\u3002"
+    category: 4
+    difficulty: 0
+    order: 1
+    prerequisiteId: 
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 1
+    enemyDeck: []
+    enemyElement: 0
+    enemyLevel: 1
+    hpMultiplier: 1
+    attackMultiplier: 0.8
+    speedMultiplier: 1
+    experience: 60
+    medals: 600
+    gems: 0
+    shiningStones: 1
+    eventPoints: 0
+    materialCount: 0
+    materialType: 3
+    rewardSpiritIndex: -1
+    spiritDropChance: 0
+    firstClearSpirit: 0
+    firstClearGems: 1
+  - id: challenge_02
+    groupId: 
+    title: "\u6311\u6226\u306E\u5854 \u7B2C2\u5C64"
+    description: "\u524D\u306E\u968E\u5C64\u3092\u30AF\u30EA\u30A2\u3057\u3066\u6B21\u306E\u968E\u5C64\u3078\u3002\u5965\u307B\u3069\u5F37\u6575\u3068\u8C6A\u83EF\u306A\u521D\u56DE\u5831\u916C\u3002"
+    category: 4
+    difficulty: 0
+    order: 2
+    prerequisiteId: challenge_01
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 1
+    enemyDeck: []
+    enemyElement: 1
+    enemyLevel: 1
+    hpMultiplier: 1.5
+    attackMultiplier: 1.1
+    speedMultiplier: 1.06
+    experience: 70
+    medals: 1000
+    gems: 0
+    shiningStones: 2
+    eventPoints: 0
+    materialCount: 0
+    materialType: 3
+    rewardSpiritIndex: -1
+    spiritDropChance: 0
+    firstClearSpirit: 0
+    firstClearGems: 2
+  - id: challenge_03
+    groupId: 
+    title: "\u6311\u6226\u306E\u5854 \u7B2C3\u5C64"
+    description: "\u524D\u306E\u968E\u5C64\u3092\u30AF\u30EA\u30A2\u3057\u3066\u6B21\u306E\u968E\u5C64\u3078\u3002\u5965\u307B\u3069\u5F37\u6575\u3068\u8C6A\u83EF\u306A\u521D\u56DE\u5831\u916C\u3002"
+    category: 4
+    difficulty: 0
+    order: 3
+    prerequisiteId: challenge_02
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 2
+    enemyDeck: []
+    enemyElement: 2
+    enemyLevel: 1
+    hpMultiplier: 2.2
+    attackMultiplier: 1.4000001
+    speedMultiplier: 1.12
+    experience: 80
+    medals: 1400
+    gems: 0
+    shiningStones: 3
+    eventPoints: 0
+    materialCount: 0
+    materialType: 3
+    rewardSpiritIndex: -1
+    spiritDropChance: 0
+    firstClearSpirit: 0
+    firstClearGems: 3
+  - id: challenge_04
+    groupId: 
+    title: "\u6311\u6226\u306E\u5854 \u7B2C4\u5C64"
+    description: "\u524D\u306E\u968E\u5C64\u3092\u30AF\u30EA\u30A2\u3057\u3066\u6B21\u306E\u968E\u5C64\u3078\u3002\u5965\u307B\u3069\u5F37\u6575\u3068\u8C6A\u83EF\u306A\u521D\u56DE\u5831\u916C\u3002"
+    category: 4
+    difficulty: 0
+    order: 4
+    prerequisiteId: challenge_03
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 2
+    enemyDeck: []
+    enemyElement: 0
+    enemyLevel: 1
+    hpMultiplier: 3
+    attackMultiplier: 1.7
+    speedMultiplier: 1.18
+    experience: 90
+    medals: 1800
+    gems: 0
+    shiningStones: 4
+    eventPoints: 0
+    materialCount: 0
+    materialType: 3
+    rewardSpiritIndex: -1
+    spiritDropChance: 0
+    firstClearSpirit: 0
+    firstClearGems: 4
+  - id: challenge_05
+    groupId: 
+    title: "\u6311\u6226\u306E\u5854 \u7B2C5\u5C64"
+    description: "\u524D\u306E\u968E\u5C64\u3092\u30AF\u30EA\u30A2\u3057\u3066\u6B21\u306E\u968E\u5C64\u3078\u3002\u5965\u307B\u3069\u5F37\u6575\u3068\u8C6A\u83EF\u306A\u521D\u56DE\u5831\u916C\u3002"
+    category: 4
+    difficulty: 0
+    order: 5
+    prerequisiteId: challenge_04
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 3
+    enemyDeck: []
+    enemyElement: 1
+    enemyLevel: 1
+    hpMultiplier: 4
+    attackMultiplier: 2
+    speedMultiplier: 1.24
+    experience: 100
+    medals: 2200
+    gems: 0
+    shiningStones: 5
+    eventPoints: 0
+    materialCount: 0
+    materialType: 3
+    rewardSpiritIndex: -1
+    spiritDropChance: 0
+    firstClearSpirit: 0
+    firstClearGems: 5
+  - id: practice_01
+    groupId: 
+    title: "\u53CD\u5C04\u3068\u30B9\u30AD\u30EB\u306E\u7DF4\u7FD2"
+    description: "\u6D88\u8CBB\u30A8\u30CD\u30EB\u30AE\u30FC\u306A\u3057\u3002\u6575HP\u304C0\u306B\u306A\u3063\u3066\u3082\u30B7\u30E7\u30C3\u30C8\u3092\u7D9A\u3051\u3089\u308C\u307E\u3059\u3002"
+    category: 5
+    difficulty: 0
+    order: 1
+    prerequisiteId: 
+    availableFrom: 
+    availableUntil: 
+    enabled: 1
+    energyCost: 0
+    enemyDeck: []
+    enemyElement: 2
+    enemyLevel: 1
+    hpMultiplier: 0.5
+    attackMultiplier: 0.25
+    speedMultiplier: 1
+    experience: 0
+    medals: 0
+    gems: 0
+    shiningStones: 0
+    eventPoints: 0
+    materialCount: 0
+    materialType: 3
+    rewardSpiritIndex: -1
+    spiritDropChance: 0
+    firstClearSpirit: 0
+    firstClearGems: 0

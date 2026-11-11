@@ -141,9 +141,11 @@ namespace Ohajiki.Tests
         {
             var sim=new ShotSimulation(tuning); foreach(var c in sim.Charges)c.Active=false;
             sim.Charges[0].Active=true; sim.Charges[0].Element=element;
+            sim.Charges[0].Special=SpecialCharge.None;
             sim.Charges[0].Position=new Vector2(312,200);
             sim.Launch(Vector2.up*100,tuning.playerDeck[0]);
-            for(int i=0;i<1000 && sim.Moving;i++)sim.Tick(1f/30);
+            // This assertion concerns the first contact, before a later all-clear refill can add more.
+            for(int i=0;i<1000 && sim.Moving && sim.Collected==0;i++)sim.Tick(1f/30);
             Assert.AreEqual(1,sim.Collected); Assert.AreEqual(expected,sim.Matched);
         }
         [Test] public void ResetRefillsOnlyClearedCharges()
@@ -168,6 +170,55 @@ namespace Ohajiki.Tests
             Assert.IsFalse(enemy.Launch(Vector2.up*300,tuning.enemyDeck[0]));
             Assert.IsTrue(enemy.Launch(Vector2.down*300,tuning.enemyDeck[0]));
             Assert.Less(enemy.Velocity.y,0);
+        }
+        [TestCase(false,false)] [TestCase(true,false)]
+        [TestCase(false,true)] [TestCase(true,true)]
+        public void WarpUsesOpponentsLastLaunchOrInitialCenterWithoutChangingVelocity(bool enemySide,bool opponentHasShot)
+        {
+            var sim=new ShotSimulation(tuning);
+            Vector2 opponentPosition=new Vector2(ShotSimulation.Width/2,
+                ShotSimulation.Height*(enemySide?tuning.launchInset:1-tuning.launchInset));
+            if(opponentHasShot)
+            {
+                sim.Prepare(!enemySide,470);
+                opponentPosition=sim.Position;
+                Assert.IsTrue(sim.Launch((enemySide?Vector2.up:Vector2.down)*300,tuning.playerDeck[0]));
+                sim.CancelShot();
+                sim.Prepare(!enemySide,100); // Preparing a later turn is not a new shot.
+            }
+            sim.Prepare(enemySide,200);
+            foreach(var charge in sim.Charges)charge.Active=false;
+            var warp=sim.Charges[0];warp.Active=true;warp.Special=SpecialCharge.Warp;
+            warp.Position=new Vector2(200,enemySide?ShotSimulation.Height-200:200);
+            Vector2 before=default,after=default,arrival=default;bool triggered=false;
+            sim.CollectedCharge+=(index,same)=>before=sim.Velocity;
+            sim.SpecialTriggered+=(index,special)=>{after=sim.Velocity;arrival=sim.Position;triggered=true;};
+            Assert.IsTrue(sim.Launch((enemySide?Vector2.down:Vector2.up)*300,tuning.playerDeck[0]));
+            for(int i=0;i<240&&!triggered&&sim.Moving;i++)sim.Tick(1f/120);
+            Assert.IsTrue(triggered,"The shot must actually contact the warp charge");
+            Assert.Less(Vector2.Distance(opponentPosition,arrival),.001f,"Warp target is the opponent's launch position");
+            Assert.AreEqual(before,after,"Warp preserves the incoming velocity after the normal contact reflection");
+            Assert.AreEqual(1,sim.Collected);
+        }
+        [Test] public void AuthoredChargeProbabilitiesDriveInitialAndRefilledBoards()
+        {
+            var authored=UnityEditor.AssetDatabase.LoadAssetAtPath<BattleTuning>("Assets/Ohajiki/BattleTuning.asset");
+            Assert.IsNotNull(authored);
+            Assert.IsTrue(authored.Validate(out string error),error);
+            var sim=new ShotSimulation(authored);int[] counts=new int[7];int total=0;
+            for(int board=0;board<1000;board++)
+            {
+                foreach(var charge in sim.Charges){counts[(int)charge.Special]++;total++;charge.Active=false;}
+                sim.ResetBoard();
+            }
+            float normal=1-authored.specialChargeProbabilities.Sum();
+            for(int i=0;i<counts.Length;i++)
+            {
+                float expected=i==0?normal:authored.specialChargeProbabilities[i-1];
+                float observed=counts[i]/(float)total;
+                Assert.That(observed,Is.EqualTo(expected).Within(.005f),((SpecialCharge)i).ToString());
+                TestContext.WriteLine($"{(SpecialCharge)i}: {counts[i]}/{total} = {observed:P3}; configured {expected:P1}");
+            }
         }
         [Test] public void IncompleteAuthoredDeckIsRejectedWithoutReplacingRemainingCards()
         {

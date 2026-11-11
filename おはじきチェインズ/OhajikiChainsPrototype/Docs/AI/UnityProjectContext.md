@@ -1,4 +1,28 @@
-## Current specification update — 2026-11-11
+## Current request 20261111_03 — 2026-11-11
+
+Follow-up version 1.005 fixes charge overlap with the player shot/input area. Charge radius is 22 (diameter44), vertical centers span .22-.78 of board height, and rim/shine/label geometry scales with the configured radius. The bottom rim is y120.185, above the full input strip ending at107; the top rim is y529.815, below enemy launch zone548. Existing geometry and built-player checks now cover visible rim bounds against both shot areas, not only the smaller ball footprint. Output remains `Build/20261111_03`. See `../20261111_03_ショット領域調整.txt`.
+
+Version 1.004 implements the explicit prompt ahead of the workbook: no screen or damage-digit oscillation, 8x8 charges with non-overlapping spacing, and a gold 全消し banner scrolling right-to-left for 1.5 gameplay seconds. `ShotSimulation.AllCleared` fires once per emptied board (including missile chains), then waits 5 simulation seconds and refills only if the shot is still moving. It preserves projectile state/hit totals, supports another clear, and cancels the timer on stop/retry. Pause advances neither timer nor banner. `PrototypeBattle` refreshes charge visuals immediately after a mid-shot refill. Defaults/assets agree; legacy shake fields remain hidden for serialization compatibility and no longer drive rendering. Build output: `Build/20261111_03/OhajikiChains.exe`. `BoardRulesTests` and explicit `BoardSmoke` cover the new behavior; `RunSmoke.ps1 -Mode presentation` now runs board, feedback, title and hub. See `../20261111_03_変更と検証.txt`.
+
+## Previous charge-ball specification revision — 2026-11-11
+
+Version 1.003 follows the revised sheet `12_チャージボール`: five special types are 5% each and warp is 10% (normal 65%). Both `BattleTuning.cs` defaults and the authored asset are updated. `ShotSimulation` remembers each side's successful launch position; warp targets the opponent's last launch, falling back to the opposing center before their first shot, and preserves velocity. Preparing a turn does not overwrite launch history. The 18-sheet data master still holds older, unconfirmed values; it was not modified or imported. Build output remains `Build/20261111_01`. See `../20261111_チャージボール変更と検証.txt` for validation.
+
+## Previous request 20261111_01 — 2026-11-11
+
+Version 1.002 targets the current workbook and request. Historical notes below are superseded where they conflict.
+- Output: `Build/20261111_01/OhajikiChains.exe`, Unity 6000.3.21f1 at `C:/Program Files/Unity/Hub/Editor/6000.3.21f1/Editor/Unity.exe`, Windows x64 / Mono / D3D11.
+- `QuestCatalog.asset` contains 3 main, 3 event, 3 showdown groups × Easy/Normal/Hard, 4 material, 5 sequential challenge and 1 practice variants. All definitions/stats/rewards/dates are Inspector-editable provisional values.
+- `PlayerSession.Quests` owns energy, rank-derived capacity, run snapshots, clear flags and idempotent rewards. `QuestRun` captures the definition and participants. Completion is committed once; losses/abandonment award nothing. Progress still resets on exit.
+- `BattleLoadout` owns cloned quest enemies as well as the selected player deck. `PrototypeApp` connects quest entry/result/retry/return; legacy direct entry remains available to existing smoke modes.
+- Practice keeps running at enemy HP0; only retirement clears it. The defeated enemy stops acting. Practice has no energy cost or rewards.
+- UI: home → category → scrollable list → detail/difficulty → entry confirmation. Event/showdown banners, disabled multi/mission placeholders, header energy refill, settings/legal view restored. Missing `SpecificationSmoke` is now implemented.
+- Battle digits follow the latest spreadsheet's yellow-to-red progression. Pink burst geometry and 500/1000 size thresholds remain; only digits shake. This supersedes the historical fixed-red instruction below.
+- `dataInput_list.xlsx` was replaced externally during this task with an 18-sheet master (schema 1, data version 20261111_02). Its rows were unconfirmed and its guide says import is not connected. Preserve it. `DataInputImporter` detects this format and records that builds use existing Inspector data; manual import rejects it. The legacy four-column importer still supports empty workbooks and staged/validated target/id/field/value overrides, but is NOT an adapter for the new master. See `../20261111_01_仕様対応とデータ入力.txt`. This task has not modified any XLSX.
+- New editor assembly `Ohajiki.Editor` contains build/bootstrap/import tools. Tests reference it; new QuestTests cover content, locking, progression, reward atomicity, snapshots, practice, energy, and XLSX parsing.
+- Validation evidence and remaining limits are recorded in `../20261111_01_検証結果.txt`; `Tools/RunSmoke.ps1` runs each built-player smoke explicitly. Do not run players concurrently.
+
+## Previous specification update — 2026-11-11
 
 The 2026-11-10 spreadsheet and user approval override historical decisions below.
 Current implementation is version 1.001. See ../2026-11-11_仕様対応と検証.txt for the current coverage and validation record.

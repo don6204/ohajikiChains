@@ -14,10 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Ohajiki.Runtime::Ohajiki.ShopConfig
   startingShiningStones: 20
   startingEventPoints: 0
-  eventActive: 0
+  eventActive: 1
   eventFrom: 
   eventUntil: 
   premiumDailyGems: 2
+  legalNotice: "\u8CA9\u58F2\u4E8B\u696D\u8005\u30FB\u9023\u7D61\u5148\u30FB\u8CA9\u58F2\u6761\u4EF6\u306F\u672A\u8A2D\u5B9A\u3067\u3059\u3002\u73FE\u5728\u306F\u30C6\u30B9\u30C8\u8CFC\u5165\u306E\u307F\u5229\u7528\u3067\u304D\u307E\u3059\u3002"
   products:
   - id: power_0
     title: "\u706B\u306E\u30B9\u30D4\u30EA\u30C3\u30C8\u30D1\u30EF\u30FC"
@@ -347,3 +348,39 @@ MonoBehaviour:
     availableUntil: 
     limitPeriod: 3
     purchaseLimit: 1
+  - id: event_power
+    title: "\u706F\u706B\u796D\u30FB\u5168\u306E\u30B9\u30D4\u30EA\u30C3\u30C8\u30D1\u30EF\u30FC"
+    description: 
+    category: 3
+    currency: 3
+    price: 30
+    rewards:
+    - kind: 5
+      amount: 1
+    recommended: 0
+    discounted: 0
+    originalPrice: 0
+    portraitIndex: -1
+    enabled: 1
+    availableFrom: 
+    availableUntil: 
+    limitPeriod: 0
+    purchaseLimit: 0
+  - id: event_stone
+    title: "\u706F\u706B\u796D\u30FB\u8F1D\u304F\u77F3"
+    description: 
+    category: 3
+    currency: 3
+    price: 50
+    rewards:
+    - kind: 6
+      amount: 1
+    recommended: 0
+    discounted: 0
+    originalPrice: 0
+    portraitIndex: -1
+    enabled: 1
+    availableFrom: 
+    availableUntil: 
+    limitPeriod: 2
+    purchaseLimit: 3

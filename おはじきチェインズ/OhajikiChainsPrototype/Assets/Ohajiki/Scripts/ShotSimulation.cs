@@ -38,12 +38,16 @@ namespace Ohajiki
         public int Collected { get; private set; }
         public float WeightedContacts { get; private set; }
         public int ResetCount { get; private set; }
+        public int AllClearCount { get; private set; }
+        public bool AwaitingAllClearRefill => allClearAt >= 0;
+        public float AllClearWaitSeconds => AwaitingAllClearRefill ? Mathf.Max(0, elapsed - allClearAt) : 0;
         public bool Moving { get; private set; }
         public bool EnemySide { get; private set; }
         public IReadOnlyList<Projectile> Projectiles => projectileView;
         public IReadOnlyList<Trap> Traps => trapView;
         public event Action<int, bool> CollectedCharge;
         public event Action<int, SpecialCharge> SpecialTriggered;
+        public event Action AllCleared;
         // Owner side and raw damage. The battle owns HP and mitigation.
         public event Action<bool, int> TrapTriggered;
         readonly List<Projectile> projectiles = new List<Projectile>();
@@ -56,12 +60,16 @@ namespace Ohajiki
         SpiritDefinition actingSpirit;
         Element shotElement;
         float elapsed;
+        float allClearAt = -1;
         bool actionSplitUsed;
+        Vector2 playerLaunchPosition, enemyLaunchPosition;
 
         public ShotSimulation(BattleTuning tuning)
         {
             this.tuning = tuning;
             random = new System.Random(tuning.seed);
+            playerLaunchPosition = new Vector2(Width / 2, Height * tuning.launchInset);
+            enemyLaunchPosition = new Vector2(Width / 2, Height * (1 - tuning.launchInset));
             projectileView = projectiles.AsReadOnly();
             trapView = traps.AsReadOnly();
             projectiles.Add(primary);
@@ -110,10 +118,13 @@ namespace Ohajiki
             float forward = EnemySide ? -direction.y : direction.y;
             if (Moving || spirit == null || !spirit.IsValid || direction.sqrMagnitude <= 0 || forward <= 0) return false;
             if (!EnemySide && (direction.magnitude < tuning.minimumSwipe || forward < tuning.minimumForwardSwipe)) return false;
+            // Remember actual launches; a turn's temporary preparation must not overwrite the opponent's last shot position.
+            if (EnemySide) enemyLaunchPosition = primary.Position; else playerLaunchPosition = primary.Position;
             actingSpirit = spirit;
             shotElement = spirit.element;
             Matched = Collected = 0;
             WeightedContacts = elapsed = 0;
+            allClearAt = -1;
             actionSplitUsed = false;
             projectiles.Clear();
             primary.AttackMultiplier = 1;
@@ -125,6 +136,7 @@ namespace Ohajiki
         }
         public void ResetBoard()
         {
+            allClearAt = -1;
             foreach (var charge in Charges)
             {
                 if (charge.Active) continue;
@@ -153,6 +165,8 @@ namespace Ohajiki
                 bool anyActive = false;
                 foreach (var projectile in projectiles) anyActive |= projectile.Active;
                 if (!anyActive || elapsed >= tuning.maximumShotSeconds - .000001f) FinishShot();
+                else if (AwaitingAllClearRefill && elapsed - allClearAt >= tuning.allClearRefillDelay)
+                    ResetBoard(); // Keep this shot's velocity, clones, contacts, skill level and damage.
             }
             if (Moving && elapsed >= tuning.maximumShotSeconds - .000001f) FinishShot();
         }
@@ -237,9 +251,7 @@ namespace Ohajiki
                     }
                     break;
                 case SpecialCharge.Warp:
-                    float r = tuning.shotRadius;
-                    projectile.Position = new Vector2(Mathf.Lerp(r, Width - r, (float)random.NextDouble()),
-                        Mathf.Lerp(r, Height - r, (float)random.NextDouble()));
+                    projectile.Position = EnemySide ? playerLaunchPosition : enemyLaunchPosition;
                     break;
             }
             if (charge.Special != SpecialCharge.None) SpecialTriggered?.Invoke(index, charge.Special);
@@ -249,6 +261,13 @@ namespace Ohajiki
                 actionSplitUsed = true;
                 Split(projectile, actingSpirit.splitTotalProjectiles);
             }
+            // Missile recursion and split projectiles may clear the final cells in one step.
+            // The pending timestamp makes this a single event for each emptied board.
+            if (!Moving || AwaitingAllClearRefill) return;
+            foreach (var remaining in Charges) if (remaining.Active) return;
+            allClearAt = elapsed;
+            AllClearCount++;
+            AllCleared?.Invoke();
         }
         void Split(Projectile source, int total)
         {
@@ -298,6 +317,7 @@ namespace Ohajiki
         public void CancelShot()
         {
             Moving = false;
+            allClearAt = -1;
             foreach (var projectile in projectiles)
             {
                 projectile.Active = false;

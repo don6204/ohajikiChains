@@ -115,18 +115,25 @@ namespace Ohajiki
         public Combatant Player { get; }
         public Combatant Enemy { get; }
         public int Turn { get; private set; } = 1;
-        public bool Finished => Player.Hp <= 0 || Enemy.Hp <= 0;
-        public bool Won => Enemy.Hp <= 0;
+        public bool Practice { get; }
+        public bool Finished => Player.Hp <= 0 || (!Practice && Enemy.Hp <= 0);
+        public bool Won => Enemy.Hp <= 0 && Player.Hp>0;
         public bool EnemyActsNext { get; private set; }
         public bool ActionPending => pendingSpirit!=null;
         SpiritDefinition pendingSpirit;
         Combatant pendingSource,pendingTarget;
         ActionResult pendingResult;
         float pendingPower;
-        public BattleState(BattleTuning tuning)
+        public BattleState(BattleTuning tuning, bool practice=false)
         {
+            Practice=practice;
             Player = new Combatant(BattleRules.TotalHp(tuning.playerDeck), tuning.playerDeck[0].element);
             Enemy = new Combatant(BattleRules.TotalHp(tuning.enemyDeck), tuning.enemyDeck[0].element);
+        }
+        public void ContinuePractice()
+        {
+            if(!Practice || Enemy.Hp>0 || ActionPending)throw new InvalidOperationException("Practice target is not defeated");
+            EnemyActsNext=false;Turn++;
         }
         public ActionResult Resolve(bool enemy, SpiritDefinition spirit, int contacts, int matched, BattleTuning tuning)
         {

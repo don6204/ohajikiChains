@@ -15,6 +15,8 @@ namespace Ohajiki
         public PrototypeBattle Battle { get; private set; }
         public TitleView Title { get; private set; }
         BattleLoadout loadout;
+        QuestRun questRun;
+        string lastQuestId;
 
         public void Configure(BattleTuning battle,HubConfig home,TMP_FontAsset font)
         { battleTuning=battle;hubConfig=home;japaneseFont=font; }
@@ -29,7 +31,7 @@ namespace Ohajiki
             Session=new PlayerSession(hubConfig,battleTuning);
             var args=Environment.GetCommandLineArgs();
             bool bypassTitle=Array.Exists(args,arg=>arg=="--smoke-test" || arg=="--feedback-smoke-test" ||
-                arg=="--hub-smoke-test" || arg=="--shop-smoke-test" || arg=="--gacha-smoke-test" || arg=="--spec-smoke-test");
+                arg=="--hub-smoke-test" || arg=="--shop-smoke-test" || arg=="--gacha-smoke-test" || arg=="--spec-smoke-test" || arg=="--board-smoke-test");
             if(bypassTitle)StartGame();
             else
             {
@@ -39,7 +41,8 @@ namespace Ohajiki
             }
             if(Array.IndexOf(args,"--title-smoke-test")>=0)
                 gameObject.AddComponent<TitleSmoke>().Run(this);
-            if(Array.IndexOf(args,"--smoke-test")>=0 || Array.IndexOf(args,"--feedback-smoke-test")>=0)EnterBattle();
+            if(Array.IndexOf(args,"--smoke-test")>=0 || Array.IndexOf(args,"--feedback-smoke-test")>=0 || Array.IndexOf(args,"--board-smoke-test")>=0)EnterBattle();
+            if(Array.IndexOf(args,"--board-smoke-test")>=0)gameObject.AddComponent<BoardSmoke>().Run(this,battleTuning);
             if(Array.IndexOf(args,"--hub-smoke-test")>=0)
                 gameObject.AddComponent<HubSmoke>().Run(this);
             if(Array.IndexOf(args,"--shop-smoke-test")>=0)
@@ -61,11 +64,36 @@ namespace Ohajiki
             var canvas=new GameObject("HubCanvas");canvas.transform.SetParent(transform,false);
             Hub=canvas.AddComponent<HubView>();Hub.Initialize(Session,battleTuning,japaneseFont);
             Hub.BattleRequested+=EnterBattle;
+            Hub.QuestRequested+=EnterQuest;
+        }
+        public void EnterQuest(string id)
+        {
+            if(Battle!=null)return;
+            if(!Session.TryBeginQuest(id,out var run,out string error)){Hub.Message(error);return;}
+            questRun=run;lastQuestId=id;
+            try
+            {
+                loadout=new BattleLoadout(Session,battleTuning,run.Quest);
+                Hub.gameObject.SetActive(false);
+                var runtime=new GameObject("RuntimeBattle");runtime.transform.SetParent(transform,false);
+                Battle=runtime.AddComponent<PrototypeBattle>();
+                Battle.ConfigureSession(loadout.Tuning,japaneseFont,Session.Progress);
+                Battle.ConfigureQuest(run.Quest,won=>Session.CompleteQuest(run,won,battleTuning));
+                Battle.HomeRequested+=ReturnHome;Battle.RetryRequested+=RetryQuest;
+            }
+            catch {RemoveBattle();Hub.gameObject.SetActive(true);throw;}
+        }
+        void RetryQuest()
+        {
+            string id=lastQuestId;
+            RemoveBattle();Hub.gameObject.SetActive(true);Hub.OpenQuest(id);
+            Hub.RequestQuest(id);
         }
 
         public void EnterBattle()
         {
             if(Hub==null)return;
+            lastQuestId=null;
             if(!Session.TryEnterBattle())
             {
                 ReturnHome();Hub.Message("エネルギーが不足しています。試作版では再起動で回復します。");return;
@@ -85,22 +113,28 @@ namespace Ohajiki
         }
         public void ReturnHome()
         {
-            RemoveBattle();Hub.gameObject.SetActive(true);Hub.Navigate(HubPage.Home);
+            string id=lastQuestId;
+            RemoveBattle();Hub.gameObject.SetActive(true);
+            if(id!=null)Hub.OpenQuestCategory(Session.Config.quests.Find(id).category);
+            else Hub.Navigate(HubPage.Home);
         }
         void RemoveBattle()
         {
             if(Battle!=null)
             {
                 Battle.HomeRequested-=ReturnHome;Battle.RetryRequested-=EnterBattle;
+                Battle.RetryRequested-=RetryQuest;
                 Battle.ExperienceEarned-=AwardSpiritExperience;
                 Battle.gameObject.SetActive(false);Destroy(Battle.gameObject);Battle=null;
             }
             loadout?.Dispose();loadout=null;
+            Session?.AbandonQuest(questRun);questRun=null;
         }
         void OnDestroy()
         {
             if(Title!=null)Title.StartRequested-=StartGame;
             if(Hub!=null)Hub.BattleRequested-=EnterBattle;
+            if(Hub!=null)Hub.QuestRequested-=EnterQuest;
             RemoveBattle();
         }
     }

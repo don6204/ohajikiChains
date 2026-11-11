@@ -1,0 +1,5 @@
+{
+  "name": "Ohajiki.Editor",
+  "references": ["Ohajiki.Runtime", "Unity.TextMeshPro"],
+  "includePlatforms": ["Editor"]
+}

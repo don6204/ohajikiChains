@@ -44,7 +44,7 @@ MonoBehaviour:
   disadvantage: 0.8
   deceleration: 200
   shotRadius: 20
-  chargeRadius: 27
+  chargeRadius: 22
   squareHitboxes: 1
   maximumShotSeconds: 8
   stopSpeed: 35
@@ -53,12 +53,12 @@ MonoBehaviour:
   touchPadding: 22
   seed: 43
   specialChargeProbabilities:
-  - 0.005
-  - 0.005
-  - 0.005
-  - 0.005
-  - 0.005
-  - 0.01
+  - 0.05
+  - 0.05
+  - 0.05
+  - 0.05
+  - 0.05
+  - 0.1
   specialAttackMultiplier: 1.5
   specialSpeedMultiplier: 2.5
   specialSplitTotal: 3
@@ -68,9 +68,11 @@ MonoBehaviour:
   maximumTraps: 12
   trapRadius: 24
   boardColumns: 8
-  boardRows: 6
-  boardBottom: 0.27
-  boardTop: 0.76
+  boardRows: 8
+  boardBottom: 0.22
+  boardTop: 0.78
+  allClearRefillDelay: 5
+  allClearBannerSeconds: 1.5
   elementWeights: {x: 1, y: 1, z: 1, w: 1}
   launchInset: 0.1
   enemyMinimumAngle: 0.18
@@ -83,17 +85,17 @@ MonoBehaviour:
   contactEffectIntensity: 1.15
   contactEffectSeconds: 0.64
   contactEffectPoolSize: 16
-  damageNumberPunch: 0.5
+  damageNumberPunch: 0
   damageCounterSpeed: 24
   damageColorFullAt: 600
   trailOpacity: 0.65
-  damageBankShake: 17
-  damageBankTilt: 8
-  presentationVersion: 20261109
+  damageBankShake: 0
+  damageBankTilt: 0
+  presentationVersion: 20261111
   contactCelebrationThresholds: 050000000a00000014000000
   longPressSeconds: 0.55
   effectMaxDiameter: 160
-  hitShake: 19
+  hitShake: 0
   levelSlideSpeed: 950
   rewardExperience: 50
   rewardCoins: 500

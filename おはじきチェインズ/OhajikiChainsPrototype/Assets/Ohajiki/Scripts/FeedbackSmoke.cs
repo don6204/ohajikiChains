@@ -13,10 +13,36 @@ namespace Ohajiki
         PrototypeBattle battle;
         BattleTuning tuning;
         string output;
+        SpiritDefinition[] originalEnemyDeck, durableEnemies;
+        int[] originalPlayerHp;
         readonly List<BattlePhase> phases=new List<BattlePhase>();
         public void Begin(PrototypeBattle owner,BattleTuning config){battle=owner;tuning=config;StartCoroutine(Run());}
         void Check(bool condition,string message){if(!condition){Application.Quit(2);throw new InvalidOperationException("FEEDBACK SMOKE: "+message);}}
         void Capture(string name) => ScreenCapture.CaptureScreenshot(Path.Combine(output,name+".png"));
+        void PrepareDurableCombatants()
+        {
+            // The presentation test needs both damage stages and a complete enemy turn,
+            // even when increased special-ball rates would finish a real battle early.
+            // Player cards already belong to the session loadout; enemy assets are shared.
+            originalPlayerHp=tuning.playerDeck.Select(s=>s.baseHp).ToArray();
+            foreach(var spirit in tuning.playerDeck)spirit.baseHp=50000;
+            originalEnemyDeck=tuning.enemyDeck;
+            durableEnemies=originalEnemyDeck.Select(s=>Instantiate(s)).ToArray();
+            foreach(var spirit in durableEnemies)spirit.baseHp=50000;
+            tuning.enemyDeck=durableEnemies;
+        }
+        void OnDisable()
+        {
+            // App disables the battle before disposing its loadout. Restore ownership first.
+            if(tuning!=null)
+            {
+                if(originalEnemyDeck!=null)tuning.enemyDeck=originalEnemyDeck;
+                if(originalPlayerHp!=null)
+                    for(int i=0;i<originalPlayerHp.Length;i++)if(tuning.playerDeck[i]!=null)tuning.playerDeck[i].baseHp=originalPlayerHp[i];
+            }
+            if(durableEnemies!=null)foreach(var spirit in durableEnemies)if(spirit!=null)Destroy(spirit);
+            durableEnemies=originalEnemyDeck=null;originalPlayerHp=null;
+        }
         void CheckLevelTextLayout(TMP_Text[] texts)
         {
             Canvas.ForceUpdateCanvases();
@@ -40,16 +66,17 @@ namespace Ohajiki
             yield return new WaitForSeconds(.8f);
             output=Path.GetFullPath(Path.Combine(Application.dataPath,"..","Smoke","Feedback"));
             Directory.CreateDirectory(output);Directory.CreateDirectory(Path.Combine(output,"Frames"));
+            PrepareDurableCombatants();
             battle.View.HideOverlay();battle.Restart();
             // Isolate presentation so numeric feedback can be inspected at controlled values.
             battle.enabled=false;
             var feedback=battle.View.Feedback;
             feedback.BeginShot(false,Element.Fire);feedback.SetDamageBankVisible(true);
             yield return new WaitForSeconds(.1f);
-            Color red=feedback.DamageNumberColor,background=feedback.DamageBankColor;
+            Color yellow=feedback.DamageNumberColor,background=feedback.DamageBankColor;
             var bankPosition=feedback.BankPosition;var bankRotation=feedback.BankRotation;
             var numberPosition=feedback.DamageNumberPosition;
-            Check(red.r>.7f && red.g<.35f && red.b<.35f,"damage digits start red");
+            Check(yellow.r>.7f && yellow.g>.7f && yellow.b<.2f,"damage digits start yellow");
             var bank=feedback.transform.Find("Damage bank");
             Check(bank!=null && bank.GetComponentsInChildren<TMP_Text>().Length==1,"burst contains only the damage number");
             Check(feedback.DisplayedDamage==0 && feedback.BankScale==Vector3.one*.55f,"zero damage uses small burst");
@@ -60,17 +87,18 @@ namespace Ohajiki
             {
                 feedback.Contact(new Vector2(320,330),Element.Fire,true,sample+1,0,sampleValues[sample]);
                 yield return new WaitForSeconds(.04f);
-                if(sample==0)Check(feedback.DamageNumberPosition!=numberPosition,"contact shakes the digits");
+                Check(feedback.DamageNumberPosition==numberPosition,"contact keeps digits stationary");
                 Check(feedback.BankPosition==bankPosition && feedback.BankRotation==bankRotation,"contact keeps bank position and angle fixed");
                 yield return new WaitForSeconds(1.16f);
                 Check(feedback.DisplayedDamage==sampleValues[sample],"damage counter reaches "+sampleValues[sample]);
                 Check(feedback.BankScale==Vector3.one*sampleScales[sample],"damage burst scale at "+sampleValues[sample]);
-                Check(feedback.DamageNumberColor==red && feedback.DamageBankColor==background,"staged burst keeps red digits and pink background");
+                Check(feedback.DamageNumberColor.g<yellow.g && feedback.DamageBankColor==background,"digits warm toward red while background stays fixed");
+                if(sampleValues[sample]>=tuning.damageColorFullAt)Check(feedback.DamageNumberColor.g<.1f,"large damage digits are red");
                 Check(feedback.BankPosition==bankPosition && feedback.BankRotation==bankRotation,"scaled bank keeps position and angle fixed");
                 if(sampleCaptures[sample]!=null){Capture(sampleCaptures[sample]);yield return null;}
             }
             feedback.BeginShot(true,Element.Water);
-            Check(feedback.DamageNumberColor==red,"enemy shot keeps red digits");
+            Check(feedback.DamageNumberColor==yellow,"enemy shot resets digits to yellow");
             Check(feedback.DisplayedDamage==0 && feedback.BankScale==Vector3.one*.55f,"enemy shot resets small burst");
 
             // Display a deterministic reference frame through the normal view and feedback APIs.
@@ -127,6 +155,7 @@ namespace Ohajiki
             BattlePhase prior=battle.Phase;
             while(Time.realtimeSinceStartup<deadline)
             {
+                Check(battle.View.ScreenPosition==Vector2.zero,"screen remains stationary during shots and both damage stages");
                 var phase=battle.Phase;bool captured=false;
                 if(!battle.Simulation.EnemySide && (phase==BattlePhase.PlayerShot || phase==BattlePhase.Charging || phase==BattlePhase.DamageFlight))
                     Check(battle.State.Enemy.Hp==enemyHp,"damage applied before final count");
@@ -184,7 +213,7 @@ namespace Ohajiki
             var expected=new[]{BattlePhase.Charging,BattlePhase.DamageFlight,BattlePhase.NormalImpact,BattlePhase.CutIn,BattlePhase.Impact,BattlePhase.EnemyThinking,BattlePhase.EnemyShot,BattlePhase.Charging,BattlePhase.DamageFlight,BattlePhase.NormalImpact,BattlePhase.CutIn,BattlePhase.Impact,BattlePhase.Ready};
             Check(phases.Count==expected.Length,"phase count: "+string.Join(",",phases));
             for(int i=0;i<expected.Length;i++)Check(phases[i]==expected[i],"phase order "+i);
-            Check(sawEffects && pausedOnce && battle.Simulation.ResetCount==3,"effects, pause, board reset");
+            Check(sawEffects && pausedOnce && battle.Simulation.ResetCount>=3,"effects, pause, action-end and optional all-clear refills");
             Check(!battle.View.Feedback.DamageBankVisible,"next turn hides damage bank");
             Capture("07-next-turn-hidden");
             yield return null;
@@ -207,7 +236,7 @@ namespace Ohajiki
             yield return new WaitForSeconds(.4f);
             if(FindObjectsByType<BattleFeedback>(FindObjectsSortMode.None).Length!=0 || FindObjectsByType<AudioSource>(FindObjectsSortMode.None).Length!=0)
             {Debug.LogError("FEEDBACK SMOKE: home cleanup");Application.Quit(2);yield break;}
-            Debug.Log("FEEDBACK SMOKE PASS: fixed red digits, 499/500/999/1000 burst scale boundaries, fixed bank position and angle, digits-only counter, reference 1000 and LV2 frame, contacts, damage counter visibility, pause, normal HP before cut-in, skill after cut-in, both sides, two resets, retry and exit cleanup.");
+            Debug.Log("FEEDBACK SMOKE PASS: stationary screen and digits, yellow-to-red color reset, 499/500/999/1000 burst scale boundaries, fixed bank position and angle, reference 1000 and LV2 frame, contacts, damage counter visibility, pause, normal HP before cut-in, skill after cut-in, both sides, refills, retry and exit cleanup.");
             Application.Quit(0);
         }
     }

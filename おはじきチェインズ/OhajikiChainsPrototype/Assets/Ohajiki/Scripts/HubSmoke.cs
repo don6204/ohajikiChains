@@ -103,7 +103,8 @@ namespace Ohajiki
             Click("強化する");Click("戻る");Require(session.Level(newId)==level,"upgrade cancellation");
             Click("強化する");Click("決定");
             Require(session.Level(newId)==level+2 && session.Progress.Coins==coins-cost,"upgrade confirmation");
-            Click("ホーム");Click("バトルへ　エネルギー "+session.Config.battleEnergyCost);yield return null;yield return null;
+            Click("ホーム");Click("スピリットバトル　→");Require(hub.Page==HubPage.Quests,"quest menu");
+            app.EnterBattle();yield return null;yield return null;
             Require(app.Battle!=null && app.Battle.State.Player.MaxHp==session.DeckHp,"battle deck and level transfer");
             Require(ReferenceEquals(app.Battle.Progress,session.Progress),"shared reward authority");
             Require(FindObjectsByType<EventSystem>(FindObjectsSortMode.None).Length==1,"one battle EventSystem");

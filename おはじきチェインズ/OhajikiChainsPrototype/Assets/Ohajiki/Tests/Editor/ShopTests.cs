@@ -135,13 +135,15 @@ namespace Ohajiki.Tests
         [Test] public void SquareCornerContactReflectsOnABoxFaceAndCollectsOnlyOnce()
         {
             var spirit=home.catalog[0];spirit.baseSpeed=100;
+            float contactDistance=battle.shotRadius+battle.chargeRadius;
+            var cornerOffset=new Vector2(contactDistance*.85f,contactDistance+.5f);
             var sim=new ShotSimulation(battle);foreach(var charge in sim.Charges)charge.Active=false;
-            sim.Charges[0].Active=true;sim.Charges[0].Position=sim.Position+new Vector2(40,47.5f);
+            sim.Charges[0].Active=true;sim.Charges[0].Position=sim.Position+cornerOffset;
             sim.Launch(Vector2.up*100,spirit);sim.Tick(.01f);
             Assert.AreEqual(1,sim.Collected);Assert.LessOrEqual(sim.Velocity.y,0);
             sim.Tick(.01f);Assert.AreEqual(1,sim.Collected);
             battle.squareHitboxes=false;sim=new ShotSimulation(battle);foreach(var charge in sim.Charges)charge.Active=false;
-            sim.Charges[0].Active=true;sim.Charges[0].Position=sim.Position+new Vector2(40,47.5f);
+            sim.Charges[0].Active=true;sim.Charges[0].Position=sim.Position+cornerOffset;
             sim.Launch(Vector2.up*100,spirit);sim.Tick(.01f);Assert.AreEqual(0,sim.Collected);
         }
     }

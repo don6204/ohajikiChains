@@ -28,6 +28,10 @@ namespace Ohajiki
         float phaseTime, heldTime;
         System.Random enemyRandom;
         SpiritDefinition actingSpirit;
+        QuestDefinition quest;
+        System.Func<bool,QuestReceipt> completeQuest;
+        public void ConfigureQuest(QuestDefinition definition,System.Func<bool,QuestReceipt> complete)
+        {quest=definition;completeQuest=complete;}
         public SpiritDefinition PlayerCard => tuning.playerDeck[Deck.CardAt(SelectedSlot)];
         public SpiritDefinition EnemyCard => tuning.enemyDeck[EnemyDeck.CardAt(enemySlot)];
         public void Configure(BattleTuning config,TMP_FontAsset font) { tuning = config; japaneseFont = font; }
@@ -49,7 +53,7 @@ namespace Ohajiki
             View.PausePressed += TogglePause;
             View.CardPressed += BeginHold; View.CardReleased += EndHold;
             Restart();
-            if(embedded) { View.EnableHomeButton(()=>HomeRequested?.Invoke()); View.HideOverlay(); }
+            if(embedded) { View.EnableHomeButton(Retire,quest!=null); View.HideOverlay(); }
             if(System.Array.IndexOf(System.Environment.GetCommandLineArgs(),"--smoke-test") >= 0) StartCoroutine(RunSmoke());
             if(System.Array.IndexOf(System.Environment.GetCommandLineArgs(),"--feedback-smoke-test") >= 0) gameObject.AddComponent<FeedbackSmoke>().Begin(this,tuning);
         }
@@ -60,11 +64,13 @@ namespace Ohajiki
                 Simulation.CollectedCharge -= OnCollected;
                 Simulation.TrapTriggered -= OnTrapTriggered;
                 Simulation.SpecialTriggered -= OnSpecialTriggered;
+                Simulation.AllCleared -= OnAllCleared;
             }
             Simulation = new ShotSimulation(tuning); Simulation.CollectedCharge += OnCollected;
             Simulation.TrapTriggered += OnTrapTriggered;
             Simulation.SpecialTriggered += OnSpecialTriggered;
-            State = new BattleState(tuning); Deck = new SpiritDeck(tuning.seed); EnemyDeck = new SpiritDeck(tuning.seed+1);
+            Simulation.AllCleared += OnAllCleared;
+            State = new BattleState(tuning,quest!=null&&quest.IsPractice); Deck = new SpiritDeck(tuning.seed); EnemyDeck = new SpiritDeck(tuning.seed+1);
             enemyRandom = new System.Random(tuning.seed+2);
             SelectedSlot = 0; dragging = paused = showChain = enemyActing = rewardGranted = false;
             EndHold(); View.HideAim(); View.Feedback.ResetFeedback(); LastAction=default; PrepareEnemyCard();
@@ -119,7 +125,9 @@ namespace Ohajiki
             if(Phase == BattlePhase.Ready) { ReadPointer(); return; }
             if(Phase == BattlePhase.PlayerShot || Phase == BattlePhase.EnemyShot)
             {
+                int resetsBefore=Simulation.ResetCount;
                 Simulation.Tick(dt);
+                if(Simulation.ResetCount!=resetsBefore)Refresh();
                 View.UpdateSimulationVisuals(Simulation,actingSpirit);
                 if(State.Finished)
                 {
@@ -185,6 +193,12 @@ namespace Ohajiki
             Simulation.ResetBoard();
             if(enemyActing) EnemyDeck.Replace(enemySlot); else Deck.Replace(SelectedSlot);
             if(State.Finished) { Finish(); return; }
+            if(State.Practice && State.Enemy.Hp<=0)
+            {
+                State.ContinuePractice();enemyActing=showChain=false;actingSpirit=PlayerCard;
+                Simulation.Prepare(false,ShotSimulation.Width/2);
+                View.SetStatus("目標達成！練習を続けるか、リタイアでクリアできます。");Enter(BattlePhase.Ready);return;
+            }
             showChain = false;
             if(!enemyActing)
             {
@@ -200,8 +214,17 @@ namespace Ohajiki
         }
         void Finish()
         {
+            if(rewardGranted)return;
             int xp = State.Won || tuning.rewardOnDefeat ? tuning.rewardExperience : 0;
             int coins = State.Won || tuning.rewardOnDefeat ? tuning.rewardCoins : 0;
+            if(quest!=null)
+            {
+                var receipt=completeQuest?.Invoke(State.Won);
+                rewardGranted=true;paused=false;dragging=false;Simulation.CancelShot();
+                View.Feedback.SetPaused(false);Enter(BattlePhase.Finished);
+                View.ShowOverlay(State.Won?"QUEST CLEAR!":"もう一度、挑戦！",receipt?.Summary??"このクエストは終了しています。","もう一度挑戦");
+                return;
+            }
             if(!rewardGranted)
             {
                 rewardGranted = true;
@@ -211,6 +234,11 @@ namespace Ohajiki
             Enter(BattlePhase.Finished);
             View.ShowOverlay(State.Won ? "VICTORY!" : "もう一度、挑戦！",
                 $"バトル終了\n\n報酬 EXP +{xp} / Coin +{coins}\nRank {Progress.Rank}  累計EXP {Progress.TotalExperience}\n参加スピリターにも経験値を獲得\n\n同属性でスキル、全接触で通常攻撃\n手札と反射角を変えて再挑戦！\n※報酬はアプリ終了まで保持","もう一度バトル");
+        }
+        public void Retire()
+        {
+            if(Phase!=BattlePhase.Finished && State.Practice && State.Won){Finish();return;}
+            HomeRequested?.Invoke();
         }
         void ReadPointer()
         {
@@ -238,6 +266,11 @@ namespace Ohajiki
             string[] names = { "", "攻撃力アップ", "速度アップ", "分裂", "縦ミサイル", "横ミサイル", "ワープ" };
             View.SetStatus(names[(int)effect] + "！");
         }
+        void OnAllCleared()
+        {
+            View.Feedback.ShowAllClear();
+            View.SetStatus("全消し！ ショットが続けば5秒後にチャージボールを再配置");
+        }
         void OnTrapTriggered(bool enemyOwner,int rawDamage)
         {
             var target = enemyOwner ? State.Player : State.Enemy;
@@ -258,6 +291,7 @@ namespace Ohajiki
                 Simulation.CollectedCharge -= OnCollected;
                 Simulation.TrapTriggered -= OnTrapTriggered;
                 Simulation.SpecialTriggered -= OnSpecialTriggered;
+                Simulation.AllCleared -= OnAllCleared;
             } }
 
         IEnumerator RunSmoke()
@@ -285,7 +319,7 @@ namespace Ohajiki
                 yield return null;
             }
             while(Resolving && Time.realtimeSinceStartup < timeout) yield return null;
-            if(State.Turn != 2 || Simulation.ResetCount != 3 || !sawCharge || !sawCutIn || !sawEnemy)
+            if(State.Turn != 2 || Simulation.ResetCount < 3 || !sawCharge || !sawCutIn || !sawEnemy)
             { Debug.LogError($"SMOKE: cycle failed turn={State.Turn} resets={Simulation.ResetCount}"); Application.Quit(5); yield break; }
             ScreenCapture.CaptureScreenshot(System.IO.Path.Combine(directory,"cycle-v2.png"));
             Restart();

@@ -43,8 +43,11 @@ namespace Ohajiki
             yield return new WaitForSeconds(.8f);
             var session=app.Session;long coins=session.Progress.Coins;
             int gems=session.Gems,fire=session.MaterialCount(0),stones=session.ShiningStones;
+            bool eventActive=session.Config.shop.eventActive;session.Config.shop.eventActive=false;
             Click("ショップ");yield return Capture("01-exchange");
-            Require(Button("イベント\n開催前")==null,"event locked");
+            var locked=app.Hub.GetComponentsInChildren<UnityEngine.UI.Button>().FirstOrDefault(b=>b.name=="Button_イベント\n開催前");
+            Require(locked!=null&&!locked.IsInteractable(),"event locked");
+            session.Config.shop.eventActive=eventActive;app.Hub.Refresh();
             Product("power_0");yield return Capture("02-exchange-confirm");Click("いいえ");
             Require(session.Progress.Coins==coins && session.MaterialCount(0)==fire,"cancel exchange");
             Product("power_0");Click("はい");Require(session.Progress.Coins==coins-500 && session.MaterialCount(0)==fire+1,"power exchange");Click("閉じる");

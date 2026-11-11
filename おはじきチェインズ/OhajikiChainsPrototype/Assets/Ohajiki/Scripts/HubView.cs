@@ -8,10 +8,11 @@ using UnityEngine.InputSystem.UI;
 
 namespace Ohajiki
 {
-    public enum HubPage { Home, Spirits, Deck, UpgradeList, UpgradeDetail, Materials, Gacha, Banner, Shop, Settings }
+    public enum HubPage { Home, Spirits, Deck, UpgradeList, UpgradeDetail, Materials, Gacha, Banner, Shop, Settings, Quests, QuestList, QuestDetail }
     public sealed partial class HubView : MonoBehaviour
     {
         public event Action BattleRequested;
+        public event Action<string> QuestRequested;
         public HubPage Page { get; private set; }
         public bool HasModal => modal != null;
         public string LastMessage { get; private set; }
@@ -46,7 +47,9 @@ namespace Ohajiki
             ui.Label(screen,"<color=#ED5518>おはじき</color><color=#127890>チェインズ</color>",38,1212,500,56,29);
             ui.Label(screen,"ADVENTURE",522,1226,152,28,16,HubWidgets.Elements[1],true);
             account=ui.Label(screen,"",32,1187,656,38,25);
-            resources=ui.Label(screen,"",32,1136,656,40,21);
+            resources=ui.Label(screen,"",32,1136,596,40,19);
+            resources.enableAutoSizing=true;resources.fontSizeMin=14;resources.fontSizeMax=19;
+            ui.Button(screen,"＋",634,1138,44,38,()=>RequestEnergyRefill()).name="Button_EnergyRefill";
             content=ui.Rect(screen,"PageContent",32,160,656,940);
             toast=ui.Label(screen,"",32,118,656,40,17,HubWidgets.Ink,true);
             navigation=new UnityEngine.UI.Button[5];
@@ -106,8 +109,8 @@ namespace Ohajiki
             if(Page!=HubPage.Home)ui.Panel(content,"AdventurePage",0,0,656,940,new Color(1,.98f,.88f,.96f));
             session.Shop?.RefreshCalendar();
             account.text=$"Rank {session.Progress.Rank}　EXP {session.Progress.RankExperience}/{session.Progress.Needed(battleTuning)}";
-            resources.text=$"メダル {session.Progress.Coins:N0}　宝石 {session.Gems:N0}　エネルギー {session.Energy}/{session.Config.maximumEnergy}";
-            int active=Page==HubPage.Settings?4:Page==HubPage.Home?0:Page==HubPage.Shop?3:(Page==HubPage.Gacha||Page==HubPage.Banner)?2:1;
+            resources.text=$"メダル {session.Progress.Coins:N0}　宝石 {session.Gems:N0}　エネルギー {session.Energy}/{session.MaximumEnergy}";
+            int active=Page==HubPage.Settings?4:(Page==HubPage.Home||Page>=HubPage.Quests)?0:Page==HubPage.Shop?3:(Page==HubPage.Gacha||Page==HubPage.Banner)?2:1;
             for(int i=0;i<navigation.Length;i++)
             {
                 bool selected=i==active;Color fill=selected?HubWidgets.Accent:HubWidgets.PanelColor;
@@ -129,6 +132,9 @@ namespace Ohajiki
                 case HubPage.Banner: BannerDetail(); break;
                 case HubPage.Shop: ShopPage(); break;
                 case HubPage.Settings: SettingsPage(); break;
+                case HubPage.Quests: QuestMenu(); break;
+                case HubPage.QuestList: QuestList(); break;
+                case HubPage.QuestDetail: QuestDetail(); break;
             }
         }
         void Heading(string title,string subtitle)
@@ -166,9 +172,11 @@ namespace Ohajiki
             ui.Label(feature,$"{elementNames[(int)spirit.element]}属性　Lv{session.Level(hero)}\nデッキHP {session.DeckHp:N0}",24,100,330,80,24);
             ui.Label(feature,"さあ、チェインをつなごう！",24,22,330,65,21,HubWidgets.Muted);
             DeckSwitcher(422); DeckPreview(291);
-            bool canEnter=session.Energy>=session.Config.battleEnergyCost;
-            ui.Button(content,$"バトルへ　エネルギー {session.Config.battleEnergyCost}",0,30,656,78,()=>BattleRequested?.Invoke(),canEnter,HubWidgets.Accent);
-            if(!canEnter)Message("エネルギーがありません。試作版には自然回復はまだありません。");
+            ui.Button(content,"スピリットバトル　→",0,88,656,70,()=>{
+                if(session.Config.quests!=null)Navigate(HubPage.Quests);else BattleRequested?.Invoke();
+            },true,HubWidgets.Accent);
+            ui.Button(content,"マルチ（準備中）",0,20,320,50,null,false);
+            ui.Button(content,"ミッション（準備中）",336,20,320,50,null,false);
         }
         void Spirits()
         {

@@ -75,7 +75,7 @@ public static class PrototypeBuilder
         EditorSceneManager.SaveScene(scene, scenePath);
         EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(scenePath, true) };
         PlayerSettings.productName = "Ohajiki Chains Prototype";
-        PlayerSettings.bundleVersion = "1.001";
+        PlayerSettings.bundleVersion = "1.005";
         PlayerSettings.companyName = "OhajikiPrototype";
         PlayerSettings.defaultScreenWidth = 540; PlayerSettings.defaultScreenHeight = 960;
         PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
@@ -119,6 +119,7 @@ public static class PrototypeBuilder
             AssetDatabase.CreateAsset(home,path);
         }
         ShopPrototypeData.Configure(home,tuning);
+        QuestPrototypeData.Configure(home);
         if(home.gachaPresentationVersion<20261109)
         {
             home.firstSingleGems=1;home.singleGems=5;home.tenGems=50;home.tenBonusGems=1;home.featuredCycleSeconds=5;
@@ -168,6 +169,11 @@ public static class PrototypeBuilder
             tuning.damageNumberPunch=.5f;tuning.damageBankShake=17;tuning.damageBankTilt=8;tuning.damageCounterSpeed=24;
             tuning.hitShake=19;tuning.damageFlightSeconds=.48f;tuning.normalImpactSeconds=.9f;tuning.impactSeconds=.85f;
             tuning.presentationVersion=20261109;EditorUtility.SetDirty(tuning);
+        }
+        if(tuning.presentationVersion<20261111)
+        {
+            tuning.hitShake=tuning.damageBankShake=tuning.damageBankTilt=tuning.damageNumberPunch=0;
+            tuning.presentationVersion=20261111;EditorUtility.SetDirty(tuning);
         }
     }
     static void ConfigureDeck(BattleTuning tuning, Sprite[] portraits)
@@ -260,13 +266,31 @@ public static class PrototypeBuilder
         PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.StandaloneWindows64, false);
         PlayerSettings.SetGraphicsAPIs(BuildTarget.StandaloneWindows64,
             new[] { UnityEngine.Rendering.GraphicsDeviceType.Direct3D11 });
-        Directory.CreateDirectory("Build/Windows-v8");
+        string dataInputStatus=DataInputImporter.PrepareBuildData();
+        const string output="Build/20261111_03";
+        Directory.CreateDirectory(output);
         var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
             scenes = new[] { Root + "Scenes/Prototype.unity" },
-            locationPathName = "Build/Windows-v8/OhajikiChains.exe",
+            locationPathName = output+"/OhajikiChains.exe",
             target = BuildTarget.StandaloneWindows64, options = BuildOptions.None
         });
         if (report.summary.result != BuildResult.Succeeded) throw new System.Exception("Build failed: " + report.summary.result);
+        File.Copy("遊び方.txt",output+"/遊び方.txt",true);
+        File.Copy("Docs/20261111_01_仕様対応とデータ入力.txt",output+"/仕様対応とデータ入力.txt",true);
+        Directory.CreateDirectory(output+"/Docs");
+        File.Copy("Docs/20261111_01_仕様対応とデータ入力.txt",output+"/Docs/20261111_01_仕様対応とデータ入力.txt",true);
+        if(File.Exists("Docs/20261111_01_検証結果.txt"))
+            File.Copy("Docs/20261111_01_検証結果.txt",output+"/Docs/20261111_01_検証結果.txt",true);
+        if(File.Exists("Docs/20261111_チャージボール変更と検証.txt"))
+            File.Copy("Docs/20261111_チャージボール変更と検証.txt",output+"/Docs/20261111_チャージボール変更と検証.txt",true);
+        File.Copy("Docs/20261111_03_変更と検証.txt",output+"/Docs/20261111_03_変更と検証.txt",true);
+        File.Copy("Docs/20261111_03_ショット領域調整.txt",output+"/Docs/20261111_03_ショット領域調整.txt",true);
+        File.WriteAllText(output+"/build-info.txt","Ohajiki Chains 1.005 / 20261111_03\nUnity "+Application.unityVersion+
+            "\nWindows x64 / Mono / D3D11\nEvent 3 / Showdown 3 x 3 / Challenge 5\nData input: "+dataInputStatus+
+            "\nCharge probabilities: 5%, 5%, 5%, 5%, 5%, 10% (normal 65%); warp to opponent launch position."+
+            "\n8x8 board; no screen/digit shake; gold all-clear scroll 1.5 seconds; refill after 5 moving seconds."+
+            "\nCharge diameter 44; vertical centers 22%-78%; rims clear both launch zones."+
+            "\nBuilt UTC: "+System.DateTime.UtcNow.ToString("O"));
         Debug.Log("BUILD PASS: " + report.summary.totalSize + " bytes");
     }
 }

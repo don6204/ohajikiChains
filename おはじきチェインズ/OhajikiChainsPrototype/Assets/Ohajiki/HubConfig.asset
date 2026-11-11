@@ -42,10 +42,18 @@ MonoBehaviour:
   startingCoins: 5000
   startingGems: 0
   maximumEnergy: 5
+  energyPerRank: 1
+  energyRefillGems: 1
+  baseFriendCapacity: 10
+  friendsPerRank: 1
+  quests: {fileID: 11400000, guid: 2bb22542ca8097e47826839ce7f202ad, type: 2}
   battleEnergyCost: 1
   startingMaterials: 20
   maxSpiritLevel: 60
   upgradeCoinUnit: 50
+  spiritExperienceBase: 100
+  spiritExperiencePerLevel: 25
+  battleSpiritExperienceMultiplier: 1
   banners:
   - title: "\u6052\u5E38\u30AC\u30C1\u30E3"
     description: "\u3044\u3064\u3067\u3082\u51FA\u4F1A\u3048\u308B\u30B9\u30D4\u30EA\u30BF\u30FC\u305F\u3061\u3002"
@@ -283,6 +291,3 @@ MonoBehaviour:
   gachaPresentationVersion: 20261109
   shop: {fileID: 11400000, guid: d487d2df4154504449fdde72be860006, type: 2}
   specificationVersion: 20261106
-  spiritExperienceBase: 100
-  spiritExperiencePerLevel: 25
-  battleSpiritExperienceMultiplier: 1

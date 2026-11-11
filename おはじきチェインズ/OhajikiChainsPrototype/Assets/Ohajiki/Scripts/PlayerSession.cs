@@ -115,7 +115,8 @@ namespace Ohajiki
     {
         public BattleTuning Tuning { get; }
         public IReadOnlyList<int> SpiritIds { get; }
-        public BattleLoadout(PlayerSession session, BattleTuning template)
+        readonly bool ownsEnemies;
+        public BattleLoadout(PlayerSession session, BattleTuning template, QuestDefinition quest=null)
         {
             SpiritIds = Array.AsReadOnly(session.DeckCopy());
             Tuning = UnityEngine.Object.Instantiate(template);
@@ -123,10 +124,31 @@ namespace Ohajiki
                 var spirit = UnityEngine.Object.Instantiate(session.Config.catalog[id]);
                 spirit.level = session.Level(id); return spirit;
             }).ToArray();
+            if(quest!=null)
+            {
+                ownsEnemies=true;
+                var sources=quest.enemyDeck!=null && quest.enemyDeck.Length==SpiritDeck.Size ? quest.enemyDeck :
+                    template.enemyDeck.Where(s=>s.element==quest.enemyElement).ToArray();
+                if(sources.Length==0)sources=template.enemyDeck;
+                Tuning.enemyDeck=Enumerable.Range(0,SpiritDeck.Size).Select(i=>{
+                    var spirit=UnityEngine.Object.Instantiate(sources[i%sources.Length]);
+                    spirit.level=quest.enemyLevel;
+                    // Bake scaled stats only into battle-owned copies; authored growth remains intact.
+                    spirit.baseHp=Mathf.Max(1,Mathf.RoundToInt(spirit.Hp*quest.hpMultiplier));spirit.hpPerLevel=0;
+                    spirit.baseAttack=Mathf.Max(0,Mathf.RoundToInt(spirit.Attack*quest.attackMultiplier));spirit.attackPerLevel=0;
+                    spirit.baseSpeed=Mathf.Max(1,spirit.Speed*quest.speedMultiplier);spirit.speedPerLevel=0;
+                    if(spirit.skill==Skill.Attack || spirit.skill==Skill.Heal || spirit.skill==Skill.Guard)
+                        spirit.skillPower=spirit.skillPower.Select(p=>p*quest.attackMultiplier).ToArray();
+                    spirit.trapDamage=Mathf.RoundToInt(spirit.trapDamage*quest.attackMultiplier);
+                    return spirit;
+                }).ToArray();
+                Tuning.rewardExperience=quest.experience;Tuning.rewardCoins=quest.medals;Tuning.rewardOnDefeat=false;
+            }
         }
         public void Dispose()
         {
             foreach (var spirit in Tuning.playerDeck) Release(spirit);
+            if(ownsEnemies)foreach(var spirit in Tuning.enemyDeck)Release(spirit);
             Release(Tuning);
         }
         static void Release(UnityEngine.Object value)

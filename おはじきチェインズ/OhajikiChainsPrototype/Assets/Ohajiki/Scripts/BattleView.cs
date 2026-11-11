@@ -16,6 +16,7 @@ namespace Ohajiki
         public event Action CardReleased;
         public RectTransform Board { get; private set; }
         public BattleFeedback Feedback { get; private set; }
+        public Vector2 ScreenPosition => root.anchoredPosition;
         bool supportImpact;
         public bool OverlayVisible => overlay.gameObject.activeSelf;
         readonly Color ink = SpiritUiSkin.Ink;
@@ -104,18 +105,19 @@ namespace Ohajiki
             Board.GetComponent<UnityEngine.UI.Image>().sprite=Resources.Load<Sprite>("UI/SandstoneBoard");
             Board.gameObject.AddComponent<UnityEngine.UI.RectMask2D>();
             Panel(Board, "LaunchZone", 12, 24, 600, 82, new Color(.18f,.7f,.65f,.18f));
-            launchHint = Label(Board, "タップで位置調整 → ボールから上へスワイプ", 20, 110, 584, 30, 18, muted, TextAlignmentOptions.Center);
+            launchHint = Label(Board, "タップで位置調整 → ボールから上へスワイプ", 20, 8, 584, 26, 16, muted, TextAlignmentOptions.Center);
             Panel(Board, "EnemyLaunchZone", 12, 548, 600, 82, new Color(.95f,.4f,.15f,.13f));
             Label(Board, "ENEMY", 420, 595, 172, 30, 16, muted, TextAlignmentOptions.Right);
             int chargeCount = tuning.boardColumns * tuning.boardRows;
+            float chargeDiameter=tuning.chargeRadius*2,chargeScale=chargeDiameter/54f;
             charges = new RectTransform[chargeCount]; chargeImages = new UnityEngine.UI.Image[chargeCount]; chargeLabels = new TMP_Text[chargeCount];
             for (int i = 0; i < chargeCount; i++)
             {
-                charges[i] = Panel(Board, "Charge_" + i, 0, 0, 54, 54, Color.white, true);
+                charges[i] = Panel(Board, "Charge_" + i, 0, 0, chargeDiameter, chargeDiameter, Color.white, true);
                 chargeImages[i] = charges[i].GetComponent<UnityEngine.UI.Image>();
-                skin.Image(charges[i],"Orb rim",skin.Ring,27,27,56,56,new Color(.36f,.15f,.035f,.55f),true);
-                skin.Image(charges[i],"Orb shine",skin.Star,15,40,14,14,new Color(1,1,1,.75f),true);
-                chargeLabels[i] = Label(charges[i], "", 0, 0, 54, 54, 22, Color.white, TextAlignmentOptions.Center);skin.Text(chargeLabels[i],true);
+                skin.Image(charges[i],"Orb rim",skin.Ring,tuning.chargeRadius,tuning.chargeRadius,56*chargeScale,56*chargeScale,new Color(.36f,.15f,.035f,.55f),true);
+                skin.Image(charges[i],"Orb shine",skin.Star,15*chargeScale,40*chargeScale,14*chargeScale,14*chargeScale,new Color(1,1,1,.75f),true);
+                chargeLabels[i] = Label(charges[i], "", 0, 0, chargeDiameter, chargeDiameter, 22, Color.white, TextAlignmentOptions.Center);skin.Text(chargeLabels[i],true);
             }
             aim = Panel(Board, "Direction", 0, 0, 1, 5, new Color(1, .86f, .44f));
             aim.pivot = new Vector2(0, .5f); aim.gameObject.SetActive(false);
@@ -184,10 +186,12 @@ namespace Ohajiki
             ShowOverlay("おはじきチェインズ", "選ぶ。はじく。つなげる。\n\n① 下の4枚からスピリターを選ぶ\n② 発射位置をタップで調整\n③ ボールから飛ばす方向へスワイプ\n\n敵もショット！双方の攻撃後に消えたボールを補充", "バトルをはじめる");
             Resize();
         }
-        public void EnableHomeButton(Action action)
+        public void EnableHomeButton(Action action,bool quest=false)
         {
             progressText.rectTransform.sizeDelta=new Vector2(400,30);
-            Button(root,"ホーム",456,1218,108,42,action);
+            var homeButton=Button(root,quest?"リタイア":"ホーム",456,1218,108,42,action);
+            homeButton.SetSiblingIndex(overlay.GetSiblingIndex());
+            Button(overlay,quest?"クエストへ":"ホームへ",160,35,400,60,action);
         }
         void Update()
         {
@@ -220,7 +224,7 @@ namespace Ohajiki
                 charges[i].anchoredPosition = c.Position - Vector2.one * tuning.chargeRadius;
                 chargeImages[i].color = colors[(int)c.Element];
                 bool special = c.Special != SpecialCharge.None;
-                chargeLabels[i].fontSize = special ? 16 : 22;
+                chargeLabels[i].fontSize = (special ? 16 : 22)*tuning.chargeRadius/27f;
                 chargeLabels[i].text = elements[(int)c.Element] + (special ? "\n" + specialLabels[(int)c.Special] : "");
             }
             projectile.sizeDelta = Vector2.one * tuning.shotRadius * 2;
@@ -415,7 +419,7 @@ namespace Ohajiki
                 cutInArt.rectTransform.localScale=Vector3.one*Mathf.Lerp(1.16f,1,progress);
                 cutInText.text = (enemy ? "ENEMY SKILL" : "SPIRIT SKILL") + $"\n{spirit.displayName}\n\n{spirit.skillName}";
             }
-            root.anchoredPosition = impact && !supportImpact ? new Vector2(Mathf.Sin(progress*40)*tuning.hitShake*(1-progress),0) : Vector2.zero;
+            root.anchoredPosition = Vector2.zero;
         }
         public void ShowNormalImpact(ActionResult result)
         {
