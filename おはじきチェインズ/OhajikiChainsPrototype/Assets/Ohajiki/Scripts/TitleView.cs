@@ -124,7 +124,7 @@ namespace Ohajiki
         {
             if(canvas==null)return;
             Resize();clock+=Time.unscaledDeltaTime;
-            logo.anchoredPosition=new Vector2(360,1000+Mathf.Sin(clock*.9f)*4);
+            logo.anchoredPosition=new Vector2(360,1000+Mathf.Sin(clock*MasterConstants.GetFloat("TitleView.logoFloatAngularRate",.9f))*MasterConstants.GetFloat("TitleView.logoFloatAmplitude",4));
             for(int i=0;i<characters.Length;i++)characters[i].anchoredPosition=characterOrigins[i]+Vector2.up*Mathf.Sin(clock*1.1f+i*1.7f)*5;
             for(int i=0;i<orbs.Length;i++)orbs[i].anchoredPosition=orbOrigins[i]+Vector2.up*Mathf.Sin(clock*1.6f+i)*9;
             for(int i=0;i<lights.Length;i++)
@@ -133,11 +133,13 @@ namespace Ohajiki
                 lights[i].rectTransform.anchoredPosition=new Vector2(50+Mathf.Repeat(i*.381f,1)*620+Mathf.Sin(clock+i)*10,340+p*810);
                 lights[i].color=new Color(1,1,.8f,Mathf.Sin(p*Mathf.PI)*(.35f+.35f*Mathf.Sin(clock*2+i)));
             }
-            prompt.alpha=.72f+.28f*(.5f+.5f*Mathf.Sin(clock*2.7f));
+            float minAlpha=MasterConstants.GetFloat("TitleView.promptMinAlpha",.72f);
+            prompt.alpha=minAlpha+(1-minAlpha)*(.5f+.5f*Mathf.Sin(clock*MasterConstants.GetFloat("TitleView.promptPulseAngularRate",2.7f)));
             if(!IsStarting)return;
             startAge+=Time.unscaledDeltaTime;
-            fade.color=new Color(1,.98f,.88f,Mathf.SmoothStep(0,1,startAge/.45f));
-            if(startAge>=.45f)StartRequested?.Invoke();
+            float fadeSeconds=MasterConstants.GetFloat("TitleView.startFadeSeconds",.45f);
+            fade.color=new Color(1,.98f,.88f,Mathf.SmoothStep(0,1,startAge/fadeSeconds));
+            if(startAge>=fadeSeconds)StartRequested?.Invoke();
         }
     }
 }

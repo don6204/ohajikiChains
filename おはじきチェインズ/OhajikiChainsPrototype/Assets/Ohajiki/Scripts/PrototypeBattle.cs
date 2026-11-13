@@ -48,6 +48,7 @@ namespace Ohajiki
             var art = new Sprite[3];
             foreach(var spirit in tuning.playerDeck) if(art[(int)spirit.element] == null) art[(int)spirit.element] = spirit.portrait;
             View.Initialize(japaneseFont,art,tuning);
+            if(quest!=null&&quest.useEnemyPortrait)View.SetEnemyPortrait(quest.enemyPortrait);
             View.Selected += Select;
             View.Restarted += () => { if(embedded)RetryRequested?.Invoke(); else Restart(); };
             View.PausePressed += TogglePause;
@@ -180,7 +181,8 @@ namespace Ohajiki
         void StartEnemyShot()
         {
             enemyActing = true; actingSpirit = EnemyCard;
-            Simulation.Prepare(true,Mathf.Lerp(50,ShotSimulation.Width-50,(float)enemyRandom.NextDouble()));
+            float sideInset=MasterConstants.GetFloat("PrototypeBattle.enemyLaunchSideInset",50);
+            Simulation.Prepare(true,Mathf.Lerp(sideInset,ShotSimulation.Width-sideInset,(float)enemyRandom.NextDouble()));
             float angle = Mathf.Lerp(tuning.enemyMinimumAngle*Mathf.PI,(1-tuning.enemyMinimumAngle)*Mathf.PI,(float)enemyRandom.NextDouble());
             if(!Simulation.Launch(new Vector2(Mathf.Cos(angle),-Mathf.Sin(angle))*300,actingSpirit,State.Enemy.SpeedMultiplier)) throw new System.InvalidOperationException("Enemy launch failed");
             View.Feedback.BeginShot(true,actingSpirit.element);
@@ -247,7 +249,7 @@ namespace Ohajiki
             if(pointer.press.wasPressedThisFrame)
             {
                 if(Vector2.Distance(point,Simulation.Position) <= tuning.shotRadius+tuning.touchPadding) dragging = true;
-                else if(point.x >= 0 && point.x <= ShotSimulation.Width && Mathf.Abs(point.y-ShotSimulation.Height*tuning.launchInset) <= 42)
+                else if(point.x >= 0 && point.x <= ShotSimulation.Width && Mathf.Abs(point.y-ShotSimulation.Height*tuning.launchInset) <= MasterConstants.GetFloat("PrototypeBattle.launchLineTouchHalfHeight",42))
                 { Simulation.SetLaunchX(point.x); Refresh(); }
             }
             if(dragging) View.SetAim(Simulation.Position,point-Simulation.Position);

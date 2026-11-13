@@ -7,12 +7,29 @@ namespace Ohajiki
     [Serializable]
     public sealed class GachaEntry
     {
+        public string masterId;
         public int spiritIndex;
         [Min(0)] public int weight = 1;
+        [Min(1)] public int quantity = 1;
+    }
+    [Serializable]
+    public sealed class GachaPlayOption
+    {
+        public string id;
+        [Min(1)] public int order = 1;
+        [Min(0)] public int cost;
+        [Min(1)] public int drawCount = 1;
+        public bool paidOnly;
+        [Tooltip("0は無制限。回数はプレイ確定時のみ消費")]
+        [Min(0)] public int purchaseLimit;
+        [Tooltip("0=なし、1=日毎、2=週毎（月曜開始）、3=月毎、4=年毎")]
+        public int resetPeriod;
     }
     [Serializable]
     public sealed class GachaBanner
     {
+        public string masterId;
+        public Sprite bannerTexture;
         public string title = "スピリターの集い";
         [TextArea] public string description = "スピリターたちが集まる召喚。";
         public int featuredIndex;
@@ -22,8 +39,11 @@ namespace Ohajiki
         public GachaKind kind;
         [Tooltip("★1〜★5の順。未設定の場合のみ従来のキャラ重み抽選")]
         public int[] rarityWeights;
-        [Tooltip("日本時間 yyyy-MM-dd。空欄は試作開放。終了日は含まない")]
+        [Tooltip("ゲーム暦の yyyy-MM-dd または yyyy-MM-ddTHH:mm:ss。空欄は期間制限なし。終了時刻は含まない")]
         public string availableFrom,availableUntil;
+        [Tooltip("未設定の場合のみ従来の共通価格を使用")]
+        public GachaPlayOption[] plays;
+        public bool IsOpen(DateTimeOffset now) => GachaRules.IsOpen(this,now);
     }
 
     [CreateAssetMenu(menuName = "Ohajiki/Home Config")]
@@ -85,7 +105,7 @@ namespace Ohajiki
                 long weight=0;
                 foreach (var entry in banner.pool)
                 {
-                    if(entry==null || entry.spiritIndex<0 || entry.spiritIndex>=catalog.Length || entry.weight<0)
+                    if(entry==null || entry.spiritIndex<0 || entry.spiritIndex>=catalog.Length || entry.weight<0 || entry.quantity<1)
                     { error="抽選候補の設定が不正です";return false; }
                     weight+=entry.weight;
                 }

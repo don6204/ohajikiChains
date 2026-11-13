@@ -1,17 +1,19 @@
 param(
-    [ValidateSet('all','presentation','board','spec','feedback','title','hub','shop','gacha')]
-    [string]$Mode = 'spec',
-    [int]$TimeoutSeconds = 900
+    [ValidateSet('all','presentation','master','board','spec','feedback','title','hub','shop','gacha')]
+    [string]$Mode = 'master',
+    [int]$TimeoutSeconds = 900,
+    [string]$ReviewDirectory
 )
 $ErrorActionPreference = 'Stop'
 $projectRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$buildRoot = Join-Path $projectRoot 'Build\20261111_03'
+$buildRoot = Join-Path $projectRoot 'Build\20261113_MasterData'
 $playerPath = Join-Path $buildRoot 'OhajikiChains.exe'
-$reviewRoot = [System.IO.Path]::GetFullPath((Join-Path $projectRoot '..\Review\20261111_03'))
+$reviewRoot = [System.IO.Path]::GetFullPath((Join-Path $projectRoot '..\Review\20261113_masterdata'))
+if ($ReviewDirectory) { $reviewRoot = [System.IO.Path]::GetFullPath($ReviewDirectory) }
 New-Item -ItemType Directory -Path $reviewRoot -Force | Out-Null
 if (-not (Test-Path -LiteralPath $playerPath -PathType Leaf)) { throw "Build missing: $playerPath" }
-$modes = if ($Mode -eq 'all') { @('board','spec','feedback','title','hub','shop','gacha') }
-    elseif ($Mode -eq 'presentation') { @('board','feedback','title','hub') } else { @($Mode) }
+$modes = if ($Mode -eq 'all') { @('master','board','spec','feedback','title','hub','shop','gacha') }
+    elseif ($Mode -eq 'presentation') { @('master','board','feedback','title','hub') } else { @($Mode) }
 foreach ($smokeMode in $modes) {
 $logPath = Join-Path $reviewRoot ($smokeMode + '-smoke.log')
 $arguments = '--' + $smokeMode + '-smoke-test -logFile "' + $logPath + '" -force-d3d11 -screen-width 540 -screen-height 960 -screen-fullscreen 0'

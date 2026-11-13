@@ -4,7 +4,13 @@ namespace Ohajiki
     // Session-only until save and account specifications are supplied.
     public sealed class PlayerProgress
     {
-        public int Rank { get; private set; } = 1;
+        // PrototypeBattle owns one of these as a field initializer; defer resource access until use.
+        int rank;
+        public int Rank
+        {
+            get {if(rank==0)rank=MasterConstants.GetInt("PlayerProgress.initialRank",1);return rank;}
+            private set {rank=value;}
+        }
         public long TotalExperience { get; private set; }
         public long RankExperience { get; private set; }
         public long Coins { get; private set; }

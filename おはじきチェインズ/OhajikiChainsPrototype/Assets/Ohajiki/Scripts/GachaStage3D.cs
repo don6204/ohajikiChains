@@ -26,7 +26,7 @@ namespace Ohajiki
             world=new GameObject("Summon 3D set");world.transform.position=Origin;
             movieCamera=new GameObject("Summon movie camera",typeof(Camera)).GetComponent<Camera>();movieCamera.transform.SetParent(world.transform,false);
             movieCamera.targetTexture=target;movieCamera.cullingMask=1<<31;movieCamera.clearFlags=CameraClearFlags.SolidColor;
-            movieCamera.backgroundColor=new Color(.33f,.76f,.93f);movieCamera.nearClipPlane=.1f;movieCamera.farClipPlane=80;movieCamera.fieldOfView=44;
+            movieCamera.backgroundColor=new Color(.33f,.76f,.93f);movieCamera.nearClipPlane=.1f;movieCamera.farClipPlane=80;movieCamera.fieldOfView=MasterConstants.GetFloat("GachaStage3D.cameraFieldOfView",44);
             movieCamera.allowHDR=false;movieCamera.allowMSAA=false;
             Material stone=Material(new Color(.88f,.70f,.39f)),lightStone=Material(new Color(1,.9f,.65f)),gold=Material(new Color(1,.7f,.11f),.14f),teal=Material(new Color(.05f,.7f,.75f),.3f),grass=Material(new Color(.25f,.65f,.26f));
             Material floor=Material(new Color(1,.98f,.87f));floor.mainTexture=Resources.Load<Sprite>("UI/SandstoneBoard").texture;
@@ -65,7 +65,7 @@ namespace Ohajiki
             beam=Piece(PrimitiveType.Cylinder,"Release pillar",new Vector3(0,3,0),new Vector3(.25f,3,.25f),Material(new Color(1,.93f,.52f),1));
             beam.gameObject.SetActive(false);
             Material starlight=Material(new Color(1,.9f,.3f),.6f);
-            for(int i=0;i<36;i++)stars.Add(GemPiece("Orbit mote",Vector3.zero,new Vector3(.065f,.13f,.065f),starlight));
+            for(int i=0;i<MasterConstants.GetInt("GachaStage3D.moteCount",36);i++)stars.Add(GemPiece("Orbit mote",Vector3.zero,new Vector3(.065f,.13f,.065f),starlight));
             Film(0,0,0);
         }
         Material Material(Color color,float glow=0)
@@ -110,7 +110,8 @@ namespace Ohajiki
         {
             Color color=HubWidgets.Elements[(int)spirit.element];orbMaterial.SetColor("_BaseColor",Color.Lerp(color,Color.white,.25f));
             var sprite=spirit.portrait;
-            portraitMaterial.mainTexture=sprite!=null?sprite.texture:Texture2D.whiteTexture;
+            portraitMaterial.mainTexture=sprite!=null?sprite.texture:null;
+            portrait.gameObject.SetActive(sprite!=null);
             if(sprite!=null)
             {
                 Rect r=sprite.textureRect;portraitMaterial.mainTextureScale=new Vector2(r.width/sprite.texture.width,r.height/sprite.texture.height);
@@ -131,8 +132,10 @@ namespace Ohajiki
             if(stage==1 && p>.72f)y+=Mathf.Sin((p-.72f)/.28f*Mathf.PI)*.45f;
             orb.localPosition=new Vector3(0,y,0);orb.localScale=Vector3.one*1.35f*(stage==2?1+p*1.7f:1);
             orb.localRotation=Quaternion.Euler(clock*30,clock*95,0);
-            if(stage==2)movieCamera.transform.localPosition+=new Vector3(Mathf.Sin(p*51),Mathf.Cos(p*43),0)*.07f*(1-p);
-            movieCamera.transform.LookAt(Origin+look);movieCamera.fieldOfView=stage==2?Mathf.Lerp(44,36,p):44;
+            if(stage==2)movieCamera.transform.localPosition+=new Vector3(Mathf.Sin(p*51),Mathf.Cos(p*43),0)*MasterConstants.GetFloat("GachaStage3D.releaseCameraShake",.07f)*(1-p);
+            movieCamera.transform.LookAt(Origin+look);
+            float normalField=MasterConstants.GetFloat("GachaStage3D.cameraFieldOfView",44);
+            movieCamera.fieldOfView=stage==2?Mathf.Lerp(normalField,MasterConstants.GetFloat("GachaStage3D.releaseFieldOfView",36),p):normalField;
             Vector3 toward=(movieCamera.transform.position-orb.position).normalized;
             portrait.position=orb.position+toward*.69f;portrait.rotation=Quaternion.LookRotation(-toward);
             portrait.localScale=Vector3.one*(stage==2?1.1f+p:1.1f);

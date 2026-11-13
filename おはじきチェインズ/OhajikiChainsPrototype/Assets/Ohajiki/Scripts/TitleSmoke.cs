@@ -44,7 +44,7 @@ namespace Ohajiki
             yield return new WaitForSeconds(.8f);
             var session=app.Session;int energy=session.Energy;
             Require(app.Title!=null && app.Hub==null && app.Battle==null,"starts at title only");
-            Require(app.Title.DisplayVersion=="Ver. 1.005","updated version");
+            Require(app.Title.DisplayVersion=="Ver. 1.006","updated version");
             Require(TitleView.SocialUrl=="https://x.com/don_kng68","specified X destination");
             Capture("01-title");yield return null;
             Screen.SetResolution(480,800,FullScreenMode.Windowed);yield return new WaitForSeconds(.4f);

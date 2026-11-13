@@ -13,8 +13,8 @@ namespace Ohajiki
         public void OnPointerUp(PointerEventData e)=>pressed=false;
         void Update()
         {
-            float scale=button!=null&&button.IsInteractable()?(pressed?.96f:over?1.025f:1):1;
-            transform.localScale=Vector3.Lerp(transform.localScale,Vector3.one*scale,1-Mathf.Exp(-20*Time.unscaledDeltaTime));
+            float scale=button!=null&&button.IsInteractable()?(pressed?MasterConstants.GetFloat("UiButtonMotion.pressedScale",.96f):over?MasterConstants.GetFloat("UiButtonMotion.hoverScale",1.025f):1):1;
+            transform.localScale=Vector3.Lerp(transform.localScale,Vector3.one*scale,1-Mathf.Exp(-MasterConstants.GetFloat("UiButtonMotion.scaleFollowRate",20)*Time.unscaledDeltaTime));
         }
         void OnDisable(){over=pressed=false;transform.localScale=Vector3.one;}
     }

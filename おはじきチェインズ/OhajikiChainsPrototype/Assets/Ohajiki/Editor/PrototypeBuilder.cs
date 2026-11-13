@@ -75,7 +75,7 @@ public static class PrototypeBuilder
         EditorSceneManager.SaveScene(scene, scenePath);
         EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(scenePath, true) };
         PlayerSettings.productName = "Ohajiki Chains Prototype";
-        PlayerSettings.bundleVersion = "1.005";
+        PlayerSettings.bundleVersion = "1.006";
         PlayerSettings.companyName = "OhajikiPrototype";
         PlayerSettings.defaultScreenWidth = 540; PlayerSettings.defaultScreenHeight = 960;
         PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
@@ -267,7 +267,12 @@ public static class PrototypeBuilder
         PlayerSettings.SetGraphicsAPIs(BuildTarget.StandaloneWindows64,
             new[] { UnityEngine.Rendering.GraphicsDeviceType.Direct3D11 });
         string dataInputStatus=DataInputImporter.PrepareBuildData();
-        const string output="Build/20261111_03";
+        var imported=AssetDatabase.LoadAssetAtPath<MasterGameData>(MasterDataImporter.OutputPath);
+        var buildTuning=imported!=null?imported.battle:AssetDatabase.LoadAssetAtPath<BattleTuning>(Root+"BattleTuning.asset");
+        string chargePercentages=string.Join(", ",buildTuning.specialChargeProbabilities.Select(p=>
+            (p*100).ToString("0.##",System.Globalization.CultureInfo.InvariantCulture)+"%"));
+        string normalPercentage=((1-buildTuning.specialChargeProbabilities.Sum())*100).ToString("0.##",System.Globalization.CultureInfo.InvariantCulture);
+        const string output="Build/20261113_MasterData";
         Directory.CreateDirectory(output);
         var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
             scenes = new[] { Root + "Scenes/Prototype.unity" },
@@ -276,7 +281,7 @@ public static class PrototypeBuilder
         });
         if (report.summary.result != BuildResult.Succeeded) throw new System.Exception("Build failed: " + report.summary.result);
         File.Copy("遊び方.txt",output+"/遊び方.txt",true);
-        File.Copy("Docs/20261111_01_仕様対応とデータ入力.txt",output+"/仕様対応とデータ入力.txt",true);
+        File.Copy("Docs/20261113_MasterData取込.txt",output+"/仕様対応とデータ入力.txt",true);
         Directory.CreateDirectory(output+"/Docs");
         File.Copy("Docs/20261111_01_仕様対応とデータ入力.txt",output+"/Docs/20261111_01_仕様対応とデータ入力.txt",true);
         if(File.Exists("Docs/20261111_01_検証結果.txt"))
@@ -285,9 +290,10 @@ public static class PrototypeBuilder
             File.Copy("Docs/20261111_チャージボール変更と検証.txt",output+"/Docs/20261111_チャージボール変更と検証.txt",true);
         File.Copy("Docs/20261111_03_変更と検証.txt",output+"/Docs/20261111_03_変更と検証.txt",true);
         File.Copy("Docs/20261111_03_ショット領域調整.txt",output+"/Docs/20261111_03_ショット領域調整.txt",true);
-        File.WriteAllText(output+"/build-info.txt","Ohajiki Chains 1.005 / 20261111_03\nUnity "+Application.unityVersion+
+        File.Copy("Docs/20261113_MasterData取込.txt",output+"/Docs/20261113_MasterData取込.txt",true);
+        File.WriteAllText(output+"/build-info.txt","Ohajiki Chains 1.006 / 20261113_MasterData\nUnity "+Application.unityVersion+
             "\nWindows x64 / Mono / D3D11\nEvent 3 / Showdown 3 x 3 / Challenge 5\nData input: "+dataInputStatus+
-            "\nCharge probabilities: 5%, 5%, 5%, 5%, 5%, 10% (normal 65%); warp to opponent launch position."+
+            "\nCharge probabilities: "+chargePercentages+" (normal "+normalPercentage+"%); warp to opponent launch position."+
             "\n8x8 board; no screen/digit shake; gold all-clear scroll 1.5 seconds; refill after 5 moving seconds."+
             "\nCharge diameter 44; vertical centers 22%-78%; rims clear both launch zones."+
             "\nBuilt UTC: "+System.DateTime.UtcNow.ToString("O"));

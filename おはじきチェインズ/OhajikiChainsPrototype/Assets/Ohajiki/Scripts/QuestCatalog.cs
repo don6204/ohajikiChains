@@ -9,10 +9,22 @@ namespace Ohajiki
     public enum QuestDifficulty { Standard, Easy, Normal, Hard }
 
     [Serializable]
+    public sealed class QuestRewardEntry
+    {
+        public string id;
+        public int spiritIndex=-1;
+        public ShopRewardKind itemKind;
+        [Range(0,1)] public float probability=1;
+        [Min(1)] public int min=1,max=1;
+    }
+
+    [Serializable]
     public sealed class QuestDefinition
     {
         public string id, groupId, title;
         [TextArea] public string description;
+        public Sprite banner,enemyPortrait;
+        public bool useEnemyPortrait;
         public QuestCategory category;
         public QuestDifficulty difficulty;
         [Min(1)] public int order = 1;
@@ -23,6 +35,7 @@ namespace Ohajiki
         [Min(0)] public int energyCost = 1;
         [Header("仮の敵編成 / 空欄なら共通の敵から属性に合わせて編成")]
         public SpiritDefinition[] enemyDeck;
+        public bool preserveEnemyLevels;
         public Element enemyElement;
         [Range(1,60)] public int enemyLevel = 1;
         [Min(.01f)] public float hpMultiplier = 1, attackMultiplier = 1, speedMultiplier = 1;
@@ -36,6 +49,9 @@ namespace Ohajiki
         public bool firstClearSpirit;
         [Header("初回クリアのみ")]
         [Min(0)] public int firstClearGems;
+        // Explicit flag survives Unity's null-array-to-empty serialization.
+        public bool useMasterRewards;
+        public QuestRewardEntry[] masterRewards;
         public string DifficultyLabel => difficulty == QuestDifficulty.Easy ? "易" :
             difficulty == QuestDifficulty.Normal ? "普通" : difficulty == QuestDifficulty.Hard ? "難" : "";
         public string DisplayTitle => title + (difficulty == QuestDifficulty.Standard ? "" : " / " + DifficultyLabel);
@@ -70,11 +86,28 @@ namespace Ohajiki
                     q.firstClearGems<0 || (long)q.gems+q.firstClearGems>int.MaxValue || q.shiningStones<0 || q.eventPoints<0 ||
                     q.materialCount<0 || q.materialType<0 || q.materialType>3 || q.rewardSpiritIndex < -1 || q.rewardSpiritIndex>=spiritCount ||
                     float.IsNaN(q.spiritDropChance) || q.spiritDropChance<0 || q.spiritDropChance>1 ||
-                    (q.rewardSpiritIndex<0 && (q.spiritDropChance>0 || q.firstClearSpirit)))
+                    (q.rewardSpiritIndex<0 && (q.spiritDropChance>0 || (q.firstClearSpirit && !q.useMasterRewards))))
                 {error=q.id+": 数値・属性・報酬の設定が不正です";return false;}
                 if(q.enemyDeck!=null && q.enemyDeck.Length>0 &&
                     (q.enemyDeck.Length!=SpiritDeck.Size || q.enemyDeck.Any(s=>s==null || !s.IsValid)))
                 {error=q.id+": 敵デッキには有効な12体が必要です";return false;}
+                if(q.preserveEnemyLevels && (q.enemyDeck==null || q.enemyDeck.Length!=SpiritDeck.Size))
+                {error=q.id+": 個別レベルには敵デッキが必要です";return false;}
+                if(q.useMasterRewards)
+                {
+                    if(q.masterRewards==null){error=q.id+": マスター報酬配列が未設定です";return false;}
+                    var rewardIds=new HashSet<string>(StringComparer.Ordinal);
+                    foreach(var reward in q.masterRewards)
+                        if(reward==null || string.IsNullOrWhiteSpace(reward.id) || !rewardIds.Add(reward.id) ||
+                            reward.spiritIndex < -1 || reward.spiritIndex>=spiritCount ||
+                            !Enum.IsDefined(typeof(ShopRewardKind),reward.itemKind) ||
+                            float.IsNaN(reward.probability) || float.IsInfinity(reward.probability) ||
+                            reward.probability<0 || reward.probability>1 || reward.min<1 || reward.max<reward.min)
+                        {error=q.id+": マスター報酬のID・参照・数量・確率が不正です";return false;}
+                    if(q.firstClearSpirit && !q.masterRewards.Any(r=>r.spiritIndex>=0 &&
+                        (q.rewardSpiritIndex<0 || r.spiritIndex==q.rewardSpiritIndex)))
+                    {error=q.id+": 初回確定スピリターの報酬行がありません";return false;}
+                }
                 if(!ValidDate(q.availableFrom) || !ValidDate(q.availableUntil) ||
                     (!string.IsNullOrEmpty(q.availableFrom) && !string.IsNullOrEmpty(q.availableUntil) &&
                      string.CompareOrdinal(q.availableFrom,q.availableUntil)>=0))

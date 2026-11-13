@@ -26,7 +26,7 @@ namespace Ohajiki
             revealLayer=ui.Rect(root,"Summon reveal",0,0,720,1280);
             revealGroup=revealLayer.gameObject.AddComponent<CanvasGroup>();
             halo=skin.Image(root,"Release radiance",skin.Glow,360,640,900,900,Color.clear,true);
-            rays=new UnityEngine.UI.Image[24];
+            rays=new UnityEngine.UI.Image[MasterConstants.GetInt("GachaSequence.releaseRayCount",24)];
             for(int i=0;i<rays.Length;i++)rays[i]=skin.Image(root,"Release spark",i%2==0?skin.Star:skin.Shard,360,640,20,80,Color.clear,true);
             flash=skin.Image(root,"Warm release flash",null,0,0,720,1280,Color.clear);
             stageTitle=ui.Label(root,"精霊の遺跡",36,1060,648,88,43,Color.white,true);skin.Text(stageTitle,true);
@@ -60,10 +60,10 @@ namespace Ohajiki
             skin.Halo(revealLayer,new Vector2(360,734),580,spirit.rarity>=4?SpiritUiSkin.Gold:HubWidgets.Elements[(int)spirit.element]);
             ui.Panel(revealLayer,"Result name plate",40,257,640,237,new Color(1,.97f,.83f,.96f));
             var portrait=skin.Image(revealLayer,"Full spirit reveal",spirit.portrait,360,758,485,565,Color.white,true);
-            portrait.preserveAspect=true;art=portrait.rectTransform;
+            portrait.preserveAspect=true;portrait.enabled=spirit.portrait!=null;art=portrait.rectTransform;
             var newText=ui.Label(revealLayer,Receipt.NewSpirits[RevealIndex]?"NEW SPIRIT!":"SPIRIT GET!",40,1080,640,84,44,SpiritUiSkin.Gold,true);skin.Text(newText,true);
             rarity=ui.Label(revealLayer,new string('★',spirit.rarity),42,1005,636,72,42,SpiritUiSkin.Gold,true);skin.Text(rarity,true);
-            ui.Label(revealLayer,spirit.displayName,62,386,596,90,40,SpiritUiSkin.Ink,true);
+            ui.Label(revealLayer,spirit.displayName+(Receipt.Quantities[RevealIndex]>1?" ×"+Receipt.Quantities[RevealIndex]:""),62,386,596,90,40,SpiritUiSkin.Ink,true);
             ui.Label(revealLayer,"を手に入れた",62,332,596,54,25,SpiritUiSkin.Muted,true);
             ui.Label(revealLayer,$"{new[]{"火","水","木"}[(int)spirit.element]}属性　/　★{spirit.rarity}"+
                 (Receipt.SpiritIds.Count==10?$"　 {RevealIndex+1} / 10":""),62,275,596,50,24,SpiritUiSkin.Ink,true);
@@ -84,7 +84,7 @@ namespace Ohajiki
                 var cell=ui.Panel(revealLayer,"Result "+i,x,y,122,300,Color.Lerp(SpiritUiSkin.Paper,HubWidgets.Elements[(int)spirit.element],.10f));
                 var ball=ui.Rect(cell,"Spirit ball",9,149,104,104).gameObject.AddComponent<SpiritBallVisual>();ball.Initialize(skin);ball.Show(spirit);
                 ui.Label(cell,new string('★',spirit.rarity),2,109,118,40,18,SpiritUiSkin.Ink,true);
-                ui.Label(cell,spirit.displayName,8,31,106,81,19,SpiritUiSkin.Ink,true);
+                ui.Label(cell,spirit.displayName+(Receipt.Quantities[i]>1?" ×"+Receipt.Quantities[i]:""),8,31,106,81,19,SpiritUiSkin.Ink,true);
                 if(Receipt.NewSpirits[i])ui.Label(cell,"NEW",8,254,106,35,19,new Color(.84f,.25f,.045f),true);
             }
             ui.Label(revealLayer,$"宝石 −{Receipt.Cost}　おまけ ＋{Receipt.Bonus}\n現在の宝石 {session.Gems}個",45,222,630,95,24,SpiritUiSkin.Ink,true);
@@ -98,7 +98,7 @@ namespace Ohajiki
         }
         public void Next()
         {
-            if(complete || Phase!=SummonPhase.Reveal || age<.45f)return;
+            if(complete || Phase!=SummonPhase.Reveal || age<MasterConstants.GetFloat("GachaSequence.revealNextDelay",.45f))return;
             if(Receipt.SpiritIds.Count==1){Finish();return;}
             if(RevealIndex+1==Receipt.SpiritIds.Count){Begin(SummonPhase.Summary);return;}
             RevealIndex++;Begin(SummonPhase.Drop);
@@ -108,7 +108,8 @@ namespace Ohajiki
         {
             if(Receipt==null || complete)return;
             float dt=Mathf.Min(Time.unscaledDeltaTime,.05f);age+=dt;clock+=dt;
-            float duration=Phase==SummonPhase.Approach?3.5f:Phase==SummonPhase.Drop?1.25f:.7f;
+            float duration=Phase==SummonPhase.Approach?MasterConstants.GetFloat("GachaSequence.approachSeconds",3.5f):
+                Phase==SummonPhase.Drop?MasterConstants.GetFloat("GachaSequence.dropSeconds",1.25f):MasterConstants.GetFloat("GachaSequence.releaseSeconds",.7f);
             if(Phase==SummonPhase.Approach || Phase==SummonPhase.Drop || Phase==SummonPhase.Release)
             {
                 Stage.Film((int)Phase,Mathf.Clamp01(age/duration),clock);
@@ -116,14 +117,15 @@ namespace Ohajiki
             }
             if(Phase==SummonPhase.Reveal)
             {
-                revealGroup.alpha=Mathf.Clamp01(age/.22f);next.interactable=age>=.45f;
-                art.localScale=Vector3.one*(1+.23f*Mathf.Exp(-age*6));
+                revealGroup.alpha=Mathf.Clamp01(age/MasterConstants.GetFloat("GachaSequence.revealFadeSeconds",.22f));next.interactable=age>=MasterConstants.GetFloat("GachaSequence.revealNextDelay",.45f);
+                art.localScale=Vector3.one*(1+MasterConstants.GetFloat("GachaSequence.revealScalePunch",.23f)*Mathf.Exp(-age*MasterConstants.GetFloat("GachaSequence.revealScaleDecay",6)));
                 art.anchoredPosition=new Vector2(360,758+Mathf.Sin(clock*1.5f)*5);
-                rarity.maxVisibleCharacters=Mathf.Clamp(1+Mathf.FloorToInt(age/.14f),1,Current.rarity);
+                rarity.maxVisibleCharacters=Mathf.Clamp(1+Mathf.FloorToInt(age/MasterConstants.GetFloat("GachaSequence.rarityCharacterInterval",.14f)),1,Current.rarity);
             }
-            float burst=Phase==SummonPhase.Release?Mathf.Sin(Mathf.Clamp01(age/.7f)*Mathf.PI):Phase==SummonPhase.Reveal?Mathf.Max(0,1-age/.8f):0;
-            flash.color=new Color(1,.96f,.7f,Phase==SummonPhase.Release?burst*.65f:0);
-            halo.color=new Color(1,.86f,.3f,burst*.75f);
+            float burst=Phase==SummonPhase.Release?Mathf.Sin(Mathf.Clamp01(age/MasterConstants.GetFloat("GachaSequence.releaseSeconds",.7f))*Mathf.PI):
+                Phase==SummonPhase.Reveal?Mathf.Max(0,1-age/MasterConstants.GetFloat("GachaSequence.revealHaloFadeSeconds",.8f)):0;
+            flash.color=new Color(1,.96f,.7f,Phase==SummonPhase.Release?burst*MasterConstants.GetFloat("GachaSequence.releaseFlashAlpha",.65f):0);
+            halo.color=new Color(1,.86f,.3f,burst*MasterConstants.GetFloat("GachaSequence.haloMaxAlpha",.75f));
             for(int i=0;i<rays.Length;i++)
             {
                 float a=i*Mathf.PI*2/rays.Length+clock*.12f;

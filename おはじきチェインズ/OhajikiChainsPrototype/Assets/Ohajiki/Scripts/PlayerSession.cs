@@ -26,14 +26,14 @@ namespace Ohajiki
             if (!config.Validate(out string error)) throw new ArgumentException(error);
             Config = config; Energy = config.maximumEnergy; Gems = config.startingGems;
             this.clock=clock??(()=>DateTimeOffset.UtcNow);
-            levels = config.catalog.Select(s => Mathf.Min(s.level, config.maxSpiritLevel)).ToArray();
+            levels = config.catalog.Select(s => Mathf.Min(s.level,Mathf.Min(s.maxLevel,config.maxSpiritLevel))).ToArray();
             spiritExperience = new long[levels.Length];
-            copies=Enumerable.Range(0,levels.Length).Select(i=>i<config.startingOwnedCount?1:0).ToArray();
+            copies=Enumerable.Range(0,levels.Length).Select(i=>i<config.startingOwnedCount?MasterConstants.GetInt("PlayerSession.initialOwnedCopies",1):0).ToArray();
             random=new System.Random(tuning.seed+100);
             for (int i = 0; i < materials.Length; i++) materials[i] = config.startingMaterials;
             decks = new int[config.deckSlots][];
             for (int slot = 0; slot < decks.Length; slot++)
-                decks[slot] = Enumerable.Range(0, SpiritDeck.Size).Select(i => (i + slot * 3) % config.startingOwnedCount).ToArray();
+                decks[slot] = Enumerable.Range(0, SpiritDeck.Size).Select(i => (i + slot * MasterConstants.GetInt("PlayerSession.initialDeckOffset",3)) % config.startingOwnedCount).ToArray();
             Progress.Award(0, config.startingCoins, tuning);
             if(config.shop!=null)
             {
@@ -43,8 +43,14 @@ namespace Ohajiki
         }
         public int Level(int index) => levels[index];
         public long SpiritExperience(int index) => spiritExperience[index];
-        public long ExperienceToNextLevel(int index) => levels[index] >= Config.maxSpiritLevel ? 0 :
-            (long)Config.spiritExperienceBase + (long)Config.spiritExperiencePerLevel * (levels[index] - 1);
+        public int MaximumSpiritLevel(int index) => Mathf.Min(Config.maxSpiritLevel,Config.catalog[index].maxLevel);
+        public long ExperienceToNextLevel(int index)
+        {
+            if(levels[index]>=MaximumSpiritLevel(index))return 0;
+            var spirit=Config.catalog[index];bool specific=spirit.experienceBase>0;
+            return (long)(specific?spirit.experienceBase:Config.spiritExperienceBase)+
+                (long)(specific?spirit.experiencePerLevel:Config.spiritExperiencePerLevel)*(levels[index]-1);
+        }
         public void AwardBattleExperience(IReadOnlyList<int> participants, int experience)
         {
             if (participants == null) throw new ArgumentNullException(nameof(participants));
@@ -56,14 +62,14 @@ namespace Ohajiki
             long award = (long)Math.Min(int.MaxValue, Math.Floor(experience * (double)Config.battleSpiritExperienceMultiplier));
             foreach (int id in unique)
             {
-                if (levels[id] >= Config.maxSpiritLevel) continue;
+                if (levels[id] >= MaximumSpiritLevel(id)) continue;
                 spiritExperience[id] += award;
-                while (levels[id] < Config.maxSpiritLevel && spiritExperience[id] >= ExperienceToNextLevel(id))
+                while (levels[id] < MaximumSpiritLevel(id) && spiritExperience[id] >= ExperienceToNextLevel(id))
                 {
                     spiritExperience[id] -= ExperienceToNextLevel(id);
                     levels[id]++;
                 }
-                if (levels[id] >= Config.maxSpiritLevel) spiritExperience[id] = 0;
+                if (levels[id] >= MaximumSpiritLevel(id)) spiritExperience[id] = 0;
             }
         }
         public int Copies(int index) => copies[index];
@@ -87,19 +93,24 @@ namespace Ohajiki
             if (sort == 2) return source.OrderByDescending(i => Config.catalog[i].rarity).ThenBy(i => Config.catalog[i].displayName).ToArray();
             return source.OrderBy(i => Config.catalog[i].displayName, StringComparer.Ordinal).ToArray();
         }
-        public long UpgradeCost(int id, int count) => (long)Config.upgradeCoinUnit * count * (2L * levels[id] + count - 1) / 2;
+        public int MaterialLevelGain => MasterConstants.GetInt("PlayerSession.materialLevelGain",1);
+        public long UpgradeCost(int id, int count)
+        {
+            long gain=(long)count*MaterialLevelGain;
+            return Config.upgradeCoinUnit*gain*(2L*levels[id]+gain-1)/2;
+        }
         public bool CanUpgrade(int id, int material, int count)
         {
             return id >= 0 && id < levels.Length && copies[id]>0 && material >= 0 && material < materials.Length && count > 0 &&
-                (material == 3 || material == (int)Config.catalog[id].element) && levels[id] + count <= Config.maxSpiritLevel &&
+                (material == 3 || material == (int)Config.catalog[id].element) && levels[id] + (long)count*MaterialLevelGain <= MaximumSpiritLevel(id) &&
                 materials[material] >= count && Progress.Coins >= UpgradeCost(id, count);
         }
         public bool Upgrade(int id, int material, int count)
         {
             if (!CanUpgrade(id, material, count)) return false;
             if (!Progress.TrySpendCoins(UpgradeCost(id, count))) return false;
-            materials[material] -= count; levels[id] += count;
-            if (levels[id] >= Config.maxSpiritLevel) spiritExperience[id] = 0;
+            materials[material] -= count; levels[id] += count*MaterialLevelGain;
+            if (levels[id] >= MaximumSpiritLevel(id)) spiritExperience[id] = 0;
             return true;
         }
         public bool TryEnterBattle()
@@ -108,7 +119,7 @@ namespace Ohajiki
             Energy -= Config.battleEnergyCost; return true;
         }
         public bool BannerOpen(int index) => index>=0 && index<Config.banners.Length &&
-            ShopCalendar.IsOpen(Config.banners[index].availableFrom,Config.banners[index].availableUntil,ShopCalendar.Today(clock()));
+            Config.banners[index].IsOpen(clock());
     }
 
     public sealed class BattleLoadout : IDisposable
@@ -132,7 +143,7 @@ namespace Ohajiki
                 if(sources.Length==0)sources=template.enemyDeck;
                 Tuning.enemyDeck=Enumerable.Range(0,SpiritDeck.Size).Select(i=>{
                     var spirit=UnityEngine.Object.Instantiate(sources[i%sources.Length]);
-                    spirit.level=quest.enemyLevel;
+                    if(!quest.preserveEnemyLevels)spirit.level=quest.enemyLevel;
                     // Bake scaled stats only into battle-owned copies; authored growth remains intact.
                     spirit.baseHp=Mathf.Max(1,Mathf.RoundToInt(spirit.Hp*quest.hpMultiplier));spirit.hpPerLevel=0;
                     spirit.baseAttack=Mathf.Max(0,Mathf.RoundToInt(spirit.Attack*quest.attackMultiplier));spirit.attackPerLevel=0;

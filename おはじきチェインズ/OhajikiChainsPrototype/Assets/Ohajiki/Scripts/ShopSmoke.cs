@@ -11,14 +11,31 @@ namespace Ohajiki
     {
         PrototypeApp app;
         string directory;
+        HubConfig calendarConfig;GachaBanner[] originalBanners,calendarBanners;
         public void Run(PrototypeApp target) {app=target;StartCoroutine(Guard(Flow()));}
+        void UseOpenCalendarFixture()
+        {
+            // Calendar correctness is covered separately; this smoke must reach the shop-to-gacha purchase flow.
+            calendarConfig=app.Session.Config;originalBanners=calendarConfig.banners;
+            calendarBanners=originalBanners.Select(b=>{
+                var copy=JsonUtility.FromJson<GachaBanner>(JsonUtility.ToJson(b));
+                copy.availableFrom=copy.availableUntil=null;return copy;
+            }).ToArray();
+            calendarConfig.banners=calendarBanners;
+        }
+        void RestoreCalendarFixture()
+        {
+            if(calendarConfig!=null&&ReferenceEquals(calendarConfig.banners,calendarBanners))calendarConfig.banners=originalBanners;
+            calendarConfig=null;originalBanners=calendarBanners=null;
+        }
+        void OnDisable()=>RestoreCalendarFixture();
         IEnumerator Guard(IEnumerator flow)
         {
             while(true)
             {
                 object next;
                 try {if(!flow.MoveNext())yield break;next=flow.Current;}
-                catch(Exception error) {Debug.LogError("SHOP SMOKE FAIL: "+error);Application.Quit(20);yield break;}
+                catch(Exception error) {RestoreCalendarFixture();Debug.LogError("SHOP SMOKE FAIL: "+error);Application.Quit(20);yield break;}
                 yield return next;
             }
         }
@@ -41,7 +58,11 @@ namespace Ohajiki
         {
             directory=Path.Combine(Application.dataPath,"..","SmokeShop");Directory.CreateDirectory(directory);
             yield return new WaitForSeconds(.8f);
+            // Initialize the hidden player's swap chain before collecting visual evidence.
+            Screen.SetResolution(480,800,FullScreenMode.Windowed);yield return new WaitForSeconds(.3f);
+            Screen.SetResolution(540,960,FullScreenMode.Windowed);yield return new WaitForSeconds(.3f);
             var session=app.Session;long coins=session.Progress.Coins;
+            UseOpenCalendarFixture();
             int gems=session.Gems,fire=session.MaterialCount(0),stones=session.ShiningStones;
             bool eventActive=session.Config.shop.eventActive;session.Config.shop.eventActive=false;
             Click("ショップ");yield return Capture("01-exchange");
@@ -73,6 +94,7 @@ namespace Ohajiki
             app.Hub.RequestGacha(1);Click("決定");Require(session.Gems==gems+39,"shared gems and first discount");
             app.Hub.GachaMovie.Skip();yield return new WaitForSeconds(.6f);app.Hub.GachaMovie.Next();yield return null;
             Click("ホーム");yield return Capture("11-home");
+            RestoreCalendarFixture();
             Debug.Log("SHOP SMOKE PASS: locked event, exchange/purchase confirm and cancel, gem/medal/stone balances, pack rewards/shared limit, monthly premium/daily bonus, paid banner rarity display and gem-cost summon, return home.");
             if(Array.IndexOf(Environment.GetCommandLineArgs(),"--stay-open")<0)Application.Quit(0);
         }

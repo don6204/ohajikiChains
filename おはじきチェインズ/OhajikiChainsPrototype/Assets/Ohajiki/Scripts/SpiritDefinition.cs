@@ -9,11 +9,16 @@ namespace Ohajiki
     [CreateAssetMenu(menuName = "Ohajiki/Spirit Definition")]
     public sealed class SpiritDefinition : ScriptableObject
     {
+        public string masterId;
         public string displayName;
+        [TextArea] public string description;
         public Sprite portrait;
         public Element element;
         [Range(1, 5)] public int rarity = 1;
         [Min(1)] public int level = 1;
+        [Range(1,60)] public int maxLevel = 60;
+        [Min(0)] public int experienceBase;
+        [Min(0)] public int experiencePerLevel;
         [Min(1)] public int baseHp = 100;
         [Min(0)] public int hpPerLevel = 10;
         [Min(0)] public int baseAttack = 220;
@@ -36,17 +41,18 @@ namespace Ohajiki
         public int Hp => baseHp + hpPerLevel * (level - 1);
         public int Attack => baseAttack + attackPerLevel * (level - 1);
         public float Speed => baseSpeed + speedPerLevel * (level - 1);
-        public float Power(int effectLevel) => skillPower[Mathf.Clamp(effectLevel - 1, 0, skillPower.Length - 1)];
+        public float Power(int effectLevel) => skill == Skill.Cleanse ? 0 : skillPower[Mathf.Clamp(effectLevel - 1, 0, skillPower.Length - 1)];
         public bool IsValid
         {
             get
             {
                 if (element < Element.Fire || element > Element.Wood || rarity < 1 || rarity > 5 ||
-                    level < 1 || level > 60 || baseHp <= 0 || baseSpeed <= 0 || float.IsNaN(baseSpeed) ||
+                    level < 1 || level > maxLevel || maxLevel < 1 || maxLevel > 60 || experienceBase < 0 || experiencePerLevel < 0 ||
+                    baseHp <= 0 || baseSpeed <= 0 || float.IsNaN(baseSpeed) ||
                     float.IsInfinity(baseSpeed) || skill < Skill.Attack || skill > Skill.SpeedDown ||
-                    skillPower == null || skillPower.Length == 0 || guardTurns < 1 || statusTurns < 1)
+                    (skill != Skill.Cleanse && (skillPower == null || skillPower.Length == 0)) || guardTurns < 1 || statusTurns < 1)
                     return false;
-                foreach (float power in skillPower)
+                foreach (float power in skillPower ?? System.Array.Empty<float>())
                     if (power < 0 || float.IsNaN(power) || float.IsInfinity(power)) return false;
                 if (actionSkill < ActionSkill.None || actionSkill > ActionSkill.Split) return false;
                 if (actionSkill == ActionSkill.Trap && (trapTargetElement < Element.Fire ||

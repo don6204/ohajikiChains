@@ -1,6 +1,6 @@
 {
   "name": "Ohajiki.Tests",
-  "references": ["Ohajiki.Runtime", "Ohajiki.Editor"],
+  "references": ["Ohajiki.Runtime", "Ohajiki.Editor", "Unity.TextMeshPro"],
   "includePlatforms": ["Editor"],
   "optionalUnityReferences": ["TestAssemblies"]
 }

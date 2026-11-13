@@ -8,8 +8,15 @@ namespace Ohajiki
     {
         public QuestDefinition Quest { get; }
         public IReadOnlyList<int> Participants { get; }
+        internal ShopReward[] PlannedMasterItems;
+        internal Dictionary<int,int> PlannedMasterSpirits;
         internal QuestRun(QuestDefinition quest,int[] participants)
-        { Quest=UnityEngine.JsonUtility.FromJson<QuestDefinition>(UnityEngine.JsonUtility.ToJson(quest));Participants=Array.AsReadOnly(participants); }
+        {
+            Quest=UnityEngine.JsonUtility.FromJson<QuestDefinition>(UnityEngine.JsonUtility.ToJson(quest));
+            // Unity can serialize a null array as empty; preserve the legacy/imported distinction.
+            if(quest.masterRewards==null)Quest.masterRewards=null;
+            Participants=Array.AsReadOnly(participants);
+        }
     }
     public sealed class QuestReceipt
     {
@@ -60,6 +67,7 @@ namespace Ohajiki
             var q=run.Quest;
             bool first=won && !IsCleared(q.id);
             if(!won){ActiveQuestRun=null;return new QuestReceipt{Summary="クリア報酬はありません。\n編成や属性を変えて再挑戦！"};}
+            if(q.useMasterRewards)return CompleteMasterQuest(run,first,tuning);
             var rewards=q.Rewards(first);
             if(!CanApplyShop(ShopCurrency.Medals,0,rewards,out string error))throw new InvalidOperationException(error);
             // Validate before the single commit. No UI action can grant the run again.
@@ -81,6 +89,61 @@ namespace Ohajiki
             if(spirit>=0)summary+="\nスピリター獲得："+Config.catalog[spirit].displayName;
             if(first)summary+="\n初回クリア！";
             return new QuestReceipt{Won=true,FirstClear=first,SpiritIndex=spirit,Summary=summary};
+        }
+        QuestReceipt CompleteMasterQuest(QuestRun run,bool first,BattleTuning tuning)
+        {
+            var q=run.Quest;
+            if(run.PlannedMasterItems==null)
+            {
+                var items=new List<ShopReward>();var spirits=new Dictionary<int,int>();
+                QuestRewardEntry guaranteed=first&&q.firstClearSpirit?q.masterRewards.FirstOrDefault(r=>r.spiritIndex>=0 &&
+                    (q.rewardSpiritIndex<0 || r.spiritIndex==q.rewardSpiritIndex)):null;
+                foreach(var reward in q.masterRewards)
+                {
+                    bool forced=ReferenceEquals(reward,guaranteed);
+                    if(!forced && (reward.probability<=0 || (reward.probability<1 && random.NextDouble()>=reward.probability)))continue;
+                    int count=forced?1:reward.min==reward.max?reward.min:
+                        reward.min+(int)(random.NextDouble()*((long)reward.max-reward.min+1));
+                    if(reward.spiritIndex>=0)
+                    {
+                        spirits.TryGetValue(reward.spiritIndex,out int prior);
+                        if((long)prior+count>int.MaxValue)throw new InvalidOperationException("スピリター報酬の数量上限です");
+                        spirits[reward.spiritIndex]=prior+count;
+                    }
+                    else items.Add(new ShopReward{kind=reward.itemKind,amount=count});
+                }
+                if(first && q.firstClearGems>0)items.Add(new ShopReward{kind=ShopRewardKind.Gems,amount=q.firstClearGems});
+                // Cache the draw before balance validation: a rejected claim cannot reroll its rewards.
+                run.PlannedMasterItems=items.ToArray();run.PlannedMasterSpirits=spirits;
+            }
+            if(!CanApplyShop(ShopCurrency.Medals,0,run.PlannedMasterItems,out string error))throw new InvalidOperationException(error);
+            foreach(var reward in run.PlannedMasterSpirits)
+                if((long)copies[reward.Key]+reward.Value>int.MaxValue)throw new InvalidOperationException("スピリター所持上限です");
+            ApplyShop(ShopCurrency.Medals,0,run.PlannedMasterItems,out _);
+            Progress.Award(q.experience,0,tuning);AwardBattleExperience(run.Participants,q.experience);
+            foreach(var reward in run.PlannedMasterSpirits)copies[reward.Key]+=reward.Value;
+            clearedQuests.Add(q.id);ActiveQuestRun=null;
+            string summary=$"{q.DisplayTitle}\nEXP +{q.experience}";
+            foreach(var group in run.PlannedMasterItems.GroupBy(r=>r.kind))
+                summary+=$"\n{QuestRewardName(group.Key)} +{group.Sum(r=>(long)r.amount):N0}";
+            foreach(var reward in run.PlannedMasterSpirits)
+                summary+=$"\n{Config.catalog[reward.Key].displayName} ×{reward.Value}";
+            if(first)summary+="\n初回クリア！";
+            return new QuestReceipt{Won=true,FirstClear=first,
+                SpiritIndex=run.PlannedMasterSpirits.Count==0?-1:run.PlannedMasterSpirits.First().Key,Summary=summary};
+        }
+        public static string QuestRewardName(ShopRewardKind kind)
+        {
+            string fallback;
+            switch(kind)
+            {
+                case ShopRewardKind.Medals:fallback="メダル";break;
+                case ShopRewardKind.Gems:fallback="宝石";break;
+                case ShopRewardKind.ShiningStones:fallback="輝く石";break;
+                case ShopRewardKind.EventPoints:fallback="イベントポイント";break;
+                default:fallback=new[]{"火","水","木","全"}[(int)kind-(int)ShopRewardKind.FirePower]+"パワー";break;
+            }
+            return MasterGameData.ItemName(kind,fallback);
         }
     }
 }

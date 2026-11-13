@@ -19,7 +19,7 @@ namespace Ohajiki
         void BuildBannerDetail()
         {
             var banner=session.Config.banners[selectedBanner];
-            Heading(banner.title,banner.kind==GachaKind.Paid?"有償枠：今回は共通の宝石で試作":"召喚の扉をひらこう");
+            Heading(banner.title,"召喚の扉をひらこう");
             skin.Halo(content,new Vector2(328,591),385,SpiritUiSkin.Gold);
             var portrait=ui.Rect(content,"Featured portrait",138,375,380,425);
             featuredArt=portrait.gameObject.AddComponent<UnityEngine.UI.Image>();featuredArt.raycastTarget=false;featuredArt.preserveAspect=true;
@@ -38,14 +38,16 @@ namespace Ohajiki
             ui.Button(content,$"10連　宝石 {session.GachaCost(selectedBanner,10)}個\nおまけ 宝石{session.Config.tenBonusGems}個",342,137,300,96,()=>RequestGacha(10),open,new Color(.96f,.68f,.18f)).name="Button_GachaTen";
             ui.Button(content,"戻る",14,49,190,66,()=>Navigate(HubPage.Gacha));
             ui.Button(content,"排出率・排出内容",224,49,418,66,ShowRates);
-            Message(open?$"所持宝石 {session.Gems}個 / 初回割引は全ガチャ共通1回":"開催期間外です");
+            Message(open?$"所持宝石 {session.Gems}個 / 初回割引は各ガチャで1回":"開催期間外です");
         }
         void ChangeFeatured(int delta)
         {
             int[] ids=FeaturedIds();featuredPage=(featuredPage+delta+ids.Length)%ids.Length;
             FeaturedSpiritId=ids[featuredPage];var spirit=session.Config.catalog[FeaturedSpiritId];
-            featuredArt.sprite=spirit.portrait;featuredName.text=$"{new string('★',spirit.rarity)}  {spirit.displayName}";
-            featuredPosition.text=$"PICK UP  {featuredPage+1} / {ids.Length}";
+            featuredArt.sprite=spirit.portrait;featuredArt.enabled=spirit.portrait!=null;featuredName.text=$"{new string('★',spirit.rarity)}  {spirit.displayName}";
+            var banner=session.Config.banners[selectedBanner];
+            bool hasPickup=string.IsNullOrEmpty(banner.masterId)||(banner.featuredIndices!=null&&banner.featuredIndices.Length>0);
+            featuredPosition.text=hasPickup?$"PICK UP  {featuredPage+1} / {ids.Length}":"登場スピリター";
             featuredTimer=0;featuredFade=0;
         }
         void UpdateFeatured()

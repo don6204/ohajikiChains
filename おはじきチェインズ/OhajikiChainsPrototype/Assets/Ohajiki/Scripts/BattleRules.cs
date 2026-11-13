@@ -12,7 +12,7 @@ namespace Ohajiki
         }
         public static float Affinity(Element attack, Element target, BattleTuning tuning)
         {
-            if (attack == target || attack == Element.Neutral || target == Element.Neutral) return 1;
+            if (attack == target || attack == Element.Neutral || target == Element.Neutral) return MasterConstants.GetFloat("BattleRules.neutralAffinity",1);
             return (attack == Element.Fire && target == Element.Wood) || (attack == Element.Wood && target == Element.Water) ||
                 (attack == Element.Water && target == Element.Fire) ? tuning.advantage : tuning.disadvantage;
         }
@@ -69,9 +69,9 @@ namespace Ohajiki
         public void SetSpeedBoost(float multiplier, int turns)
         { speedBoost = Mathf.Max(1, multiplier); SpeedBoostTurns = Mathf.Max(1, turns); }
         public void SetAttackReduction(float multiplier, int turns)
-        { attackReduction = Mathf.Clamp(multiplier, .05f, 1); AttackReductionTurns = Mathf.Max(1, turns); }
+        { attackReduction = Mathf.Clamp(multiplier, MasterConstants.GetFloat("Combatant.minimumReductionMultiplier",.05f), 1); AttackReductionTurns = Mathf.Max(1, turns); }
         public void SetSpeedReduction(float multiplier, int turns)
-        { speedReduction = Mathf.Clamp(multiplier, .05f, 1); SpeedReductionTurns = Mathf.Max(1, turns); }
+        { speedReduction = Mathf.Clamp(multiplier, MasterConstants.GetFloat("Combatant.minimumReductionMultiplier",.05f), 1); SpeedReductionTurns = Mathf.Max(1, turns); }
         public void Cleanse()
         {
             attackReduction = speedReduction = 1;

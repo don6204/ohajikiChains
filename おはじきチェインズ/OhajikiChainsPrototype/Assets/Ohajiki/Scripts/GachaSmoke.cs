@@ -10,14 +10,31 @@ namespace Ohajiki
     public sealed class GachaSmoke : MonoBehaviour
     {
         PrototypeApp app;string directory;bool recording;int frame;float nextFrame;
+        HubConfig calendarConfig;GachaBanner[] originalBanners,calendarBanners;
         public void Run(PrototypeApp owner){app=owner;StartCoroutine(Guard(Flow()));}
+        void UseOpenCalendarFixture()
+        {
+            // This presentation smoke checks animation and purchase flow independently of authored release dates.
+            calendarConfig=app.Session.Config;originalBanners=calendarConfig.banners;
+            calendarBanners=originalBanners.Select(b=>{
+                var copy=JsonUtility.FromJson<GachaBanner>(JsonUtility.ToJson(b));
+                copy.availableFrom=copy.availableUntil=null;return copy;
+            }).ToArray();
+            calendarConfig.banners=calendarBanners;
+        }
+        void RestoreCalendarFixture()
+        {
+            if(calendarConfig!=null&&ReferenceEquals(calendarConfig.banners,calendarBanners))calendarConfig.banners=originalBanners;
+            calendarConfig=null;originalBanners=calendarBanners=null;
+        }
+        void OnDisable(){recording=false;RestoreCalendarFixture();}
         IEnumerator Guard(IEnumerator flow)
         {
             while(true)
             {
                 object next;
                 try{if(!flow.MoveNext())yield break;next=flow.Current;}
-                catch(Exception e){Debug.LogError("GACHA SMOKE FAIL: "+e);Application.Quit(25);yield break;}
+                catch(Exception e){RestoreCalendarFixture();Debug.LogError("GACHA SMOKE FAIL: "+e);Application.Quit(25);yield break;}
                 yield return next;
             }
         }
@@ -44,7 +61,11 @@ namespace Ohajiki
         {
             directory=Path.GetFullPath(Path.Combine(Application.dataPath,"..","SmokeGacha"));Directory.CreateDirectory(directory);Directory.CreateDirectory(Path.Combine(directory,"Frames"));
             yield return new WaitForSeconds(.8f);
+            // Initialize the hidden player's swap chain before collecting visual evidence.
+            Screen.SetResolution(480,800,FullScreenMode.Windowed);yield return new WaitForSeconds(.3f);
+            Screen.SetResolution(540,960,FullScreenMode.Windowed);yield return new WaitForSeconds(.3f);
             var session=app.Session;var hub=app.Hub;
+            UseOpenCalendarFixture();
             OpenBanner(0);hub.RequestGacha(10);Require(hub.GachaMovie==null && session.Gems==0,"insufficient gems no movie");
             Require(session.Shop.Confirm(session.Shop.Prepare("gems_180",out _),out _),"fund through simulated purchase");hub.Refresh();
             int first=hub.FeaturedSpiritId;yield return new WaitForSeconds(5.3f);
@@ -94,6 +115,7 @@ namespace Ohajiki
             app.ReturnHome();yield return null;yield return null;
             Require(FindObjectsByType<AudioSource>(FindObjectsSortMode.None).Length==0,"no SE");
             Require(FindObjectsByType<Camera>(FindObjectsSortMode.None).Count(c=>c.targetTexture!=null)==0,"no render camera leak");
+            RestoreCalendarFixture();
             Debug.Log("GACHA SMOKE PASS: affordability, confirmation/cancel, per-banner first discount, featured carousel, real 3D camera, all four stages, ten individual reveals, bonus, both skip modes, no duplicate rewards, navigation and interruption cleanup, no SE.");
             Application.Quit(0);
         }

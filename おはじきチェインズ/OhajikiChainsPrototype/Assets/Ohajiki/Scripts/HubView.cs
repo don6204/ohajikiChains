@@ -109,7 +109,7 @@ namespace Ohajiki
             if(Page!=HubPage.Home)ui.Panel(content,"AdventurePage",0,0,656,940,new Color(1,.98f,.88f,.96f));
             session.Shop?.RefreshCalendar();
             account.text=$"Rank {session.Progress.Rank}　EXP {session.Progress.RankExperience}/{session.Progress.Needed(battleTuning)}";
-            resources.text=$"メダル {session.Progress.Coins:N0}　宝石 {session.Gems:N0}　エネルギー {session.Energy}/{session.MaximumEnergy}";
+            resources.text=$"{PlayerSession.QuestRewardName(ShopRewardKind.Medals)} {session.Progress.Coins:N0}　宝石 {session.Gems:N0}　エネルギー {session.Energy}/{session.MaximumEnergy}";
             int active=Page==HubPage.Settings?4:(Page==HubPage.Home||Page>=HubPage.Quests)?0:Page==HubPage.Shop?3:(Page==HubPage.Gacha||Page==HubPage.Banner)?2:1;
             for(int i=0;i<navigation.Length;i++)
             {
@@ -277,12 +277,12 @@ namespace Ohajiki
             Heading("スピリター強化",spirit.displayName);
             skin.Halo(content,new Vector2(328,604),360,HubWidgets.Elements[(int)spirit.element]);
             ui.Portrait(content,spirit.portrait,138,415,380,390);
-            ui.Label(content,$"{new string('★',spirit.rarity)}　{elementNames[(int)spirit.element]}属性　Lv{session.Level(selectedSpirit)} / {session.Config.maxSpiritLevel}",0,355,656,50,28,null,true);
+            ui.Label(content,$"{new string('★',spirit.rarity)}　{elementNames[(int)spirit.element]}属性　Lv{session.Level(selectedSpirit)} / {session.MaximumSpiritLevel(selectedSpirit)}",0,355,656,50,28,null,true);
             ui.Label(content,$"HP {session.Hp(selectedSpirit)}　攻撃 {session.Attack(selectedSpirit)}　速度 {session.Speed(selectedSpirit):0}",0,289,656,44,24,HubWidgets.Muted,true);
             long needed = session.ExperienceToNextLevel(selectedSpirit);
             ui.Label(content,needed == 0 ? "EXP MAX" : $"EXP {session.SpiritExperience(selectedSpirit)} / {needed}",
                 0,244,656,34,20,HubWidgets.Muted,true);
-            bool available=session.Level(selectedSpirit)<session.Config.maxSpiritLevel;
+            bool available=session.Level(selectedSpirit)<session.MaximumSpiritLevel(selectedSpirit);
             ui.Button(content,available?"強化アイテムを選択　→":"レベル上限です",0,160,656,80,()=>{selectedMaterial=(int)spirit.element;quantity=1;Open(HubPage.Materials);},available,HubWidgets.Accent);
             ui.Button(content,"戻る",0,32,200,64,()=>Navigate(HubPage.UpgradeList));
         }
@@ -294,21 +294,24 @@ namespace Ohajiki
             for(int i=0;i<4;i++)
             {
                 int type=i;bool allowed=i==3||i==(int)spirit.element;
-                ui.Button(content,$"{elementNames[i]}\n所持 {session.MaterialCount(i)}",i*164,626,152,106,()=>{selectedMaterial=type;quantity=1;Render();},allowed,
+                ui.Button(content,$"{PlayerSession.QuestRewardName((ShopRewardKind)((int)ShopRewardKind.FirePower+i))}\n所持 {session.MaterialCount(i)}",i*164,626,152,106,()=>{selectedMaterial=type;quantity=1;Render();},allowed,
                     i==selectedMaterial?HubWidgets.Accent:HubWidgets.PanelColor);
             }
             ui.Label(content,"使う個数",0,543,656,44,24,null,true);
             ui.Button(content,"−",112,461,92,64,()=>{quantity=Mathf.Max(1,quantity-1);Render();},quantity>1);
             ui.Label(content,quantity.ToString(),224,461,208,64,36,null,true);
-            int max=Math.Min(session.MaterialCount(selectedMaterial),session.Config.maxSpiritLevel-level);
+            int max=Math.Min(session.MaterialCount(selectedMaterial),(session.MaximumSpiritLevel(selectedSpirit)-level)/session.MaterialLevelGain);
             ui.Button(content,"＋",452,461,92,64,()=>{quantity++;Render();},quantity<max);
-            ui.Label(content,$"Lv{level} → Lv{level+quantity}\n必要メダル {session.UpgradeCost(selectedSpirit,quantity):N0}\nHP +{spirit.hpPerLevel*quantity}　攻撃 +{spirit.attackPerLevel*quantity}",0,254,656,164,25,null,true);
+            int levelGain=quantity*session.MaterialLevelGain;
+            string medalName=PlayerSession.QuestRewardName(ShopRewardKind.Medals);
+            string materialName=PlayerSession.QuestRewardName((ShopRewardKind)((int)ShopRewardKind.FirePower+selectedMaterial));
+            ui.Label(content,$"Lv{level} → Lv{level+levelGain}\n必要{medalName} {session.UpgradeCost(selectedSpirit,quantity):N0}\nHP +{spirit.hpPerLevel*levelGain}　攻撃 +{spirit.attackPerLevel*levelGain}",0,254,656,164,25,null,true);
             bool can=session.CanUpgrade(selectedSpirit,selectedMaterial,quantity);
-            ui.Button(content,"強化する",216,131,440,76,()=>Confirm("強化しますか？",$"{elementNames[selectedMaterial]}パワー {quantity}個と\nメダル {session.UpgradeCost(selectedSpirit,quantity):N0} を使います。",()=>{
+            ui.Button(content,"強化する",216,131,440,76,()=>Confirm("強化しますか？",$"{materialName} {quantity}個と\n{medalName} {session.UpgradeCost(selectedSpirit,quantity):N0} を使います。",()=>{
                 if(session.Upgrade(selectedSpirit,selectedMaterial,quantity)){Open(HubPage.UpgradeDetail);Message("強化しました。ステータスは次のバトルに反映されます。");}
             }),can,HubWidgets.Accent);
             ui.Button(content,"戻る",0,131,200,76,()=>Navigate(HubPage.UpgradeDetail));
-            ui.Label(content,"仮の強化ルール：パワー1個でLv+1",0,40,656,42,18,HubWidgets.Muted,true);
+            ui.Label(content,$"パワー1個でLv+{session.MaterialLevelGain}",0,40,656,42,18,HubWidgets.Muted,true);
             if(!can)Message("素材・メダル・レベル上限を確認してください。");
         }
         void Gacha()
@@ -321,13 +324,13 @@ namespace Ohajiki
                 var row=ui.Row(list,280);
                 var card=ui.Button(row,"",0,0,640,280,()=>{selectedBanner=index;Open(HubPage.Banner);}).GetComponent<RectTransform>();
                 skin.Halo(card,new Vector2(493,142),248,Color.Lerp(HubWidgets.Elements[(int)spirit.element],Color.white,.25f));
-                ui.Portrait(card,spirit.portrait,357,0,260,278);
+                ui.Portrait(card,string.IsNullOrEmpty(banner.masterId)?spirit.portrait:banner.bannerTexture,357,0,260,278);
                 ui.Label(card,"SPIRIT SUMMON",24,225,330,30,17,HubWidgets.Elements[(int)spirit.element]);
                 ui.Label(card,banner.title,24,136,330,84,31);
                 ui.Label(card,banner.description,24,58,330,72,19,HubWidgets.Muted);
                 ui.Label(card,session.BannerOpen(i)?"詳細を見る　→":"開催期間外",24,15,330,36,22);
             }
-            Message("初回1連は各ガチャで宝石1個！");
+            Message("必要宝石数・抽選内容は各ガチャの詳細で確認できます");
         }
         void BannerDetail()
         {
@@ -337,7 +340,7 @@ namespace Ohajiki
         {
             OpenModal("TrialRates",new Color(.025f,.07f,.1f,1));
             ui.Label(modal,"排出率・排出内容",48,1090,624,70,32,null,true);
-            ui.Label(modal,"レアリティ率は仕様書準拠 / キャラ配分は仮設定",48,1020,624,55,18,HubWidgets.Muted,true);
+            ui.Label(modal,"各スピリターの排出率を表示しています",48,1020,624,55,18,HubWidgets.Muted,true);
             var list=ui.Scroll(modal,48,240,624,750);var banner=session.Config.banners[selectedBanner];var pool=banner.pool;
             if(GachaRules.UsesRarity(banner))for(int star=5;star>=1;star--)
             {var row=ui.Row(list,52);ui.Label(row,$"★{star}　{banner.rarityWeights[star-1]}%",8,0,600,52,26,HubWidgets.Ink);}

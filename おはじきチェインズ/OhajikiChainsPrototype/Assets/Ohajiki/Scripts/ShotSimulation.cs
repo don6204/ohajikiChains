@@ -74,10 +74,11 @@ namespace Ohajiki
             trapView = traps.AsReadOnly();
             projectiles.Add(primary);
             Charges = new Charge[tuning.boardColumns * tuning.boardRows];
+            float sideInset=MasterConstants.GetFloat("ShotSimulation.chargeSideInset",52);
             for (int row = 0; row < tuning.boardRows; row++)
                 for (int col = 0; col < tuning.boardColumns; col++)
                     Charges[row * tuning.boardColumns + col] = new Charge {
-                        Position = new Vector2(Mathf.Lerp(52, Width - 52, col / (float)(tuning.boardColumns - 1)),
+                        Position = new Vector2(Mathf.Lerp(sideInset, Width - sideInset, col / (float)(tuning.boardColumns - 1)),
                             Mathf.Lerp(Height * tuning.boardBottom, Height * tuning.boardTop, row / (float)(tuning.boardRows - 1))),
                         Active = false
                     };
@@ -109,7 +110,8 @@ namespace Ohajiki
         {
             if (Moving) throw new InvalidOperationException("Cannot reposition a moving shot");
             EnemySide = enemySide;
-            primary.Position = new Vector2(Mathf.Clamp(x, tuning.shotRadius + 18, Width - tuning.shotRadius - 18),
+            float sidePadding=MasterConstants.GetFloat("ShotSimulation.launchSidePadding",18);
+            primary.Position = new Vector2(Mathf.Clamp(x, tuning.shotRadius + sidePadding, Width - tuning.shotRadius - sidePadding),
                 Height * (enemySide ? 1 - tuning.launchInset : tuning.launchInset));
         }
         public void SetLaunchX(float x) { if (!Moving) Prepare(false, x); }

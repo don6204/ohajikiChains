@@ -45,6 +45,9 @@ namespace Ohajiki
         UnityEngine.UI.Image[] cardPortraits;
         UnityEngine.UI.Image[] cardMarks;
         SpiritBallVisual shotArt,enemyBallArt;
+        bool useEnemyPortrait;
+        Sprite enemyPortrait;
+        public void SetEnemyPortrait(Sprite sprite) {useEnemyPortrait=true;enemyPortrait=sprite;}
         RectTransform impactPanel;
         TMP_Text impactCaption,impactUnit;
         UnityEngine.UI.Image targetFlash;
@@ -173,7 +176,7 @@ namespace Ohajiki
             for (int i = 0; i < 3; i++)
             {
                 var portrait = Image(Rect("Hero", overlay, 50 + i * 210, 688 + (i % 2) * 25, 200, 270), Color.white);
-                portrait.sprite = portraits[i]; portrait.preserveAspect = true;
+                portrait.sprite = portraits[i]; portrait.enabled=portraits[i]!=null; portrait.preserveAspect = true;
             }
             overlayBody = Label(overlay, "", 58, 314, 604, 366, 25, ink, TextAlignmentOptions.Center);
             overlayBody.enableAutoSizing = true;
@@ -231,6 +234,7 @@ namespace Ohajiki
             UpdateSimulationVisuals(sim,active);
             projectile.GetComponent<UnityEngine.UI.Image>().color = colors[(int)active.element];
             shotArt.Show(active);enemyBallArt.Show(enemy);
+            if(useEnemyPortrait)enemyBallArt.SetPortrait(enemyPortrait);
             playerText.text = $"味方 HP {state.Player.Hp}/{state.Player.MaxHp}" + GuardText(state.Player);
             enemyName.text = enemy.displayName;
             enemyIconImage.color = colors[(int)enemy.element]; enemyIconLabel.text = elements[(int)enemy.element];
@@ -248,6 +252,7 @@ namespace Ohajiki
                 cardImages[i].color = i == selected ? new Color(1,.83f,.37f) : Color.Lerp(panel,colors[e],.08f);
                 cardMarks[i].gameObject.SetActive(i==selected);
                 cardPortraits[i].sprite = spirit.portrait;
+                cardPortraits[i].enabled=spirit.portrait!=null;
                 cardLabels[i].text = $"{elements[e]} {spirit.displayName}\n{skills[(int)spirit.skill]}";
                 cardButtons[i].interactable = !paused && phase == BattlePhase.Ready;
             }
@@ -369,7 +374,7 @@ namespace Ohajiki
         public void ShowDetails(SpiritDefinition spirit)
         {
             string powers = "";
-            for(int i=0;i<spirit.skillPower.Length;i++)
+            for(int i=0;i<(spirit.skillPower?.Length??0);i++)
                 powers += $"Lv{i+1}: " + (spirit.skill != Skill.Cleanse && (int)spirit.skill >= (int)Skill.PercentAttack ? $"{spirit.skillPower[i]*100:0.#}%" : $"{spirit.skillPower[i]:0}") + "  ";
             detailText.text = $"{elements[(int)spirit.element]} {spirit.displayName}  Lv{spirit.level}\nHP {spirit.Hp} / 攻撃 {spirit.Attack} / 速度 {spirit.Speed:0}\n\n{spirit.skillName} / {skills[(int)spirit.skill]}\n{powers}\n" +
                 (spirit.skill == Skill.Guard || spirit.skill == Skill.PercentGuard ? $"防御は相手の行動{spirit.guardTurns}回分\n" : "") +
@@ -416,6 +421,7 @@ namespace Ohajiki
                 float ease = 1-Mathf.Pow(1-Mathf.Clamp01(progress*2),3);
                 cutInPanel.anchoredPosition = new Vector2(Mathf.Lerp(740,40,ease),520);
                 cutInArt.sprite = spirit.portrait;
+                cutInArt.enabled=spirit.portrait!=null;
                 cutInArt.rectTransform.localScale=Vector3.one*Mathf.Lerp(1.16f,1,progress);
                 cutInText.text = (enemy ? "ENEMY SKILL" : "SPIRIT SKILL") + $"\n{spirit.displayName}\n\n{spirit.skillName}";
             }

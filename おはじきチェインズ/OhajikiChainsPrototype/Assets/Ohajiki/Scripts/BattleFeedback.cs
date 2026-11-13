@@ -29,7 +29,7 @@ namespace Ohajiki
         Burst[] bursts;
         readonly Vector2 bankCenter=new Vector2(530,990);
         readonly Vector2 numberCenter=new Vector2(190,140);
-        const float NumberTilt=-17;
+        static float NumberTilt=>MasterConstants.GetFloat("BattleFeedback.damageNumberTilt",-17);
         readonly Color gold=new Color(1,.82f,.12f);
         readonly Color[] colors={new Color(1,.27f,.055f),new Color(.08f,.68f,1),new Color(.28f,.90f,.17f),new Color(.70f,.3f,1)};
         Vector2 shotPosition,chargeStart,impactCenter;
@@ -114,9 +114,10 @@ namespace Ohajiki
             foreach(var ray in impactRays)ray.color=Color.clear;
             paused=showBeam=charging=false;
             lastTarget=lastContacts=lastTier=0;lastLevel=1;lastDisplayed=-1;displayed=clock=0;
-            impactAge=celebrateAge=lockAge=10;
+            impactAge=MasterConstants.GetFloat("BattleFeedback.impactVisualSeconds",.55f);
+            celebrateAge=MasterConstants.GetFloat("BattleFeedback.celebrationSeconds",.72f);lockAge=10;
             allClearAge=0;allClear.gameObject.SetActive(false);
-            bank.anchoredPosition=bankCenter;bank.localScale=Vector3.one*.55f;bank.localRotation=Quaternion.identity;
+            bank.anchoredPosition=bankCenter;bank.localScale=Vector3.one*MasterConstants.GetFloat("BattleFeedback.bankScale_small",.55f);bank.localRotation=Quaternion.identity;
             number.text="0";number.rectTransform.localScale=Vector3.one;
             number.rectTransform.anchoredPosition=numberCenter;number.rectTransform.localRotation=Quaternion.Euler(0,0,NumberTilt);
             celebration.text="";
@@ -154,7 +155,8 @@ namespace Ohajiki
             lastTarget=total;lastContacts=contacts;lastLevel=level;lastTier=tier;
             var b=bursts[burstCursor++%bursts.Length];b.age=0;b.rotation=contacts*29;b.active=true;
             b.origin=board.anchoredPosition+position;b.color=colors[(int)element];
-            b.scale=(same?1.15f:.82f)*(levelUp?1.2f:1)*tuning.contactEffectIntensity;
+            b.scale=(same?MasterConstants.GetFloat("BattleFeedback.sameContactScale",1.15f):MasterConstants.GetFloat("BattleFeedback.otherContactScale",.82f))*
+                (levelUp?MasterConstants.GetFloat("BattleFeedback.skillLevelUpScale",1.2f):1)*tuning.contactEffectIntensity;
             b.root.anchoredPosition=b.origin;b.root.gameObject.SetActive(true);
             b.number.text=$"+{delta:N0}";b.number.color=same?new Color(1,.95f,.4f):Color.white;
             AnimateBurst(b,0);
@@ -218,12 +220,13 @@ namespace Ohajiki
             displayed=Mathf.MoveTowards(displayed,lastTarget,Mathf.Max(1,lastTarget-displayed)*tuning.damageCounterSpeed*dt);
             if(Mathf.Abs(displayed-lastTarget)<1)displayed=lastTarget;
             int value=Mathf.RoundToInt(displayed);if(lastDisplayed!=value){number.text=value.ToString("N0");lastDisplayed=value;}
-            bank.localScale=Vector3.one*(value >= 1000 ? 1f : value >= 500 ? .78f : .55f);
+            bank.localScale=Vector3.one*(value>=MasterConstants.GetInt("BattleFeedback.bankScaleThreshold2",1000)?MasterConstants.GetFloat("BattleFeedback.bankScale_large",1):
+                value>=MasterConstants.GetInt("BattleFeedback.bankScaleThreshold1",500)?MasterConstants.GetFloat("BattleFeedback.bankScale_medium",.78f):MasterConstants.GetFloat("BattleFeedback.bankScale_small",.55f));
             number.rectTransform.anchoredPosition=numberCenter;
             number.rectTransform.localRotation=Quaternion.Euler(0,0,NumberTilt);
             number.rectTransform.localScale=Vector3.one;
             UpdateBankColor();
-            float cp=Mathf.Clamp01(celebrateAge/.72f);celebration.alpha=1-cp;
+            float cp=Mathf.Clamp01(celebrateAge/MasterConstants.GetFloat("BattleFeedback.celebrationSeconds",.72f));celebration.alpha=1-cp;
             celebration.rectTransform.anchoredPosition=new Vector2(360,879+cp*16);
             celebration.rectTransform.localScale=Vector3.one*(1+.35f*Mathf.Exp(-cp*7));
             celebration.rectTransform.localRotation=Quaternion.Euler(0,0,-4*(1-cp));
@@ -269,7 +272,7 @@ namespace Ohajiki
         }
         void AnimateImpact()
         {
-            float p=Mathf.Clamp01(impactAge/.55f),fade=1-p,ease=1-Mathf.Pow(1-p,3);
+            float p=Mathf.Clamp01(impactAge/MasterConstants.GetFloat("BattleFeedback.impactVisualSeconds",.55f)),fade=1-p,ease=1-Mathf.Pow(1-p,3);
             impactRing.rectTransform.sizeDelta=Vector2.one*Mathf.Lerp(45,285,ease);impactRing.color=Alpha(impactRing.color,fade*.85f*tuning.contactEffectIntensity);
             impactBurst.rectTransform.sizeDelta=new Vector2(490,205)*(1+.2f*ease);
             impactBurst.color=Alpha(impactBurst.color,fade*.6f);

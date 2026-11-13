@@ -52,7 +52,7 @@ namespace Ohajiki
         public void Portrait(Transform parent,Sprite sprite,float x,float y,float w,float h)
         {
             var image=Rect(parent,"Portrait",x,y,w,h).gameObject.AddComponent<UnityEngine.UI.Image>();
-            image.sprite=sprite; image.preserveAspect=true; image.raycastTarget=false;
+            image.sprite=sprite; image.enabled=sprite!=null; image.preserveAspect=true; image.raycastTarget=false;
         }
         public RectTransform Scroll(Transform parent,float x,float y,float w,float h)
         {

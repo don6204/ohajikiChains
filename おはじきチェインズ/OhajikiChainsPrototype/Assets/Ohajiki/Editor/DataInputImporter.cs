@@ -43,6 +43,7 @@ public static class DataInputImporter
     // It must never be interpreted as the legacy four-column override format.
     public static string PrepareBuildData(string path=null)
     {
+        if(path==null&&File.Exists(MasterDataImporter.DefaultPath))return MasterDataImporter.Import(MasterDataImporter.DefaultPath);
         path=path??DefaultPath;
         if(!File.Exists(path))throw new FileNotFoundException("入力ファイルが見つかりません",path);
         if(IsStructuredMaster(path))

@@ -23,8 +23,10 @@ namespace Ohajiki
         {rect.anchorMin=Vector2.one*from;rect.anchorMax=Vector2.one*to;rect.offsetMin=rect.offsetMax=Vector2.zero;}
         public void Show(SpiritDefinition spirit)
         {
-            face.sprite=spirit.portrait;
+            SetPortrait(spirit.portrait);
             body.color=Colors[(int)spirit.element];
         }
+        public void SetPortrait(Sprite sprite)
+        { face.sprite=sprite;face.enabled=sprite!=null; }
     }
 }

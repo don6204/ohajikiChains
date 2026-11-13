@@ -68,7 +68,8 @@ namespace Ohajiki
     }
     public static class ShopCalendar
     {
-        public static DateTime Today(DateTimeOffset now) => now.ToOffset(TimeSpan.FromHours(9)).Date;
+        public static DateTimeOffset LocalTime(DateTimeOffset now) => now.ToOffset(TimeSpan.FromHours(MasterConstants.GetInt("ShopCalendar.utcOffsetHours",9)));
+        public static DateTime Today(DateTimeOffset now) => LocalTime(now).Date;
         static bool Parse(string value,out DateTime date) => DateTime.TryParseExact(value,"yyyy-MM-dd",CultureInfo.InvariantCulture,DateTimeStyles.None,out date);
         public static bool ValidWindow(string from,string until)
         {

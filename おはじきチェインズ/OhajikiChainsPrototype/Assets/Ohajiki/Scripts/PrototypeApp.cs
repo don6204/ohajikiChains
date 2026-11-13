@@ -14,6 +14,7 @@ namespace Ohajiki
         public HubView Hub { get; private set; }
         public PrototypeBattle Battle { get; private set; }
         public TitleView Title { get; private set; }
+        public MasterGameData Master { get; private set; }
         BattleLoadout loadout;
         QuestRun questRun;
         string lastQuestId;
@@ -23,6 +24,8 @@ namespace Ohajiki
 
         void Start()
         {
+            Master=Resources.Load<MasterGameData>("OhajikiMasterData");
+            if(Master!=null){battleTuning=Master.battle;hubConfig=Master.home;}
             if(battleTuning==null || hubConfig==null || japaneseFont==null)
             { Debug.LogError("PrototypeApp configuration is missing");enabled=false;return; }
             if(!battleTuning.Validate(out string error) || !hubConfig.Validate(out error))
@@ -41,6 +44,8 @@ namespace Ohajiki
             }
             if(Array.IndexOf(args,"--title-smoke-test")>=0)
                 gameObject.AddComponent<TitleSmoke>().Run(this);
+            if(Array.IndexOf(args,"--master-smoke-test")>=0)
+                gameObject.AddComponent<MasterDataSmoke>().Run(this);
             if(Array.IndexOf(args,"--smoke-test")>=0 || Array.IndexOf(args,"--feedback-smoke-test")>=0 || Array.IndexOf(args,"--board-smoke-test")>=0)EnterBattle();
             if(Array.IndexOf(args,"--board-smoke-test")>=0)gameObject.AddComponent<BoardSmoke>().Run(this,battleTuning);
             if(Array.IndexOf(args,"--hub-smoke-test")>=0)
