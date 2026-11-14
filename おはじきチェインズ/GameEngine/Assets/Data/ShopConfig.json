@@ -1,0 +1,478 @@
+{
+  "startingShiningStones": 20,
+  "startingEventPoints": 0,
+  "eventActive": 1,
+  "eventFrom": null,
+  "eventUntil": null,
+  "premiumDailyGems": 2,
+  "legalNotice": "販売事業者・連絡先・販売条件は未設定です。現在はテスト購入のみ利用できます。",
+  "products": [
+    {
+      "id": "power_0",
+      "title": "火のスピリットパワー",
+      "description": null,
+      "category": 0,
+      "currency": 0,
+      "price": 500,
+      "rewards": [
+        {
+          "kind": 2,
+          "amount": 1
+        }
+      ],
+      "recommended": 0,
+      "discounted": 0,
+      "originalPrice": 0,
+      "portraitIndex": -1,
+      "enabled": 1,
+      "availableFrom": null,
+      "availableUntil": null,
+      "limitPeriod": 0,
+      "purchaseLimit": 0
+    },
+    {
+      "id": "power_1",
+      "title": "水のスピリットパワー",
+      "description": null,
+      "category": 0,
+      "currency": 0,
+      "price": 500,
+      "rewards": [
+        {
+          "kind": 3,
+          "amount": 1
+        }
+      ],
+      "recommended": 0,
+      "discounted": 0,
+      "originalPrice": 0,
+      "portraitIndex": -1,
+      "enabled": 1,
+      "availableFrom": null,
+      "availableUntil": null,
+      "limitPeriod": 0,
+      "purchaseLimit": 0
+    },
+    {
+      "id": "power_2",
+      "title": "木のスピリットパワー",
+      "description": null,
+      "category": 0,
+      "currency": 0,
+      "price": 500,
+      "rewards": [
+        {
+          "kind": 4,
+          "amount": 1
+        }
+      ],
+      "recommended": 0,
+      "discounted": 0,
+      "originalPrice": 0,
+      "portraitIndex": -1,
+      "enabled": 1,
+      "availableFrom": null,
+      "availableUntil": null,
+      "limitPeriod": 0,
+      "purchaseLimit": 0
+    },
+    {
+      "id": "power_3",
+      "title": "全のスピリットパワー",
+      "description": null,
+      "category": 0,
+      "currency": 0,
+      "price": 500,
+      "rewards": [
+        {
+          "kind": 5,
+          "amount": 1
+        }
+      ],
+      "recommended": 0,
+      "discounted": 0,
+      "originalPrice": 0,
+      "portraitIndex": -1,
+      "enabled": 1,
+      "availableFrom": null,
+      "availableUntil": null,
+      "limitPeriod": 0,
+      "purchaseLimit": 0
+    },
+    {
+      "id": "medals_1000",
+      "title": "メダル 1,000枚",
+      "description": null,
+      "category": 1,
+      "currency": 1,
+      "price": 5,
+      "rewards": [
+        {
+          "kind": 0,
+          "amount": 1000
+        }
+      ],
+      "recommended": 0,
+      "discounted": 0,
+      "originalPrice": 0,
+      "portraitIndex": -1,
+      "enabled": 1,
+      "availableFrom": null,
+      "availableUntil": null,
+      "limitPeriod": 0,
+      "purchaseLimit": 0
+    },
+    {
+      "id": "medals_2000",
+      "title": "メダル 2,000枚",
+      "description": null,
+      "category": 1,
+      "currency": 1,
+      "price": 10,
+      "rewards": [
+        {
+          "kind": 0,
+          "amount": 2000
+        }
+      ],
+      "recommended": 0,
+      "discounted": 0,
+      "originalPrice": 0,
+      "portraitIndex": -1,
+      "enabled": 1,
+      "availableFrom": null,
+      "availableUntil": null,
+      "limitPeriod": 0,
+      "purchaseLimit": 0
+    },
+    {
+      "id": "medals_5000",
+      "title": "メダル 5,000枚",
+      "description": null,
+      "category": 1,
+      "currency": 1,
+      "price": 25,
+      "rewards": [
+        {
+          "kind": 0,
+          "amount": 5000
+        }
+      ],
+      "recommended": 0,
+      "discounted": 0,
+      "originalPrice": 0,
+      "portraitIndex": -1,
+      "enabled": 1,
+      "availableFrom": null,
+      "availableUntil": null,
+      "limitPeriod": 0,
+      "purchaseLimit": 0
+    },
+    {
+      "id": "medals_7000",
+      "title": "メダル 7,000枚",
+      "description": null,
+      "category": 1,
+      "currency": 1,
+      "price": 30,
+      "rewards": [
+        {
+          "kind": 0,
+          "amount": 7000
+        }
+      ],
+      "recommended": 0,
+      "discounted": 0,
+      "originalPrice": 0,
+      "portraitIndex": -1,
+      "enabled": 1,
+      "availableFrom": null,
+      "availableUntil": null,
+      "limitPeriod": 0,
+      "purchaseLimit": 0
+    },
+    {
+      "id": "medals_10000",
+      "title": "メダル 10,000枚",
+      "description": null,
+      "category": 1,
+      "currency": 1,
+      "price": 40,
+      "rewards": [
+        {
+          "kind": 0,
+          "amount": 10000
+        }
+      ],
+      "recommended": 0,
+      "discounted": 0,
+      "originalPrice": 0,
+      "portraitIndex": -1,
+      "enabled": 1,
+      "availableFrom": null,
+      "availableUntil": null,
+      "limitPeriod": 0,
+      "purchaseLimit": 0
+    },
+    {
+      "id": "gem_from_stones",
+      "title": "宝石 1個",
+      "description": null,
+      "category": 2,
+      "currency": 2,
+      "price": 5,
+      "rewards": [
+        {
+          "kind": 1,
+          "amount": 1
+        }
+      ],
+      "recommended": 0,
+      "discounted": 0,
+      "originalPrice": 0,
+      "portraitIndex": -1,
+      "enabled": 1,
+      "availableFrom": null,
+      "availableUntil": null,
+      "limitPeriod": 0,
+      "purchaseLimit": 0
+    },
+    {
+      "id": "release_0",
+      "title": "火のリリース記念パック",
+      "description": "リリース記念 / 内容は仮設定",
+      "category": 4,
+      "currency": 4,
+      "price": 1000,
+      "rewards": [
+        {
+          "kind": 2,
+          "amount": 20
+        },
+        {
+          "kind": 1,
+          "amount": 10
+        }
+      ],
+      "recommended": 1,
+      "discounted": 0,
+      "originalPrice": 0,
+      "portraitIndex": 0,
+      "enabled": 1,
+      "availableFrom": null,
+      "availableUntil": null,
+      "limitPeriod": 1,
+      "purchaseLimit": 1
+    },
+    {
+      "id": "release_1",
+      "title": "水のリリース記念パック",
+      "description": "リリース記念 / 内容は仮設定",
+      "category": 4,
+      "currency": 4,
+      "price": 1000,
+      "rewards": [
+        {
+          "kind": 3,
+          "amount": 20
+        },
+        {
+          "kind": 1,
+          "amount": 10
+        }
+      ],
+      "recommended": 1,
+      "discounted": 0,
+      "originalPrice": 0,
+      "portraitIndex": 1,
+      "enabled": 1,
+      "availableFrom": null,
+      "availableUntil": null,
+      "limitPeriod": 1,
+      "purchaseLimit": 1
+    },
+    {
+      "id": "release_2",
+      "title": "木のリリース記念パック",
+      "description": "リリース記念 / 内容は仮設定",
+      "category": 4,
+      "currency": 4,
+      "price": 1000,
+      "rewards": [
+        {
+          "kind": 4,
+          "amount": 20
+        },
+        {
+          "kind": 1,
+          "amount": 10
+        }
+      ],
+      "recommended": 1,
+      "discounted": 0,
+      "originalPrice": 0,
+      "portraitIndex": 2,
+      "enabled": 1,
+      "availableFrom": null,
+      "availableUntil": null,
+      "limitPeriod": 1,
+      "purchaseLimit": 1
+    },
+    {
+      "id": "gems_1",
+      "title": "宝石 1個",
+      "description": null,
+      "category": 5,
+      "currency": 4,
+      "price": 160,
+      "rewards": [
+        {
+          "kind": 1,
+          "amount": 1
+        }
+      ],
+      "recommended": 0,
+      "discounted": 0,
+      "originalPrice": 0,
+      "portraitIndex": -1,
+      "enabled": 1,
+      "availableFrom": null,
+      "availableUntil": null,
+      "limitPeriod": 0,
+      "purchaseLimit": 0
+    },
+    {
+      "id": "gems_32",
+      "title": "宝石 32個",
+      "description": null,
+      "category": 5,
+      "currency": 4,
+      "price": 2200,
+      "rewards": [
+        {
+          "kind": 1,
+          "amount": 32
+        }
+      ],
+      "recommended": 0,
+      "discounted": 0,
+      "originalPrice": 0,
+      "portraitIndex": -1,
+      "enabled": 1,
+      "availableFrom": null,
+      "availableUntil": null,
+      "limitPeriod": 0,
+      "purchaseLimit": 0
+    },
+    {
+      "id": "gems_80",
+      "title": "宝石 80個",
+      "description": null,
+      "category": 5,
+      "currency": 4,
+      "price": 4900,
+      "rewards": [
+        {
+          "kind": 1,
+          "amount": 80
+        }
+      ],
+      "recommended": 0,
+      "discounted": 0,
+      "originalPrice": 0,
+      "portraitIndex": -1,
+      "enabled": 1,
+      "availableFrom": null,
+      "availableUntil": null,
+      "limitPeriod": 0,
+      "purchaseLimit": 0
+    },
+    {
+      "id": "gems_180",
+      "title": "宝石 180個",
+      "description": null,
+      "category": 5,
+      "currency": 4,
+      "price": 10000,
+      "rewards": [
+        {
+          "kind": 1,
+          "amount": 180
+        }
+      ],
+      "recommended": 0,
+      "discounted": 0,
+      "originalPrice": 0,
+      "portraitIndex": -1,
+      "enabled": 1,
+      "availableFrom": null,
+      "availableUntil": null,
+      "limitPeriod": 0,
+      "purchaseLimit": 0
+    },
+    {
+      "id": "premium",
+      "title": "プレミアムパス",
+      "description": null,
+      "category": 6,
+      "currency": 4,
+      "price": 800,
+      "rewards": [],
+      "recommended": 0,
+      "discounted": 0,
+      "originalPrice": 0,
+      "portraitIndex": -1,
+      "enabled": 1,
+      "availableFrom": null,
+      "availableUntil": null,
+      "limitPeriod": 3,
+      "purchaseLimit": 1
+    },
+    {
+      "id": "event_power",
+      "title": "灯火祭・全のスピリットパワー",
+      "description": null,
+      "category": 3,
+      "currency": 3,
+      "price": 30,
+      "rewards": [
+        {
+          "kind": 5,
+          "amount": 1
+        }
+      ],
+      "recommended": 0,
+      "discounted": 0,
+      "originalPrice": 0,
+      "portraitIndex": -1,
+      "enabled": 1,
+      "availableFrom": null,
+      "availableUntil": null,
+      "limitPeriod": 0,
+      "purchaseLimit": 0
+    },
+    {
+      "id": "event_stone",
+      "title": "灯火祭・輝く石",
+      "description": null,
+      "category": 3,
+      "currency": 3,
+      "price": 50,
+      "rewards": [
+        {
+          "kind": 6,
+          "amount": 1
+        }
+      ],
+      "recommended": 0,
+      "discounted": 0,
+      "originalPrice": 0,
+      "portraitIndex": -1,
+      "enabled": 1,
+      "availableFrom": null,
+      "availableUntil": null,
+      "limitPeriod": 2,
+      "purchaseLimit": 3
+    }
+  ]
+}

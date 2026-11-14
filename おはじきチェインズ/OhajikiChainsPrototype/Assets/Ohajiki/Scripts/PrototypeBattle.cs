@@ -94,6 +94,7 @@ namespace Ohajiki
             if(View.OverlayVisible || paused || Phase != BattlePhase.Ready || View.DetailsVisible) return false;
             actingSpirit = PlayerCard;
             if(!Simulation.Launch(direction,actingSpirit,State.Player.SpeedMultiplier)) return false;
+            State.BeginShot(false,actingSpirit);
             State.Player.Element = actingSpirit.element; enemyActing = false; showChain = true;
             View.Feedback.BeginShot(false,actingSpirit.element);
             View.SetStatus("全接触数で通常攻撃 / 同属性数でスキル強化");
@@ -130,7 +131,7 @@ namespace Ohajiki
                 Simulation.Tick(dt);
                 if(Simulation.ResetCount!=resetsBefore)Refresh();
                 View.UpdateSimulationVisuals(Simulation,actingSpirit);
-                if(State.Finished)
+                if(State.Finished && !State.ShotInProgress)
                 {
                     Simulation.CancelShot();
                     Finish();
@@ -139,7 +140,7 @@ namespace Ohajiki
                 if(!Simulation.Moving)
                 {
                     View.Feedback.LockTotal(CurrentNormalDamage());
-                    Enter(BattlePhase.Charging); View.SetStatus("接触ダメージ確定 → 通常攻撃 → スキル");
+                    Enter(BattlePhase.Charging); View.SetStatus("ゾーンエフェクト → キャラスライド → スキル発動");
                 }
                 return;
             }
@@ -150,15 +151,11 @@ namespace Ohajiki
             switch(Phase)
             {
                 case BattlePhase.Charging:
-                    Enter(BattlePhase.DamageFlight);View.SetStatus("ためた力を、相手へ！");break;
-                case BattlePhase.DamageFlight:
-                    LastAction=State.ResolveNormal(enemyActing,actingSpirit,Simulation.Collected,Simulation.Matched,tuning,Simulation.WeightedContacts);
-                    View.ShowNormalImpact(LastAction); View.SetStatus("接触でためたダメージを解放！");
-                    Enter(BattlePhase.NormalImpact); break;
-                case BattlePhase.NormalImpact: Enter(BattlePhase.CutIn); break;
+                    LastAction=State.ResolveNormal(enemyActing,actingSpirit,Simulation.Collected,Simulation.Matched,tuning,Simulation.DamageWeight);
+                    Enter(BattlePhase.CutIn);break;
                 case BattlePhase.CutIn:
                     LastAction=State.ResolveSkill();
-                    View.ShowSkillImpact(LastAction,actingSpirit); View.SetStatus((enemyActing ? "敵：" : "味方：") + LastAction.Summary);
+                    View.ShowSkillImpact(LastAction,actingSpirit); View.SetStatus((enemyActing ? "敵：" : "味方：") + actingSpirit.skillName+" 発動");
                     Enter(BattlePhase.Impact); break;
                 case BattlePhase.Impact: CompleteAction(); break;
                 case BattlePhase.EnemyThinking: StartEnemyShot(); break;
@@ -185,16 +182,17 @@ namespace Ohajiki
             Simulation.Prepare(true,Mathf.Lerp(sideInset,ShotSimulation.Width-sideInset,(float)enemyRandom.NextDouble()));
             float angle = Mathf.Lerp(tuning.enemyMinimumAngle*Mathf.PI,(1-tuning.enemyMinimumAngle)*Mathf.PI,(float)enemyRandom.NextDouble());
             if(!Simulation.Launch(new Vector2(Mathf.Cos(angle),-Mathf.Sin(angle))*300,actingSpirit,State.Enemy.SpeedMultiplier)) throw new System.InvalidOperationException("Enemy launch failed");
+            State.BeginShot(true,actingSpirit);
             View.Feedback.BeginShot(true,actingSpirit.element);
             showChain = true; View.SetStatus("敵がショット！相手も接触数と同属性で攻撃");
             Enter(BattlePhase.EnemyShot);
         }
         void CompleteAction()
         {
+            if(State.Finished) { Finish(); return; }
             // Refill only the slots cleared during this action.
             Simulation.ResetBoard();
             if(enemyActing) EnemyDeck.Replace(enemySlot); else Deck.Replace(SelectedSlot);
-            if(State.Finished) { Finish(); return; }
             if(State.Practice && State.Enemy.Hp<=0)
             {
                 State.ContinuePractice();enemyActing=showChain=false;actingSpirit=PlayerCard;
@@ -261,7 +259,7 @@ namespace Ohajiki
         }
         int CurrentNormalDamage() => BattleRules.ContactDamage(
             actingSpirit.Attack * (enemyActing ? State.Enemy.AttackMultiplier : State.Player.AttackMultiplier),
-            Simulation.WeightedContacts,actingSpirit.element,
+            Simulation.DamageWeight,actingSpirit.element,
             enemyActing?State.Player.Element:State.Enemy.Element,tuning);
         void OnSpecialTriggered(int index,SpecialCharge effect)
         {
@@ -277,14 +275,17 @@ namespace Ohajiki
         {
             var target = enemyOwner ? State.Player : State.Enemy;
             int damage = target.ReceiveTrap(rawDamage);
+            State.RecordDefeat();
             View.SetStatus($"罠が発動！ {(enemyOwner ? "味方" : "敵")}に {damage} ダメージ");
-            if(State.Finished) Simulation.CancelShot();
+            if(State.Finished && !State.ShotInProgress) Simulation.CancelShot();
             Refresh();
         }
         void OnCollected(int index,bool same)
         {
             var charge=Simulation.Charges[index];
-            View.Feedback.Contact(charge.Position,charge.Element,same,Simulation.Collected,Simulation.Matched,CurrentNormalDamage());
+            int normalDamage=CurrentNormalDamage();
+            State.ApplyContactDamage(enemyActing,actingSpirit,normalDamage);
+            View.Feedback.Contact(charge.Position,charge.Element,same,Simulation.Collected,Simulation.Matched,normalDamage);
             Refresh();
         }
         void Refresh() => View.Refresh(Simulation,Deck,State,tuning,SelectedSlot,showChain,actingSpirit,EnemyCard,Phase,paused,Progress);

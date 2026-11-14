@@ -1,0 +1,50 @@
+{
+  "Assets/Ohajiki/Art/Fire.png": {
+    "Path": "Assets/Imported/Art/Fire.png"
+  },
+  "59ed9f6f564d3534b83df57c784f1598": {
+    "Path": "Assets/Imported/Art/Fire.png"
+  },
+  "Assets/Ohajiki/Art/Neutral.png": {
+    "Path": "Assets/Imported/Art/Neutral.png"
+  },
+  "b77da21764789444b9779b4544116d4c": {
+    "Path": "Assets/Imported/Art/Neutral.png"
+  },
+  "Assets/Ohajiki/Art/Water.png": {
+    "Path": "Assets/Imported/Art/Water.png"
+  },
+  "be429e16247aa3d498d13f604d7400ed": {
+    "Path": "Assets/Imported/Art/Water.png"
+  },
+  "Assets/Ohajiki/Art/Wood.png": {
+    "Path": "Assets/Imported/Art/Wood.png"
+  },
+  "d1b2f78c0eebdd249b92319790030c14": {
+    "Path": "Assets/Imported/Art/Wood.png"
+  },
+  "Assets/Ohajiki/Resources/UI/HitCounterBurst.png": {
+    "Path": "Assets/Imported/Resources/UI/HitCounterBurst.png"
+  },
+  "e548352d80bb2b44a9657444f74eff64": {
+    "Path": "Assets/Imported/Resources/UI/HitCounterBurst.png"
+  },
+  "Assets/Ohajiki/Resources/UI/SandstoneBoard.png": {
+    "Path": "Assets/Imported/Resources/UI/SandstoneBoard.png"
+  },
+  "0bdc218a9687d454c946a3031e12d5cc": {
+    "Path": "Assets/Imported/Resources/UI/SandstoneBoard.png"
+  },
+  "Assets/Ohajiki/Resources/UI/SpiritSanctuary.png": {
+    "Path": "Assets/Imported/Resources/UI/SpiritSanctuary.png"
+  },
+  "2589942aa602f9e4dab88babae524f5a": {
+    "Path": "Assets/Imported/Resources/UI/SpiritSanctuary.png"
+  },
+  "Assets/Ohajiki/Resources/UI/SunnyRuins.png": {
+    "Path": "Assets/Imported/Resources/UI/SunnyRuins.png"
+  },
+  "08bfe85cc6f74264fa0a9c7fe0c1c71f": {
+    "Path": "Assets/Imported/Resources/UI/SunnyRuins.png"
+  }
+}

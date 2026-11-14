@@ -25,6 +25,13 @@ public static class PrototypeBuilder
         if (!File.Exists("Assets/TextMesh Pro/Resources/TMP Settings.asset"))
             throw new System.InvalidOperationException("Run PrototypeBuilder.ImportEssentials without -quit first, then build.");
         AssetDatabase.Refresh();
+        var hitTexture=(TextureImporter)AssetImporter.GetAtPath(Root+"Resources/UI/HitCounterBurst.png");
+        if(hitTexture!=null && hitTexture.textureType!=TextureImporterType.Sprite)
+        {
+            hitTexture.textureType=TextureImporterType.Sprite;hitTexture.spriteImportMode=SpriteImportMode.Single;
+            hitTexture.alphaIsTransparency=true;hitTexture.mipmapEnabled=false;
+            hitTexture.maxTextureSize=2048;hitTexture.SaveAndReimport();
+        }
         var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(Root + "Fonts/Japanese.asset");
         if (font == null)
         {
@@ -75,7 +82,7 @@ public static class PrototypeBuilder
         EditorSceneManager.SaveScene(scene, scenePath);
         EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(scenePath, true) };
         PlayerSettings.productName = "Ohajiki Chains Prototype";
-        PlayerSettings.bundleVersion = "1.006";
+        PlayerSettings.bundleVersion = "1.010";
         PlayerSettings.companyName = "OhajikiPrototype";
         PlayerSettings.defaultScreenWidth = 540; PlayerSettings.defaultScreenHeight = 960;
         PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
@@ -272,7 +279,7 @@ public static class PrototypeBuilder
         string chargePercentages=string.Join(", ",buildTuning.specialChargeProbabilities.Select(p=>
             (p*100).ToString("0.##",System.Globalization.CultureInfo.InvariantCulture)+"%"));
         string normalPercentage=((1-buildTuning.specialChargeProbabilities.Sum())*100).ToString("0.##",System.Globalization.CultureInfo.InvariantCulture);
-        const string output="Build/20261113_MasterData";
+        const string output="Build/20261114_HitDamageGrowth";
         Directory.CreateDirectory(output);
         var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
             scenes = new[] { Root + "Scenes/Prototype.unity" },
@@ -291,12 +298,17 @@ public static class PrototypeBuilder
         File.Copy("Docs/20261111_03_変更と検証.txt",output+"/Docs/20261111_03_変更と検証.txt",true);
         File.Copy("Docs/20261111_03_ショット領域調整.txt",output+"/Docs/20261111_03_ショット領域調整.txt",true);
         File.Copy("Docs/20261113_MasterData取込.txt",output+"/Docs/20261113_MasterData取込.txt",true);
-        File.WriteAllText(output+"/build-info.txt","Ohajiki Chains 1.006 / 20261113_MasterData\nUnity "+Application.unityVersion+
+        File.WriteAllText(output+"/build-info.txt","Ohajiki Chains "+PlayerSettings.bundleVersion+" / "+output+"\nUnity "+Application.unityVersion+
             "\nWindows x64 / Mono / D3D11\nEvent 3 / Showdown 3 x 3 / Challenge 5\nData input: "+dataInputStatus+
             "\nCharge probabilities: "+chargePercentages+" (normal "+normalPercentage+"%); warp to opponent launch position."+
-            "\n8x8 board; no screen/digit shake; gold all-clear scroll 1.5 seconds; refill after 5 moving seconds."+
+            "\n8x8 board; no screen shake; gold all-clear scroll 1.5 seconds; refill after 5 moving seconds."+
             "\nCharge diameter 44; vertical centers 22%-78%; rims clear both launch zones."+
+            "\nHit UI: tilted digits only shake/pop; stationary burst; yellow to red, full at "+buildTuning.damageColorFullAt+" hits."+
+            "\nPermanent contact-time damage; shot -> zone -> slide -> skill. No trial symbol or alternative build method."+
+            "\nContact n: attack * contact factor * affinity * per-projectile boost * 1.02^(n-1). Resets on each shot."+
+            "\nHP zero: finish the active shot, zone, slide and skill before showing results. First defeat is preserved."+
             "\nBuilt UTC: "+System.DateTime.UtcNow.ToString("O"));
+        File.Copy("Docs/20261114_正式採用とヒット倍率.txt",output+"/正式仕様と変更.txt",true);
         Debug.Log("BUILD PASS: " + report.summary.totalSize + " bytes");
     }
 }

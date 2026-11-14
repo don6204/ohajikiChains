@@ -52,6 +52,9 @@ namespace Ohajiki.Tests
         {
             var sim=ClearBoard(enemy);Assert.IsTrue(sim.Charges.All(c=>!c.Active));
             Assert.AreEqual(64,sim.Collected);Assert.AreEqual(64,sim.Matched);Assert.AreEqual(64,sim.WeightedContacts);
+            double expected=0,hit=1;
+            for(int i=0;i<64;i++){expected+=hit;hit*=1.02;}
+            Assert.AreEqual(expected,sim.DamageWeight,1e-8,"missile cascade shares the shot hit index");
             sim.Tick(.1f);Assert.AreEqual(1,sim.AllClearCount);Assert.AreEqual(1,sim.ResetCount);
         }
         [Test] public void MovingShotRefillsAfterFiveSecondsWithoutLosingItsAccumulatedAttack()
@@ -63,6 +66,9 @@ namespace Ohajiki.Tests
             Assert.AreEqual(2,sim.ResetCount);Assert.IsTrue(sim.Moving);Assert.IsFalse(sim.AwaitingAllClearRefill);
             Assert.IsTrue(sim.Charges.Any(c=>c.Active));
             Assert.GreaterOrEqual(sim.Collected,64);Assert.GreaterOrEqual(sim.Matched,64);Assert.GreaterOrEqual(sim.WeightedContacts,64);
+            double expected=0,hit=1;
+            for(int i=0;i<sim.Collected;i++){expected+=hit;hit*=1.02;}
+            Assert.AreEqual(expected,sim.DamageWeight,1e-8,"refill keeps every earlier hit multiplier");
             Assert.That(sim.Velocity.magnitude,Is.InRange(speed-.05f,speed+.001f));
         }
         [Test] public void AnotherAllClearStartsAFreshFiveSecondWaitInTheSameShot()

@@ -1,0 +1,10 @@
+bin/
+obj/
+Build/
+Review/
+.local/
+Library/
+SaveData/
+*.user
+*.bak
+*.autosave

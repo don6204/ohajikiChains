@@ -1,0 +1,3699 @@
+{
+  "Version": 1,
+  "Name": "バトル盤面・試射",
+  "Width": 720,
+  "Height": 1280,
+  "Background": "#132C37",
+  "Objects": [
+    {
+      "Id": "d845aa03e385444d97a0e86d9ffcc768",
+      "Name": "見出し",
+      "ParentId": null,
+      "Active": true,
+      "Order": 20,
+      "Transform": {
+        "X": 360,
+        "Y": 58,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 690,
+        "Height": 72
+      },
+      "Components": [
+        {
+          "Id": "efe0d0f33c864859b0b1f278e28d1619",
+          "Type": "Text",
+          "Enabled": true,
+          "Values": {
+            "Text": "盤面・ショットの調整",
+            "FontSize": "34",
+            "Color": "#F7F0DD",
+            "Bold": "true"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Name": "盤面",
+      "ParentId": null,
+      "Active": true,
+      "Order": 0,
+      "Transform": {
+        "X": 360,
+        "Y": 650,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 624,
+        "Height": 940
+      },
+      "Components": [
+        {
+          "Id": "3b9dfa18f62349b49d50b5434564aabd",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#203F4B",
+            "Opacity": "1",
+            "Shape": "矩形"
+          }
+        },
+        {
+          "Id": "dcaf6d7e751848cbbd6b79e39c56dc66",
+          "Type": "Board",
+          "Enabled": true,
+          "Values": {
+            "Columns": "8",
+            "Rows": "8",
+            "ChargeSize": "44",
+            "FillHeight": ".68",
+            "Seed": "12345",
+            "Refill": "true"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "b38bafddfcb84ce6ba5d0d427763f71b",
+      "Name": "チャージ 01-01",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -273,
+        "Y": -279.65,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "d36c78c682e04bc0a6653366959e0d3c",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#EF7866",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "fd9b9225281f432988ef187b4385a674",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "7e494df08804421f9102a571fc8abed8",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "火",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "0",
+            "Column": "0"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "5a23c34a536a414ba104c584f9e79579",
+      "Name": "チャージ 01-02",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -195,
+        "Y": -279.65,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "aebbbe85d1194719abcca7d4b03bf2ac",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#EF7866",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "65c16b00beda4df9955c7596a48e58ad",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "64e32513d4fa4e4aa4ff6efc78bd8fb9",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "火",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "0",
+            "Column": "1"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "ee92a1a096544644995e4ceee021e5f3",
+      "Name": "チャージ 01-03",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -117,
+        "Y": -279.65,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "e133276dc5a44b5cbb798ba39dc5f01d",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#C7C4B8",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "a84cb655112a4c2cb953046bbac08153",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "18dc5db5453545e5862b14fe13fa985b",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "無",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "0",
+            "Column": "2"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "48cb65059b0347e0a4d1203dde348471",
+      "Name": "チャージ 01-04",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -39,
+        "Y": -279.65,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "0d8e563d9a6b41fb91027960cb269feb",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#A7CC6B",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "d8dcb83b17714796ba158b5507bbe86e",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "4c447a33b2d047849bba063522023fbb",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "木",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "0",
+            "Column": "3"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "3fa6910ac1ed4ad7b19cfb3fe85c2321",
+      "Name": "チャージ 01-05",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 39,
+        "Y": -279.65,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "34844258a3e54cb383f97f0db270b36c",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#C7C4B8",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "c83f45bcc3a64f01b7a6993d9f568238",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "d85b039e2c104447b68655142cc337ff",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "無",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "0",
+            "Column": "4"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "a4cbf5b6567443ca9a77e7af6a30de2a",
+      "Name": "チャージ 01-06",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 117,
+        "Y": -279.65,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "1d0a7a9989ed40c188e98a59ba2e6c75",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#C7C4B8",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "4ee92149ef1a4048b4b7729eb4a84ed1",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "c15acfb408494fd6958ab5a9c7511a98",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "無",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "0",
+            "Column": "5"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "43e6d4e65b164be7a5bd00f0c63c2d3c",
+      "Name": "チャージ 01-07",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 195,
+        "Y": -279.65,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "72d2f7cebb344c5399067c634153d2a9",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#EF7866",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "27e444a215ea4ee09b23920fdb06b567",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "c9b3f4b7381f4d518613b1c582937c30",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "火",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "0",
+            "Column": "6"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "faceb2a47180489fbd2cf6508c85c994",
+      "Name": "チャージ 01-08",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 273,
+        "Y": -279.65,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "f7ac161240de4da687a6c77ddd6b3b25",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#A7CC6B",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "2330d5c7a3bf4ae28d1c81b5b209a5dc",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "8bd6128bf3284f2b917750cef774e797",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "木",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "0",
+            "Column": "7"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "68da235f8cb84faca00046c3dd296e42",
+      "Name": "チャージ 02-01",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -273,
+        "Y": -199.75,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "c15010e2dcdc4442a45ddcec58738045",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#65BAE3",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "d9e1392e085048ab9269d53bdbdfa487",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "a6de29a009db4c229f01fe7d399e7c39",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "水",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "1",
+            "Column": "0"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "e378116127a14159b30974048b319187",
+      "Name": "チャージ 02-02",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -195,
+        "Y": -199.75,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "544175429a5c49bb9383d8f568e8c868",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#A7CC6B",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "d7f4449d3d944540876cc103457b6eb0",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "cb605c097f8343ceb0f0a7708f5c1d9d",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "木",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "1",
+            "Column": "1"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "b0b3dca891d6427da2edede07c4eba4e",
+      "Name": "チャージ 02-03",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -117,
+        "Y": -199.75,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "16f70e857ce4467ea211136aa05f4b55",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#EF7866",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "ab64e88016194781ac6719235e7f1f2d",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "45dcd83ec65247659cd280a67bb971af",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "火",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "1",
+            "Column": "2"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "e948edbb343f4bdf822baf9018545eb7",
+      "Name": "チャージ 02-04",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -39,
+        "Y": -199.75,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "0378182a3d6440e8ac0e60987bff705a",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#65BAE3",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "c91f86c9c4e74f52b0dc9e55cb150ee3",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "62eed10807c74ea99e2c14834e4bc351",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "水",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "1",
+            "Column": "3"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "cf571b60310944cd8cf96dbd67d64dd6",
+      "Name": "チャージ 02-05",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 39,
+        "Y": -199.75,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "f513e1f9413f4e1bbf9f777cabc320dc",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#EF7866",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "85b55e0b2805458a906525816c6c6c9c",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "04550033b4e942bf974370745e3744fa",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "火",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "1",
+            "Column": "4"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "3686457cf31445228e2120891386831e",
+      "Name": "チャージ 02-06",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 117,
+        "Y": -199.75,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "40f26fee1a0d4ebfb99a5f2819438327",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#EF7866",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "e5228d1bed3140c882e183174174a4be",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "8c7ecc07111e45a3bee3d808d95dcca7",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "火",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "1",
+            "Column": "5"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "49a963eda4fd4afeacea734f0705f26d",
+      "Name": "チャージ 02-07",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 195,
+        "Y": -199.75,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "468befbdb13541a3a3a0f9f49008143b",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#EF7866",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "0425945b6b8643c2adb0b2784f30aaa5",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "4b8b8bad7bd1417aa587683be77c8187",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "火",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "1",
+            "Column": "6"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "50d7cd614ad142a093fe063f30a07408",
+      "Name": "チャージ 02-08",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 273,
+        "Y": -199.75,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "ad3108cf3e8c42bc8c4b6b106ada2b1d",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#A7CC6B",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "230c5f8935bc4c2f98e7f2b335bf94a5",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "f5e3e5d1820e4abb9ddc050c6a39ee56",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "木",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "1",
+            "Column": "7"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "bc2e44133fb6476e93769ce2f92d0a9d",
+      "Name": "チャージ 03-01",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -273,
+        "Y": -119.850006,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "f580e42f2cc0434d8fa16ca3042771b5",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#EF7866",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "1e136950229e4849835face80a5bd070",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "6e6ce925a1c6436ebe30da7e9acea338",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "火",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "2",
+            "Column": "0"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "6085b82623dd44d9ada355c5e0dfdebd",
+      "Name": "チャージ 03-02",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -195,
+        "Y": -119.850006,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "46199bdaeb9342629c39ddc537291781",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#C7C4B8",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "0307b1e8b6c345559e03311ceb7827b3",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "f38781ce5e3c4223b708140139ca4a1b",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "無",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "2",
+            "Column": "1"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "1c07e97b22aa4be787a9e256c855b652",
+      "Name": "チャージ 03-03",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -117,
+        "Y": -119.850006,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "cf621d504f4f4c468171b55cbb4a52af",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#C7C4B8",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "f4fbc35615bd4c53ab302f91138139e1",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "201a25ea16c640c1a0fc35ec8fba1e64",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "無",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "2",
+            "Column": "2"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "f854a06439b341da8b1af25790541ca8",
+      "Name": "チャージ 03-04",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -39,
+        "Y": -119.850006,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "ecd7741fb4964dc7bfb754d7b972b36d",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#65BAE3",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "230117f640b544f8b043568560e3a478",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "a8ab7732e3dc4d018f2f2b2533ed2b61",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "水",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "2",
+            "Column": "3"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "8a5506eeb49e474b8575535e0bc0a173",
+      "Name": "チャージ 03-05",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 39,
+        "Y": -119.850006,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "6972f05535f6429c9d4b433f3eb1143f",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#EF7866",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "518133b1b62e47fd9cf1b513500afe06",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "fef3c83e985e414fbfda374cb88ebf65",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "火",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "2",
+            "Column": "4"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "ce0073281c3d47e3a49043134c6b7a19",
+      "Name": "チャージ 03-06",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 117,
+        "Y": -119.850006,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "018a622d2ac54a27863000dfa6bd1a3a",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#A7CC6B",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "abf5bf5bdabe49fb905956b3b0de4b20",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "5f0a3e0b31424501ab2d75b257644ec5",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "木",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "2",
+            "Column": "5"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "0c8afe38043a4026b4463fad55f29e0d",
+      "Name": "チャージ 03-07",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 195,
+        "Y": -119.850006,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "f393eb5445f9439a8226459a9d8464bd",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#65BAE3",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "726a71b719fd43988905c2b4e8daf825",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "53eec8250c7a4ecb8ded44e4ef8dc7c1",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "水",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "2",
+            "Column": "6"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "926b3d40f0514f418187aef8c3665da7",
+      "Name": "チャージ 03-08",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 273,
+        "Y": -119.850006,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "5b6ac52da885431e80374ae2c788c682",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#A7CC6B",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "0ad25c3f0a17410e96bbe1dfa282d9b3",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "a12d6876b9b542f38ed33f39ae4fe54b",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "木",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "2",
+            "Column": "7"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "3564650443534e828b805461547627d8",
+      "Name": "チャージ 04-01",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -273,
+        "Y": -39.950012,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "8c84fc1fabf441f8a5873ebcfa3b0b2e",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#A7CC6B",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "261aa4b8d2474329b7e4645a83094caf",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "eae91f1392c94c589b33feadd15ffeca",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "木",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "3",
+            "Column": "0"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "5df236cefeed423a84c19acaf2362243",
+      "Name": "チャージ 04-02",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -195,
+        "Y": -39.950012,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "7b9fb18169504d0db792b864d52e75b3",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#A7CC6B",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "d971e7db55b748ea96a8925706b62daf",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "b32ee5f753d84cb0b96e001a753e88ff",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "木",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "3",
+            "Column": "1"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "5e27987ef2fe426ea7c11bc7a86d0a75",
+      "Name": "チャージ 04-03",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -117,
+        "Y": -39.950012,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "f8714a231169465196b41483f1d01021",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#A7CC6B",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "283deb9cbc6e4352a9b291afc71522f0",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "117d69a034954bee87a057b3977350b0",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "木",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "3",
+            "Column": "2"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "042f8e2631054132b7a6e7730e904966",
+      "Name": "チャージ 04-04",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -39,
+        "Y": -39.950012,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "507425c9dbe04d5d912c4c49df988bee",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#A7CC6B",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "aef865d7105c4c27acba8ed042fd2906",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "96eda8d02999460d870b08d88748eabc",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "木",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "3",
+            "Column": "3"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "cbbaa7b3517649d487b45a9f2f378948",
+      "Name": "チャージ 04-05",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 39,
+        "Y": -39.950012,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "7853f2f8c3f04f139f4872512fee285c",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#65BAE3",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "3dd0c99ecb4c4d9fa2a1af974c353d7c",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "37d40b789d3641deaa50b96bf391e669",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "水",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "3",
+            "Column": "4"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "efff7f2ac27a40a0bd563114e1ab1a01",
+      "Name": "チャージ 04-06",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 117,
+        "Y": -39.950012,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "e976356dfb474737b0176cf7ca89bf67",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#EF7866",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "d4365e5e2fca4998bd2f3f36e0ad304f",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "524bf9e1ef8b4dc7b2bd3c7a0c4632f1",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "火",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "3",
+            "Column": "5"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "aa72646ec2914b2587575e77af771e37",
+      "Name": "チャージ 04-07",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 195,
+        "Y": -39.950012,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "11c63a618d294efbbc469d003f87cb4f",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#A7CC6B",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "44e8c6e402db42dda428d669dab8e1d8",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "5d549e2f2f384041a771ec719ee38ee6",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "木",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "3",
+            "Column": "6"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "c347456787cd4bf096f0bb880a471db9",
+      "Name": "チャージ 04-08",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 273,
+        "Y": -39.950012,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "ac118abdc6154af4b8c26e738cd57025",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#EF7866",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "62970a360ee549e9a0843d09da443dac",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "313bfc7748bb4939bab67d4da0d4aa73",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "火",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "3",
+            "Column": "7"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "c0ecd44fd4174c7c8e7104531b8ef693",
+      "Name": "チャージ 05-01",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -273,
+        "Y": 39.950012,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "778ed69b06b54ee4bb48163e35c67a85",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#A7CC6B",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "d554b9507e464434b503e3a29dadefb4",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "cbf295adca4a44119df356d0dd64fcd3",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "木",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "4",
+            "Column": "0"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "8ccfd04b15e242d7bf768061cc3e9e03",
+      "Name": "チャージ 05-02",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -195,
+        "Y": 39.950012,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "475e28b9bf7e41bc961c50afcacbc9fc",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#65BAE3",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "de62c06128584bd89650048e3a8a3fb8",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "abb2856c6ea840d2ba09ed9ae63a4849",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "水",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "4",
+            "Column": "1"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "5568dcced407432a81086099e5bc9a48",
+      "Name": "チャージ 05-03",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -117,
+        "Y": 39.950012,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "ee0e3a381f5f4af78e7528f837d8d900",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#65BAE3",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "9c6d0eadce13432cbb43ae95fe27273a",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "3a22a866db61470180590dd0dc58f514",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "水",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "4",
+            "Column": "2"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "c5c4e14536ea415e8ba09219ab998aec",
+      "Name": "チャージ 05-04",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -39,
+        "Y": 39.950012,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "96bd69aa2cdf4cd18e1d834289af47dc",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#C7C4B8",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "8b60287e5b8f461abe371b047bc2ae1a",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "7e007b62d1234eb2b0f1912132baf5cc",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "無",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "4",
+            "Column": "3"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "f9e0deae5a814918883694fff551826c",
+      "Name": "チャージ 05-05",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 39,
+        "Y": 39.950012,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "ddfa1ea5beed44ed9b9787ace1ac67e6",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#EF7866",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "b2cb0ee948c5499c9871bc1f74bd7111",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "a1c2965a71db43af967e36d61b9972ef",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "火",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "4",
+            "Column": "4"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "d52e1a5820ed4ea78877186bf3651a4a",
+      "Name": "チャージ 05-06",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 117,
+        "Y": 39.950012,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "7c204d9d54e041f6ab1ec14934505ee1",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#65BAE3",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "434e01ca35ab4a8d880588dfac2649ba",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "b7282dae55c941a4894e4f6139c3a8c2",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "水",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "4",
+            "Column": "5"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "51cc6578235341068f65ce2b09ba8136",
+      "Name": "チャージ 05-07",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 195,
+        "Y": 39.950012,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "c117ba618f244f31adb093d9a9c2636f",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#65BAE3",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "1198c1761ba0413ba58eb8189e149246",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "2d99f1b90ec645179c74be28d31d9b3a",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "水",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "4",
+            "Column": "6"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "833bd14f3e01460aa76a307bc5a1629f",
+      "Name": "チャージ 05-08",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 273,
+        "Y": 39.950012,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "30f505f1848e4ea0b707f383e03dcbdc",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#65BAE3",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "01afe5f5f998477ea1e42cfca67d6ac4",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "c0ae7d23a0b14975bdf1dd1d0f039b19",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "水",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "4",
+            "Column": "7"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "ec54afa1b4084aa5a14ea108a36cc397",
+      "Name": "チャージ 06-01",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -273,
+        "Y": 119.850006,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "f946fdd2cf6c420f8d563e828ccfa0e1",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#A7CC6B",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "4b65d5e4e60e4f2bb64c5c1e1ca2c28f",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "e1b540a139fc40caa11832def15e9b80",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "木",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "5",
+            "Column": "0"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "a3b94c6a4e824dedbf19af2942916d0b",
+      "Name": "チャージ 06-02",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -195,
+        "Y": 119.850006,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "9e91d148424f41e0bf88d11e58f9d3fe",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#65BAE3",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "3ad0eb933a3f486495bf66c22a771319",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "f2d70756f16c4603b6662a811c054aeb",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "水",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "5",
+            "Column": "1"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "23314b7ddae54156ab9b92c2dbaff5a8",
+      "Name": "チャージ 06-03",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -117,
+        "Y": 119.850006,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "dfdef9ac784446ada1db2684d92cf4b8",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#65BAE3",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "945f191b3d5d41189327045759149a5c",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "539196f2eb2441bebf91c38fb5964aad",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "水",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "5",
+            "Column": "2"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "35c59982e6d644c3a2feedca8e1fc14f",
+      "Name": "チャージ 06-04",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -39,
+        "Y": 119.850006,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "0da4f6c78f8e4d3da69318d56087ff58",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#65BAE3",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "3b3f5cde219145b894bd8b56da9a1b5f",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "2c1bb27e57f0431ea201a1242e0601e9",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "水",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "5",
+            "Column": "3"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "f5cbdb91809a49019ab5a947c87a1869",
+      "Name": "チャージ 06-05",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 39,
+        "Y": 119.850006,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "f5fddc751988476ebe5cafbda7a3327f",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#A7CC6B",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "ef91e9b9e3004fb1afb8c2002ec88772",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "7c3bac43250840dfb56cfc4fb9815457",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "木",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "5",
+            "Column": "4"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "1143774c1985489998bd7523e07922cb",
+      "Name": "チャージ 06-06",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 117,
+        "Y": 119.850006,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "866389c0695d40ca81d54364b74194f5",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#65BAE3",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "c7f158aaa8fd4c4e87686120760e65fd",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "d80c8793c40249c3bfaf59739fe80afb",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "水",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "5",
+            "Column": "5"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "5c3e163c7f724d13b55eb0a47ca9effc",
+      "Name": "チャージ 06-07",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 195,
+        "Y": 119.850006,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "9bda5a96d06f4e9eb4f99d4206c03187",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#65BAE3",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "f0e79e373f134010aac01343f4dc5561",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "132bf807057843d09a58f53af37ede1d",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "水",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "5",
+            "Column": "6"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "ce65f56c340643fb992eee4a0267a9d9",
+      "Name": "チャージ 06-08",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 273,
+        "Y": 119.850006,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "b00c3a205d174f9ca5fe801ffeafefcb",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#C7C4B8",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "d90177100ebf4e1dbc9dd711fbcc01d4",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "abf3e024d673408eb0057348a6a4db05",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "無",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "5",
+            "Column": "7"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "51dd57ad308d4202ad4322095c5016f0",
+      "Name": "チャージ 07-01",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -273,
+        "Y": 199.75003,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "8d9a54da4124449e8c40746a1bdf1934",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#EF7866",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "c687744d588944088d878a0dcba0e751",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "c9443c3ccfa74cb2b28a9824e63b706d",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "火",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "6",
+            "Column": "0"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "74f82566d1824800985f487a22a4732c",
+      "Name": "チャージ 07-02",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -195,
+        "Y": 199.75003,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "353a465c7ca74a38baa4be234e3e6253",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#C7C4B8",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "75f10aa8874a479b96b3e584d0b92725",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "6c931104ed454a7cb2e547948462fe78",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "無",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "6",
+            "Column": "1"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "d5b0313a5a7f4d25ae764e444fdde03e",
+      "Name": "チャージ 07-03",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -117,
+        "Y": 199.75003,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "05877e0ebfb44410a279e1357dc00c9b",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#A7CC6B",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "038b7450ab434e7c95da206662a7f977",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "b245c0343fdc4ab0b52e23bfca14d400",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "木",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "6",
+            "Column": "2"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "825a6fec05b548dba12f216ca6446fb9",
+      "Name": "チャージ 07-04",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -39,
+        "Y": 199.75003,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "cc2587b7439f41e3881d0411d13eb533",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#A7CC6B",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "58da7e88594c438ca46761c4b6d2d8e7",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "807770a1730942bd868d0aab4c1e7c4b",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "木",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "6",
+            "Column": "3"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "a8fb6149ef3b4a6e87cd1f0979b2fd32",
+      "Name": "チャージ 07-05",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 39,
+        "Y": 199.75003,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "e6a29a5fdab64ea88e19d11c30b37578",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#65BAE3",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "0334c5ef52ec4021b329d2c1aa235256",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "cf2919bc505c427ea5caa897cace85f9",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "水",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "6",
+            "Column": "4"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "b1784cadc83943a997d252a9786066e2",
+      "Name": "チャージ 07-06",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 117,
+        "Y": 199.75003,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "01721582beb74921b6422294ceb0ba4c",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#65BAE3",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "37abfe92f8094acd914095093224707e",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "25d41e9349e2469b92e426eaf487bccd",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "水",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "6",
+            "Column": "5"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "34a589f109a240bf93134cd0dce64665",
+      "Name": "チャージ 07-07",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 195,
+        "Y": 199.75003,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "dc23d83e3bf94b4cb8e57f6d8e90409a",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#EF7866",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "7fbcf0ecb4b44470a0b9d829a8db787a",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "2861159a2159486a960adb89570e7c4c",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "火",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "6",
+            "Column": "6"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "6cff707ba2804a3ebc3e3f866e1424d9",
+      "Name": "チャージ 07-08",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 273,
+        "Y": 199.75003,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "c38f6c38159a411ab7f72d59f2ed1d48",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#A7CC6B",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "2e50ce09428f4e14945f7860387bed8a",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "4f96bc6b6b5e486cab557c2357e9a1a1",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "木",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "6",
+            "Column": "7"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "f8485e1f2f5f43048537bc4d8664048e",
+      "Name": "チャージ 08-01",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -273,
+        "Y": 279.65,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "783df37730ea480f84964f021810a2a0",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#A7CC6B",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "77fe3fe108f64d12942593fb77fc62e0",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "ec3fa3bd0cf94f38b99fbef6a3ab9a26",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "木",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "7",
+            "Column": "0"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "1b53612e2fd54d0491b36618d1acc6fe",
+      "Name": "チャージ 08-02",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -195,
+        "Y": 279.65,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "1e4d2697b28b4d1687a4cd0e7b2663b6",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#EF7866",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "930aba023c6847689d038a87c2ebffb0",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "7ccb394553314f1d8064891c6f9c52e1",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "火",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "7",
+            "Column": "1"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "a139760eef704a2aadafbd0eae8d5a08",
+      "Name": "チャージ 08-03",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -117,
+        "Y": 279.65,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "91c4f8bf519841f785987b887323eb3f",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#C7C4B8",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "51dcb4a5a1f14dc2ba092bac78c38c46",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "3ec4cbfb680d4048aba99485a073a7ff",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "無",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "7",
+            "Column": "2"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "3815a9c4eaf44ffb922ab42e298febe3",
+      "Name": "チャージ 08-04",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": -39,
+        "Y": 279.65,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "554644595d6c48a58ecda0040af4bb7d",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#EF7866",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "b404a2a5124a49ffbd3a47119e9e7120",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "3b41d4427485445897ffb46d342bd088",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "火",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "7",
+            "Column": "3"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "9832d0fda70b42d5b4cbb82c2bbe5fda",
+      "Name": "チャージ 08-05",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 39,
+        "Y": 279.65,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "349f02fc884942db8d5c5bf2f81f9a29",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#EF7866",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "8609ec026550401ca996fa88c8ee222a",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "dcdd98f241d9423e85a47d249ab9a2db",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "火",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "7",
+            "Column": "4"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "8fc8b88259e741639e4cb40428e02a9b",
+      "Name": "チャージ 08-06",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 117,
+        "Y": 279.65,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "92d9907d9832430f82b029dcd84bdec8",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#65BAE3",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "96c96a00254847c3ae801197037acaf4",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "07439b8e94214c9f8b00b20005b625be",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "水",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "7",
+            "Column": "5"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "0be02e91fb514843814d17534d20d558",
+      "Name": "チャージ 08-07",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 195,
+        "Y": 279.65,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "ad11727deb3046c98f71573ad24d623c",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#65BAE3",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "055846d6cf624f33a1cd7202ba933e63",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "bb43f183240c47cd9f296aac346ab7fe",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "水",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "7",
+            "Column": "6"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "65a934a6fc6443228110bfd5092842ac",
+      "Name": "チャージ 08-08",
+      "ParentId": "5e35c33f8ece49549fbbd0906736ebc9",
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 273,
+        "Y": 279.65,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 44,
+        "Height": 44
+      },
+      "Components": [
+        {
+          "Id": "8628bdcf047147fe8c07bc8f19f893af",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#EF7866",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "f3b2860848f0460bad67e32ad40d335e",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "44",
+            "Height": "44",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "7f47cee4948840519cb565cbc18054eb",
+          "Type": "Charge",
+          "Enabled": true,
+          "Values": {
+            "Element": "火",
+            "Effect": "通常",
+            "AttackBoost": "1.5",
+            "SpeedBoost": "2.5",
+            "SplitCount": "3",
+            "Row": "7",
+            "Column": "7"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "b4195b1738ad48c7862bbcebd4f52b0d",
+      "Name": "操作ガイド",
+      "ParentId": null,
+      "Active": true,
+      "Order": 20,
+      "Transform": {
+        "X": 360,
+        "Y": 1220,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 700,
+        "Height": 55
+      },
+      "Components": [
+        {
+          "Id": "ca4ac2fd8e5f4a3d95eac4d3994f25e4",
+          "Type": "Text",
+          "Enabled": true,
+          "Values": {
+            "Text": "再生後、下のボール付近から上へスワイプ",
+            "FontSize": "22",
+            "Color": "#A6C8C7",
+            "Bold": "true"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "64f2d0458ca0456fbb41feb6343e393a",
+      "Name": "スピリットボール",
+      "ParentId": null,
+      "Active": true,
+      "Order": 30,
+      "Transform": {
+        "X": 360,
+        "Y": 1080,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 52,
+        "Height": 52
+      },
+      "Components": [
+        {
+          "Id": "64bc7b7003fa4871a0f2341fe0eff6b4",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#FFE2A0",
+            "Opacity": "1",
+            "Shape": "円"
+          }
+        },
+        {
+          "Id": "f46a6537d3cc4c89a280f75367fb547e",
+          "Type": "BoxCollider",
+          "Enabled": true,
+          "Values": {
+            "Width": "48",
+            "Height": "48",
+            "Trigger": "false"
+          }
+        },
+        {
+          "Id": "a3a09a5b57684690bb39b793be3bc531",
+          "Type": "RigidBody",
+          "Enabled": true,
+          "Values": {
+            "VelocityX": "0",
+            "VelocityY": "0",
+            "Drag": ".45",
+            "Bounce": "1",
+            "StopSpeed": "20"
+          }
+        },
+        {
+          "Id": "84c04d02a664491f8fd089478775df36",
+          "Type": "Shot",
+          "Enabled": true,
+          "Values": {
+            "Speed": "760",
+            "MinDrag": "20",
+            "LaunchY": "1080"
+          }
+        },
+        {
+          "Id": "ae8ad7f793af4be995b47c8a16262ac0",
+          "Type": "Spirit",
+          "Enabled": true,
+          "Values": {
+            "Element": "火",
+            "HP": "1000",
+            "Attack": "100",
+            "ContactRate": ".15",
+            "Advantage": "1.2",
+            "Disadvantage": ".8"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "869f6355091a403a918257266e1a809e",
+      "Name": "ヒット数",
+      "ParentId": null,
+      "Active": true,
+      "Order": 20,
+      "Transform": {
+        "X": 220,
+        "Y": 145,
+        "Rotation": -10,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 300,
+        "Height": 85
+      },
+      "Components": [
+        {
+          "Id": "25779327d94345d0b10ada53a37d5443",
+          "Type": "Text",
+          "Enabled": true,
+          "Values": {
+            "Text": "0 HIT",
+            "FontSize": "45",
+            "Color": "#F9CD71",
+            "Bold": "true"
+          }
+        },
+        {
+          "Id": "9301c6b23e94407693c6316c023973ea",
+          "Type": "BattleReadout",
+          "Enabled": true,
+          "Values": {
+            "Value": "ヒット数",
+            "Level2": "1",
+            "Level3": "3",
+            "Level4": "5",
+            "Level5": "10"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "4b2ef43b65bf4ef98dba992eaf09aa5d",
+      "Name": "効果度",
+      "ParentId": null,
+      "Active": true,
+      "Order": 20,
+      "Transform": {
+        "X": 520,
+        "Y": 145,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 310,
+        "Height": 85
+      },
+      "Components": [
+        {
+          "Id": "4949bb787eae4dbe9ae76653b04dca37",
+          "Type": "Text",
+          "Enabled": true,
+          "Values": {
+            "Text": "効果度  Lv.1",
+            "FontSize": "30",
+            "Color": "#F7F0DD",
+            "Bold": "true"
+          }
+        },
+        {
+          "Id": "de60db6548f34e0e960e51cf805b031a",
+          "Type": "BattleReadout",
+          "Enabled": true,
+          "Values": {
+            "Value": "効果度",
+            "Level2": "1",
+            "Level3": "3",
+            "Level4": "5",
+            "Level5": "10"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "099ab6f9a268487cbced17288d8ead9a",
+      "Name": "攻撃値",
+      "ParentId": null,
+      "Active": true,
+      "Order": 20,
+      "Transform": {
+        "X": 360,
+        "Y": 1165,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 400,
+        "Height": 60
+      },
+      "Components": [
+        {
+          "Id": "68d240ccea4b40d8a7b4c672888610a3",
+          "Type": "Text",
+          "Enabled": true,
+          "Values": {
+            "Text": "攻撃値  0",
+            "FontSize": "27",
+            "Color": "#F0C989",
+            "Bold": "true"
+          }
+        },
+        {
+          "Id": "8760a4b9e3e34c6e9beed4da049fdfbc",
+          "Type": "BattleReadout",
+          "Enabled": true,
+          "Values": {
+            "Value": "攻撃値",
+            "Level2": "1",
+            "Level3": "3",
+            "Level4": "5",
+            "Level5": "10"
+          }
+        }
+      ]
+    }
+  ],
+  "Transitions": []
+}

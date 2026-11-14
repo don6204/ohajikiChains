@@ -1,0 +1,228 @@
+{
+  "Version": 1,
+  "Name": "ホーム",
+  "Width": 720,
+  "Height": 1280,
+  "Background": "#152D34",
+  "Objects": [
+    {
+      "Id": "e74ab168808143cf893d18a7260f2050",
+      "Name": "見出し",
+      "ParentId": null,
+      "Active": true,
+      "Order": 20,
+      "Transform": {
+        "X": 360,
+        "Y": 200,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 620,
+        "Height": 120
+      },
+      "Components": [
+        {
+          "Id": "2343e2aed65f4e9096a1c44a95afe3bf",
+          "Type": "Text",
+          "Enabled": true,
+          "Values": {
+            "Text": "制作プレビュー",
+            "FontSize": "60",
+            "Color": "#F7F0DD",
+            "Bold": "true"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "1a8e49cda1544a62bbba8c38cb0bb5bf",
+      "Name": "ガイド",
+      "ParentId": null,
+      "Active": true,
+      "Order": 20,
+      "Transform": {
+        "X": 360,
+        "Y": 320,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 640,
+        "Height": 90
+      },
+      "Components": [
+        {
+          "Id": "b8d7a74c82264120a0929917e8b8fe4c",
+          "Type": "Text",
+          "Enabled": true,
+          "Values": {
+            "Text": "シーン遷移とコンポーネントの動作例",
+            "FontSize": "26",
+            "Color": "#A7C7BF",
+            "Bold": "true"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "d5649fc3fd8d441ba5e8a4c880840a31",
+      "Name": "盤面で試射する",
+      "ParentId": null,
+      "Active": true,
+      "Order": 15,
+      "Transform": {
+        "X": 360,
+        "Y": 520,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 500,
+        "Height": 90
+      },
+      "Components": [
+        {
+          "Id": "913e434d4830483eb253e0196abba797",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#2A716D",
+            "Opacity": "1",
+            "Shape": "矩形"
+          }
+        },
+        {
+          "Id": "5fdcfd0b22db4065b3a371d3a2cca889",
+          "Type": "Button",
+          "Enabled": true,
+          "Values": {
+            "Event": "バトルへ"
+          }
+        },
+        {
+          "Id": "75fafe1c47584c208cec9921e118284f",
+          "Type": "Text",
+          "Enabled": true,
+          "Values": {
+            "Text": "盤面で試射する",
+            "FontSize": "32",
+            "Color": "#F5F0DF",
+            "Bold": "true"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "cd977fb8c2b34dd0975d926ce1d06f26",
+      "Name": "エフェクトを確認する",
+      "ParentId": null,
+      "Active": true,
+      "Order": 15,
+      "Transform": {
+        "X": 360,
+        "Y": 680,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 500,
+        "Height": 90
+      },
+      "Components": [
+        {
+          "Id": "5193889bcc494833bf20dc472a9967f1",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#2A716D",
+            "Opacity": "1",
+            "Shape": "矩形"
+          }
+        },
+        {
+          "Id": "e5cb559cd4bb4189b1b13978786cada7",
+          "Type": "Button",
+          "Enabled": true,
+          "Values": {
+            "Event": "演出へ"
+          }
+        },
+        {
+          "Id": "a4fa5bf5513740f08f51a72c5005f912",
+          "Type": "Text",
+          "Enabled": true,
+          "Values": {
+            "Text": "エフェクトを確認する",
+            "FontSize": "32",
+            "Color": "#F5F0DF",
+            "Bold": "true"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "e49a84f109dd45fdad1d51f3ddb56a59",
+      "Name": "タイトルへ戻る",
+      "ParentId": null,
+      "Active": true,
+      "Order": 15,
+      "Transform": {
+        "X": 360,
+        "Y": 960,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 500,
+        "Height": 90
+      },
+      "Components": [
+        {
+          "Id": "168ddb8b33ed4de5915912902baf8859",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#2A716D",
+            "Opacity": "1",
+            "Shape": "矩形"
+          }
+        },
+        {
+          "Id": "e20abbb44ccc4c8eb97c396ac80f829d",
+          "Type": "Button",
+          "Enabled": true,
+          "Values": {
+            "Event": "タイトルへ"
+          }
+        },
+        {
+          "Id": "163ab485698d449e92e479108b7c1b64",
+          "Type": "Text",
+          "Enabled": true,
+          "Values": {
+            "Text": "タイトルへ戻る",
+            "FontSize": "32",
+            "Color": "#F5F0DF",
+            "Bold": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "Transitions": [
+    {
+      "Event": "バトルへ",
+      "Target": "Assets/Scenes/Battle.scene.json",
+      "FadeSeconds": 0.3
+    },
+    {
+      "Event": "演出へ",
+      "Target": "Assets/Scenes/Effects.scene.json",
+      "FadeSeconds": 0.3
+    },
+    {
+      "Event": "タイトルへ",
+      "Target": "Assets/Scenes/Title.scene.json",
+      "FadeSeconds": 0.3
+    }
+  ]
+}

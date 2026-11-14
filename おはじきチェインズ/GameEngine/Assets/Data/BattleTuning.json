@@ -1,0 +1,103 @@
+{
+  "effectThresholds": [
+    1,
+    3,
+    5,
+    10
+  ],
+  "contactAttackFactor": 0.15,
+  "advantage": 1.2,
+  "disadvantage": 0.8,
+  "deceleration": 200,
+  "shotRadius": 20,
+  "chargeRadius": 22,
+  "squareHitboxes": 1,
+  "maximumShotSeconds": 8,
+  "stopSpeed": 35,
+  "minimumSwipe": 25,
+  "minimumForwardSwipe": 15,
+  "touchPadding": 22,
+  "seed": 43,
+  "specialChargeProbabilities": [
+    0.05,
+    0.05,
+    0.05,
+    0.05,
+    0.05,
+    0.1
+  ],
+  "specialAttackMultiplier": 1.5,
+  "specialSpeedMultiplier": 2.5,
+  "specialSplitTotal": 3,
+  "maximumProjectiles": 12,
+  "maximumShotSpeed": 6000,
+  "maximumContactMultiplier": 8,
+  "maximumTraps": 12,
+  "trapRadius": 24,
+  "boardColumns": 8,
+  "boardRows": 8,
+  "boardBottom": 0.22,
+  "boardTop": 0.78,
+  "allClearRefillDelay": 5,
+  "allClearBannerSeconds": 1.5,
+  "elementWeights": {
+    "x": 1,
+    "y": 1,
+    "z": 1,
+    "w": 1
+  },
+  "launchInset": 0.1,
+  "enemyMinimumAngle": 0.18,
+  "enemyThinkSeconds": 0.8,
+  "chargeSeconds": 0.85,
+  "cutInSeconds": 0.8,
+  "impactSeconds": 0.85,
+  "normalImpactSeconds": 0.9,
+  "damageFlightSeconds": 0.48,
+  "contactEffectIntensity": 1.15,
+  "contactEffectSeconds": 0.64,
+  "contactEffectPoolSize": 16,
+  "damageNumberPunch": 0,
+  "damageCounterSpeed": 24,
+  "damageColorFullAt": 600,
+  "trailOpacity": 0.65,
+  "damageBankShake": 0,
+  "damageBankTilt": 0,
+  "presentationVersion": 20261111,
+  "contactCelebrationThresholds": [
+    5,
+    10,
+    20
+  ],
+  "longPressSeconds": 0.55,
+  "effectMaxDiameter": 160,
+  "hitShake": 0,
+  "levelSlideSpeed": 950,
+  "rewardExperience": 50,
+  "rewardCoins": 500,
+  "rewardOnDefeat": 1,
+  "maxRank": 50,
+  "rankTwoExperience": 100,
+  "rankBands": [
+    {
+      "throughRank": 10,
+      "baseExperience": 450,
+      "perCurrentRank": 50
+    },
+    {
+      "throughRank": 20,
+      "baseExperience": 600,
+      "perCurrentRank": 60
+    },
+    {
+      "throughRank": 30,
+      "baseExperience": 800,
+      "perCurrentRank": 75
+    },
+    {
+      "throughRank": 50,
+      "baseExperience": 1000,
+      "perCurrentRank": 100
+    }
+  ]
+}

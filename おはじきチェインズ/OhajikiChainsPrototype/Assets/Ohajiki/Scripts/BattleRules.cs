@@ -5,6 +5,11 @@ namespace Ohajiki
 {
     public static class BattleRules
     {
+        public const double HitDamageGrowth=1.02;
+        public static double HitDamageMultiplier(int hitNumber)=>hitNumber<=0?0:Math.Pow(HitDamageGrowth,hitNumber-1);
+        public static double ContactWeight(int contacts)=>contacts<=0?0:(Math.Pow(HitDamageGrowth,contacts)-1)/(HitDamageGrowth-1);
+        // Keep long combos monotone at the integer HP representation limit.
+        public static int RoundDamage(double amount)=>amount<=0?0:amount>=int.MaxValue?int.MaxValue:(int)Math.Round(amount,MidpointRounding.ToEven);
         public static int EffectLevel(int count, BattleTuning tuning)
         {
             int level = 1; foreach (int threshold in tuning.effectThresholds) if (count >= threshold) level++;
@@ -18,8 +23,12 @@ namespace Ohajiki
         }
         public static int ContactDamage(int attack, int contacts, Element element, Element target, BattleTuning tuning) =>
             ContactDamage((float)attack, contacts, element, target, tuning);
-        public static int ContactDamage(float attack, float contacts, Element element, Element target, BattleTuning tuning) =>
-            Mathf.RoundToInt(attack * Mathf.Max(0, contacts) * tuning.contactAttackFactor * Affinity(element, target, tuning));
+        public static int ContactDamage(float attack,int contacts,Element element,Element target,BattleTuning tuning)=>
+            ContactDamage(attack,ContactWeight(contacts),element,target,tuning);
+        // damageWeight already includes each contact's own boost and hit multiplier.
+        public static int ContactDamage(float attack,double damageWeight,Element element,Element target,BattleTuning tuning)=>
+            attack<=0 || damageWeight<=0 || tuning.contactAttackFactor<=0?0:
+            RoundDamage(attack*damageWeight*tuning.contactAttackFactor*Affinity(element,target,tuning));
         public static int TotalHp(SpiritDefinition[] spirits)
         { int hp = 0; foreach (var spirit in spirits) hp += spirit.Hp; return hp; }
     }
@@ -95,7 +104,7 @@ namespace Ohajiki
             {
                 amount = PercentGuard ? amount * (1 - Mathf.Clamp01(GuardValue)) : Mathf.Max(0, amount - GuardValue);
             }
-            return Mathf.RoundToInt(amount);
+            return BattleRules.RoundDamage(amount);
         }
         internal int ApplyDamage(int amount) {int damage=Mathf.Min(Hp,Mathf.Max(0,amount));Hp-=damage;return damage;}
         internal void ConsumeGuardTurn() {if(GuardTurns>0 && --GuardTurns==0)GuardValue=0;}
@@ -116,14 +125,37 @@ namespace Ohajiki
         public Combatant Enemy { get; }
         public int Turn { get; private set; } = 1;
         public bool Practice { get; }
-        public bool Finished => Player.Hp <= 0 || (!Practice && Enemy.Hp <= 0);
-        public bool Won => Enemy.Hp <= 0 && Player.Hp>0;
+        public bool Finished => recordedWin.HasValue || Player.Hp <= 0 || (!Practice && Enemy.Hp <= 0);
+        public bool Won => recordedWin ?? (Enemy.Hp <= 0 && Player.Hp>0);
         public bool EnemyActsNext { get; private set; }
         public bool ActionPending => pendingSpirit!=null;
         SpiritDefinition pendingSpirit;
         Combatant pendingSource,pendingTarget;
         ActionResult pendingResult;
         float pendingPower;
+        SpiritDefinition contactSpirit;
+        bool contactEnemy;
+        int contactRawDamage,contactAppliedDamage;
+        SpiritDefinition activeShotSpirit;
+        bool activeShotEnemy;
+        bool? recordedWin;
+        public bool ShotInProgress=>activeShotSpirit!=null;
+        bool IsActiveShot(bool enemy,SpiritDefinition spirit)=>ShotInProgress && activeShotEnemy==enemy && activeShotSpirit==spirit;
+        // Only an already launched shot may continue after defeat. New turns remain blocked.
+        public void BeginShot(bool enemy,SpiritDefinition spirit)
+        {
+            if(Finished || ActionPending || ShotInProgress || enemy!=EnemyActsNext)
+                throw new InvalidOperationException("Cannot start this shot");
+            if(spirit==null || !spirit.IsValid)throw new ArgumentException("Invalid acting spirit");
+            activeShotEnemy=enemy;activeShotSpirit=spirit;
+        }
+        // Spec 11 B61: first side to reach zero loses, even while its turn finishes.
+        public void RecordDefeat()
+        {
+            if(recordedWin.HasValue)return;
+            if(Player.Hp<=0)recordedWin=false;
+            else if(!Practice && Enemy.Hp<=0)recordedWin=true;
+        }
         public BattleState(BattleTuning tuning, bool practice=false)
         {
             Practice=practice;
@@ -141,15 +173,37 @@ namespace Ohajiki
             return ResolveSkill();
         }
         public ActionResult ResolveNormal(bool enemy, SpiritDefinition spirit, int contacts, int matched, BattleTuning tuning) =>
-            ResolveNormal(enemy, spirit, contacts, matched, tuning, contacts);
-        public ActionResult ResolveNormal(bool enemy, SpiritDefinition spirit, int contacts, int matched, BattleTuning tuning, float weightedContacts)
+            ResolveNormal(enemy, spirit, contacts, matched, tuning, BattleRules.ContactWeight(contacts));
+        // Contact-time delivery. Cumulative mitigation preserves one action's
+        // fixed guard budget and percentage rounding instead of charging them per hit.
+        public int ApplyContactDamage(bool enemy,SpiritDefinition spirit,int cumulativeRawDamage)
         {
-            if (ActionPending || Finished || enemy != EnemyActsNext) throw new InvalidOperationException("Not this side's turn");
+            if(ActionPending || (Finished && !IsActiveShot(enemy,spirit)) || enemy!=EnemyActsNext ||
+                (ShotInProgress && !IsActiveShot(enemy,spirit)))
+                throw new InvalidOperationException("Not this side's active shot");
+            if(spirit==null || !spirit.IsValid)throw new ArgumentException("Invalid acting spirit");
+            if(contactSpirit!=null && (contactSpirit!=spirit || contactEnemy!=enemy))
+                throw new InvalidOperationException("Contact damage belongs to another shot");
+            if(cumulativeRawDamage<contactRawDamage)
+                throw new ArgumentOutOfRangeException(nameof(cumulativeRawDamage));
+            var target=enemy?Player:Enemy;
+            int delta=target.MitigatedDamage(cumulativeRawDamage)-target.MitigatedDamage(contactRawDamage);
+            int applied=target.ApplyDamage(delta);
+            RecordDefeat();
+            contactSpirit=spirit;contactEnemy=enemy;contactRawDamage=cumulativeRawDamage;contactAppliedDamage+=applied;
+            return applied;
+        }
+        public ActionResult ResolveNormal(bool enemy, SpiritDefinition spirit, int contacts, int matched, BattleTuning tuning, double damageWeight)
+        {
+            if (ActionPending || (Finished && !IsActiveShot(enemy,spirit)) || enemy != EnemyActsNext ||
+                (ShotInProgress && !IsActiveShot(enemy,spirit))) throw new InvalidOperationException("Not this side's turn");
             if(spirit==null || !spirit.IsValid)throw new ArgumentException("Invalid acting spirit");
             var source = enemy ? Enemy : Player; var target = enemy ? Player : Enemy;
             source.Element = spirit.element;
             var result = new ActionResult { enemy = enemy, contacts = contacts, matched = matched, level = BattleRules.EffectLevel(matched, tuning) };
-            result.normalDamage = BattleRules.ContactDamage(spirit.Attack * source.AttackMultiplier, weightedContacts, spirit.element, target.Element, tuning);
+            result.normalDamage = BattleRules.ContactDamage(spirit.Attack * source.AttackMultiplier, damageWeight, spirit.element, target.Element, tuning);
+            if(contactSpirit!=null && (contactSpirit!=spirit || contactEnemy!=enemy || result.normalDamage<contactRawDamage))
+                throw new InvalidOperationException("Contact damage does not match the completed shot");
             float power = spirit.Power(result.level), affinity = BattleRules.Affinity(spirit.element, target.Element, tuning);
             switch (spirit.skill)
             {
@@ -159,15 +213,20 @@ namespace Ohajiki
             // Snapshot one action's mitigation. A fixed guard budget and percentage rounding
             // are shared by both stages, and its duration is consumed only after the skill.
             result.normalAfterGuard=target.MitigatedDamage(result.normalDamage);
-            result.skillAfterGuard=target.MitigatedDamage(result.normalDamage+result.skillDamage)-result.normalAfterGuard;
-            result.appliedNormalDamage=target.ApplyDamage(result.normalAfterGuard);
+            int combined=BattleRules.RoundDamage((double)result.normalDamage+result.skillDamage);
+            result.skillAfterGuard=target.MitigatedDamage(combined)-result.normalAfterGuard;
+            int alreadyMitigated=target.MitigatedDamage(contactRawDamage);
+            result.appliedNormalDamage=contactAppliedDamage+target.ApplyDamage(result.normalAfterGuard-alreadyMitigated);
             result.appliedDamage=result.appliedNormalDamage;
+            RecordDefeat();
+            contactSpirit=null;contactRawDamage=contactAppliedDamage=0;
             pendingSpirit=spirit;pendingSource=source;pendingTarget=target;pendingResult=result;pendingPower=power;
             return result;
         }
         public ActionResult ResolveSkill()
         {
             if(!ActionPending)throw new InvalidOperationException("Normal attack must resolve before the skill");
+            RecordDefeat();
             var result=pendingResult;
             // Existing effects cover this action. Newly granted effects start with the next one.
             pendingSource.ConsumeStatusTurn();
@@ -194,8 +253,10 @@ namespace Ohajiki
             }
             result.appliedSkillDamage=pendingTarget.ApplyDamage(result.skillAfterGuard);
             result.appliedDamage+=result.appliedSkillDamage;pendingTarget.ConsumeGuardTurn();
+            RecordDefeat();
             EnemyActsNext=!result.enemy;if(result.enemy)Turn++;
             pendingSpirit=null;pendingSource=pendingTarget=null;
+            activeShotSpirit=null;
             return result;
         }
     }

@@ -1,0 +1,73 @@
+おはじき工房 C# API — 0.1
+
+Assets内の .cs をRoslynでまとめてコンパイルします。
+Ohajiki.Engine.OhajikiBehaviourを継承したpublicクラスで、引数なしコンストラクターが必要です。
+
+using Ohajiki.Engine;
+
+public sealed class 上下移動 : OhajikiBehaviour
+{
+    [Expose("移動速度", "1秒あたりの移動量")]
+    public float Speed = 30f;
+
+    public override void OnStart()
+    {
+        Log(GameObject.Name + " を開始しました");
+    }
+
+    public override void OnUpdate()
+    {
+        Transform.Y += Speed * DeltaTime;
+    }
+
+    public override void OnCollision(GameObject other)
+    {
+        Log("接触：" + other.Name);
+    }
+
+    public override void OnStop() { }
+}
+
+コールバック
+OnStart：再生開始／シーン読込時に1回。
+OnUpdate：各更新。DeltaTimeは秒。一時停止中は呼ばれません。
+OnCollision：四角形コライダーに接触した物体が渡されます。
+  継続接触時も呼ばれることがあります。UnityのOnCollisionEnterとは異なります。
+OnStop：再生停止／シーン離脱時。ファイル・リソース等の後始末を行います。
+
+利用できるプロパティ
+GameObject：付いているオブジェクト。
+Transform：位置X/Y、Rotation、ScaleX/Y、Width/Height。
+Scene：実行中のシーン。Scene.FindByName("名前")、CreateObject("名前")、Remove(obj)。
+Input：Pointer（論理画面座標）、PressPosition、Pressed、Held、Released。
+Input.Key(System.Windows.Forms.Keys.Space)：キーの押下状態。
+DeltaTime：前フレームからの秒数。最大0.1秒に制限。
+
+メソッド
+Log("文字列")：コンソール／プレイヤーのログ。
+SendEvent("次へ")：シーン設定の対応するイベントへ遷移。
+GameObject.GetComponent("Sprite")：先頭の有効なコンポーネント。
+GameObject.AddComponent("ParticleEmitter")：組み込みコンポーネント追加。
+component.Get("Color")、Number("Rate")、Integer("Rows")、Flag("Loop")。
+component.Set("Rate", 50f)、Set("Color", "#FFAA44")。
+Scene.Position(obj)：親の変形を反映した座標。
+Scene.SetWorldPosition(obj, new System.Numerics.Vector2(x, y))：ワールド座標で移動。
+
+インスペクターの公開フィールド
+public string / bool / int / float / double / enum を編集・保存できます。
+[Expose("日本語名", "説明")] は任意です。指定しない場合はフィールド名を使用します。
+readonly、static、privateフィールド、プロパティ、配列、独自構造体は自動表示しません。
+設定値はC#コンポーネント内の field:フィールド名 に保存されます。
+フィールドの初期値を変更した場合、シーンに保存された明示値が優先されます。
+
+ライフサイクルの制約
+実行途中で追加したC#コンポーネントには、この初版では自動的にOnStartを呼びません。
+動的な物理・描画・パーティクルは次のフレームに反映されます。
+再コンパイルには再生停止が必要です。以前のスクリプトAssemblyLoadContextは破棄予約されます。
+コンポーネントが無効、オブジェクトが無効、シーンから削除された場合はOnUpdateを呼びません。
+OnStartは開始時に有効な物だけに呼びます。後から有効にしたC#は次の再生で開始します。
+
+C#は通常のローカルアプリと同じ権限で動きます。
+独立したサンドボックスや、無限ループを強制停止する機能はありません。
+OnUpdateを短く保ち、スレッドやリソースはOnStopで終了してください。
+UnityEngineへの参照はありません。Unity用コードはこのAPIへ書き換える必要があります。

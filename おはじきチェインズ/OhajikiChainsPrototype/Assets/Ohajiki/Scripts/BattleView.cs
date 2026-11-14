@@ -216,7 +216,7 @@ namespace Ohajiki
             bool feedbackVisible=phase==BattlePhase.PlayerShot || phase==BattlePhase.EnemyShot ||
                 phase==BattlePhase.Charging || phase==BattlePhase.DamageFlight || phase==BattlePhase.NormalImpact ||
                 phase==BattlePhase.CutIn || phase==BattlePhase.Impact;
-            Feedback.SetDamageBankVisible(feedbackVisible);
+            Feedback.SetHitCounterVisible(feedbackVisible);
             // Avoid showing fragments of these secondary labels behind the shot feedback.
             turnText.gameObject.SetActive(!feedbackVisible);
             deckText.gameObject.SetActive(!feedbackVisible);
@@ -393,6 +393,8 @@ namespace Ohajiki
         }
         public void HideDetails() => detailPanel.gameObject.SetActive(false);
         public void HideOverlay() => overlay.gameObject.SetActive(false);
+        public bool DamageVisualsVisible=>Feedback.DamageVisualsVisible || targetFlash.color.a>0 ||
+            (impactPanel.gameObject.activeInHierarchy && impactUnit.text=="DAMAGE");
         public void AnimateAction(BattlePhase phase,float progress,SpiritDefinition spirit,Vector2 position,bool enemy)
         {
             energy.gameObject.SetActive(phase == BattlePhase.Charging);
@@ -403,7 +405,7 @@ namespace Ohajiki
             {
                 float kick=Mathf.Exp(-progress*8);
                 impactPanel.localScale=new Vector3(1+.13f*kick,1+.19f*kick,1);
-                targetFlash.color=new Color(1,.55f,.08f,(1-progress)*.7f);
+                targetFlash.color=Color.clear;
                 targetFlash.rectTransform.localRotation=Quaternion.Euler(0,0,progress*26);
             }
             else targetFlash.color=Color.clear;
@@ -440,7 +442,8 @@ namespace Ohajiki
         public void ShowSkillImpact(ActionResult result,SpiritDefinition spirit)
         {
             supportImpact=spirit.skill!=Skill.Attack && spirit.skill!=Skill.PercentAttack;
-            string effect=$"{result.appliedSkillDamage:N0}";impactUnit.text="DAMAGE";
+            string effect="発動";
+            impactUnit.text="SKILL";
             if(spirit.skill==Skill.Heal || spirit.skill==Skill.PercentHeal){effect=$"+{result.healing:N0}";impactUnit.text="HEAL";}
             if(result.guarding){effect="GUARD";impactUnit.text=$"相手の行動 {spirit.guardTurns}回";}
             if(!string.IsNullOrEmpty(result.statusEffect))
@@ -454,7 +457,6 @@ namespace Ohajiki
             bool bottom=affectsSelf?!result.enemy:result.enemy;
             impactPanel.anchoredPosition=new Vector2(360,bottom?410:866);
             targetFlash.rectTransform.anchoredPosition=bottom?new Vector2(360,278):new Vector2(530,1115);
-            Feedback.Impact(true,result.enemy,affectsSelf);
         }
         RectTransform Rect(string name, Transform parent, float x, float y, float w, float h)
         {

@@ -1,0 +1,168 @@
+{
+  "Version": 1,
+  "Name": "エフェクト調整",
+  "Width": 720,
+  "Height": 1280,
+  "Background": "#15252D",
+  "Objects": [
+    {
+      "Id": "ffe19c2fd4be4f8e992fc5bf8acb05d1",
+      "Name": "見出し",
+      "ParentId": null,
+      "Active": true,
+      "Order": 20,
+      "Transform": {
+        "X": 360,
+        "Y": 180,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 620,
+        "Height": 110
+      },
+      "Components": [
+        {
+          "Id": "ef7eacabb685466899815a5e7e626d54",
+          "Type": "Text",
+          "Enabled": true,
+          "Values": {
+            "Text": "エフェクトの試作",
+            "FontSize": "52",
+            "Color": "#F7F0DD",
+            "Bold": "true"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "c874ee130cf04700871765c4f4e6e38b",
+      "Name": "説明",
+      "ParentId": null,
+      "Active": true,
+      "Order": 20,
+      "Transform": {
+        "X": 360,
+        "Y": 320,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 650,
+        "Height": 140
+      },
+      "Components": [
+        {
+          "Id": "85def6cbe1b44be6b061172cc266638b",
+          "Type": "Text",
+          "Enabled": true,
+          "Values": {
+            "Text": "発生数・寿命・色・速度を\nインスペクターで調整できます",
+            "FontSize": "27",
+            "Color": "#A9C7C3",
+            "Bold": "true"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "caaf99f98b534029b7fe887e391b4c85",
+      "Name": "エネルギーの発生源",
+      "ParentId": null,
+      "Active": true,
+      "Order": 0,
+      "Transform": {
+        "X": 360,
+        "Y": 700,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 130,
+        "Height": 130
+      },
+      "Components": [
+        {
+          "Id": "c62ea245748147479ad879ac5109bca8",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#EAC46E",
+            "Opacity": "1",
+            "Shape": "リング"
+          }
+        },
+        {
+          "Id": "b8a66f17f41c4b18a046e8f14a3fc1f5",
+          "Type": "ParticleEmitter",
+          "Enabled": true,
+          "Values": {
+            "Rate": "20",
+            "Lifetime": ".8",
+            "Speed": "90",
+            "Size": "12",
+            "EndSize": "2",
+            "Direction": "-90",
+            "Spread": "360",
+            "Gravity": "40",
+            "Color": "#FFCF68",
+            "Texture": ""
+          }
+        }
+      ]
+    },
+    {
+      "Id": "253f35eb723c4f23aa91fe4c763a4e03",
+      "Name": "ホームへ戻る",
+      "ParentId": null,
+      "Active": true,
+      "Order": 15,
+      "Transform": {
+        "X": 360,
+        "Y": 1060,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 500,
+        "Height": 90
+      },
+      "Components": [
+        {
+          "Id": "63a6af3edd8f449b888ac5526185d870",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#2A716D",
+            "Opacity": "1",
+            "Shape": "矩形"
+          }
+        },
+        {
+          "Id": "784e0808001c41eb8064c107e72ac861",
+          "Type": "Button",
+          "Enabled": true,
+          "Values": {
+            "Event": "戻る"
+          }
+        },
+        {
+          "Id": "121b125c614842b290df4f153712f02a",
+          "Type": "Text",
+          "Enabled": true,
+          "Values": {
+            "Text": "ホームへ戻る",
+            "FontSize": "32",
+            "Color": "#F5F0DF",
+            "Bold": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "Transitions": [
+    {
+      "Event": "戻る",
+      "Target": "Assets/Scenes/Home.scene.json",
+      "FadeSeconds": 0.3
+    }
+  ]
+}

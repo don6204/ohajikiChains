@@ -44,7 +44,7 @@ namespace Ohajiki
             yield return new WaitForSeconds(.8f);
             var session=app.Session;int energy=session.Energy;
             Require(app.Title!=null && app.Hub==null && app.Battle==null,"starts at title only");
-            Require(app.Title.DisplayVersion=="Ver. 1.006","updated version");
+            Require(app.Title.DisplayVersion=="Ver. 1.010","updated version");
             Require(TitleView.SocialUrl=="https://x.com/don_kng68","specified X destination");
             Capture("01-title");yield return null;
             Screen.SetResolution(480,800,FullScreenMode.Windowed);yield return new WaitForSeconds(.4f);
@@ -76,7 +76,7 @@ namespace Ohajiki
             Require(app.Session==session && session.Energy==energy,"title does not reset session or spend energy");
             Capture("06-home");yield return null;
             app.EnterBattle();yield return new WaitForSeconds(.6f);
-            Require(app.Battle!=null && !app.Battle.View.Feedback.DamageBankVisible,"battle opens with hidden damage UI");
+            Require(app.Battle!=null && !app.Battle.View.Feedback.HitCounterVisible,"battle opens with hidden damage UI");
             app.ReturnHome();yield return new WaitForSeconds(.3f);
             Require(app.Title==null && app.Hub.Page==HubPage.Home,"battle returns to home");
             Debug.Log("TITLE SMOKE PASS: initial title/version, 3 sizes, backup open/close/disabled providers, modal input, double tap, fade to home, one EventSystem, session preserved, battle return, no SE. X URL inspected; external browser not launched by test.");

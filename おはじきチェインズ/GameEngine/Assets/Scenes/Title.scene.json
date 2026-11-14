@@ -1,0 +1,206 @@
+{
+  "Version": 1,
+  "Name": "タイトル",
+  "Width": 720,
+  "Height": 1280,
+  "Background": "#10282F",
+  "Objects": [
+    {
+      "Id": "c34286a22d4447068f1466a3a5fca57b",
+      "Name": "タイトル",
+      "ParentId": null,
+      "Active": true,
+      "Order": 20,
+      "Transform": {
+        "X": 360,
+        "Y": 420,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 660,
+        "Height": 240
+      },
+      "Components": [
+        {
+          "Id": "f6c693c6e0954f5e9d80304d3caa8cc3",
+          "Type": "Text",
+          "Enabled": true,
+          "Values": {
+            "Text": "おはじき\nチェインズ",
+            "FontSize": "78",
+            "Color": "#F7F0DD",
+            "Bold": "true"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "041ab7fa462e4ab58bbbbfca7ced9e15",
+      "Name": "説明",
+      "ParentId": null,
+      "Active": true,
+      "Order": 20,
+      "Transform": {
+        "X": 360,
+        "Y": 610,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 600,
+        "Height": 65
+      },
+      "Components": [
+        {
+          "Id": "4be607dc7aba4d759802215378ba0acf",
+          "Type": "Text",
+          "Enabled": true,
+          "Values": {
+            "Text": "シーンと演出を組み立てる",
+            "FontSize": "26",
+            "Color": "#9EBAB7",
+            "Bold": "true"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "3ab345005b914e52841232fb0a5a61f5",
+      "Name": "タイトルのおはじき",
+      "ParentId": null,
+      "Active": true,
+      "Order": 0,
+      "Transform": {
+        "X": 360,
+        "Y": 790,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 135,
+        "Height": 135
+      },
+      "Components": [
+        {
+          "Id": "e45d05d7acb14306ae855db3c1d4e541",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#F0C16F",
+            "Opacity": "1",
+            "Shape": "リング"
+          }
+        },
+        {
+          "Id": "edec1aa52d564d3584d1c1f6108e743d",
+          "Type": "ParticleEmitter",
+          "Enabled": true,
+          "Values": {
+            "Rate": "8",
+            "Lifetime": ".8",
+            "Speed": "90",
+            "Size": "12",
+            "EndSize": "2",
+            "Direction": "-90",
+            "Spread": "360",
+            "Gravity": "40",
+            "Color": "#FFCF68",
+            "Texture": ""
+          }
+        },
+        {
+          "Id": "e28ea678fac24b25b87cc85a5f994471",
+          "Type": "Script",
+          "Enabled": true,
+          "Values": {
+            "Class": "ゆっくり回転",
+            "field:Speed": "25"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "b75fce83d4c14a58a43eb2baf697da40",
+      "Name": "タップしてはじめる",
+      "ParentId": null,
+      "Active": true,
+      "Order": 15,
+      "Transform": {
+        "X": 360,
+        "Y": 1030,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 500,
+        "Height": 90
+      },
+      "Components": [
+        {
+          "Id": "7c054e8904424075a796b7b5f1f9ab5d",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#2A716D",
+            "Opacity": "1",
+            "Shape": "矩形"
+          }
+        },
+        {
+          "Id": "75cceb24e3a547adad8fe25f4eb772ed",
+          "Type": "Button",
+          "Enabled": true,
+          "Values": {
+            "Event": "ホームへ"
+          }
+        },
+        {
+          "Id": "f9fc81a78fd14d698fe19b1a74ca3b88",
+          "Type": "Text",
+          "Enabled": true,
+          "Values": {
+            "Text": "タップしてはじめる",
+            "FontSize": "32",
+            "Color": "#F5F0DF",
+            "Bold": "true"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "fab4293c14884c9daebd054c493dcb7c",
+      "Name": "バージョン",
+      "ParentId": null,
+      "Active": true,
+      "Order": 20,
+      "Transform": {
+        "X": 360,
+        "Y": 1210,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 600,
+        "Height": 45
+      },
+      "Components": [
+        {
+          "Id": "0bf634f39b37409487e804a918572418",
+          "Type": "Text",
+          "Enabled": true,
+          "Values": {
+            "Text": "エンジン用サンプル  0.1",
+            "FontSize": "20",
+            "Color": "#9EBAB7",
+            "Bold": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "Transitions": [
+    {
+      "Event": "ホームへ",
+      "Target": "Assets/Scenes/Home.scene.json",
+      "FadeSeconds": 0.5
+    }
+  ]
+}

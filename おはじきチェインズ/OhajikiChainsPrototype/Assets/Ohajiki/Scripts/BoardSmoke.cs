@@ -88,6 +88,10 @@ namespace Ohajiki
             // This smoke owns its temporary tuning/cards and destroys them after battle teardown.
             var durable=Instantiate(template);durable.deceleration=1;durable.maximumShotSeconds=14;
             durable.playerDeck=template.playerDeck.Select(s=>Instantiate(s)).ToArray();
+            durable.enemyDeck=template.enemyDeck.Select(s=>Instantiate(s)).ToArray();
+            // A board/refill fixture must survive its forced 64-hit missile cascade,
+            // including when this build delivers damage immediately on contact.
+            foreach(var spirit in durable.playerDeck.Concat(durable.enemyDeck))spirit.baseHp=50000;
             durable.specialChargeProbabilities=new float[6];
             battle.ConfigureSession(durable,null,app.Session.Progress);
             battle.Restart();sim=battle.Simulation;PlaceCascade(battle);
@@ -117,7 +121,7 @@ namespace Ohajiki
             Require(battle.Shoot(Vector2.up*300),"short-shot launch");
             yield return Until(()=>!battle.Simulation.Moving,3,"shot ends before delay");
             Require(battle.Simulation.ResetCount==1&&!battle.Simulation.AwaitingAllClearRefill,"stopped shot has no delayed refill");
-            app.ReturnHome();foreach(var spirit in durable.playerDeck)Destroy(spirit);Destroy(durable);
+            app.ReturnHome();foreach(var spirit in durable.playerDeck.Concat(durable.enemyDeck))Destroy(spirit);Destroy(durable);
             yield return new WaitForSeconds(.3f);
             Require(FindObjectsByType<BattleFeedback>(FindObjectsSortMode.None).Length==0,"return destroys all-clear UI");
             Debug.Log("BOARD SMOKE PASS: 64 cells / 3 resolutions, missile-chain all-clear once, gold right-to-left banner 1-2 seconds, pause, five-second moving refill with visible cells and preserved hits, stopped-shot cancellation, retry and return cleanup.");

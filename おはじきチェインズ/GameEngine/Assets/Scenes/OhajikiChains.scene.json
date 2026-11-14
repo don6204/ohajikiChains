@@ -1,0 +1,471 @@
+{
+  "Version": 1,
+  "Name": "おはじきチェインズ / Title",
+  "Width": 720,
+  "Height": 1280,
+  "Background": "#FFF3D7",
+  "Objects": [
+    {
+      "Id": "画像:0",
+      "Name": "画像",
+      "ParentId": null,
+      "Active": true,
+      "Order": 0,
+      "Transform": {
+        "X": 360,
+        "Y": 640,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 720,
+        "Height": 1280
+      },
+      "Components": [
+        {
+          "Id": "257bb21068a84f8f87e6ab28ab208dc9",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "Assets/Imported/Resources/UI/SunnyRuins.png",
+            "Color": "#FFFFFF",
+            "Opacity": "0.45",
+            "Shape": "四角"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "紙地:1",
+      "Name": "紙地",
+      "ParentId": null,
+      "Active": true,
+      "Order": 1,
+      "Transform": {
+        "X": 360,
+        "Y": 640,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 720,
+        "Height": 1280
+      },
+      "Components": [
+        {
+          "Id": "fc4e20b1b04a43568a8f3ba048fd2e7a",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#FFF3D7",
+            "Opacity": "0.78",
+            "Shape": "四角"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "画像:2",
+      "Name": "画像",
+      "ParentId": null,
+      "Active": true,
+      "Order": 2,
+      "Transform": {
+        "X": 360,
+        "Y": 640,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 720,
+        "Height": 1280
+      },
+      "Components": [
+        {
+          "Id": "eaac439b3d094bbdb44e8731c3968d90",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "Assets/Imported/Resources/UI/SunnyRuins.png",
+            "Color": "#FFFFFF",
+            "Opacity": "1",
+            "Shape": "四角"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "画像:3",
+      "Name": "画像",
+      "ParentId": null,
+      "Active": true,
+      "Order": 3,
+      "Transform": {
+        "X": 220,
+        "Y": 522.5,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 390,
+        "Height": 585
+      },
+      "Components": [
+        {
+          "Id": "2a766b4e5f97437e8f2561d294c36904",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "Assets/Imported/Art/Fire.png",
+            "Color": "#FFFFFF",
+            "Opacity": "1",
+            "Shape": "四角"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "画像:4",
+      "Name": "画像",
+      "ParentId": null,
+      "Active": true,
+      "Order": 4,
+      "Transform": {
+        "X": 505,
+        "Y": 667.5,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 330,
+        "Height": 495
+      },
+      "Components": [
+        {
+          "Id": "4aa67e8d452a4460967535aad613e347",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "Assets/Imported/Art/Water.png",
+            "Color": "#FFFFFF",
+            "Opacity": "0.9",
+            "Shape": "四角"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "タイトル帯:5",
+      "Name": "タイトル帯",
+      "ParentId": null,
+      "Active": true,
+      "Order": 5,
+      "Transform": {
+        "X": 360,
+        "Y": 155,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 720,
+        "Height": 220
+      },
+      "Components": [
+        {
+          "Id": "f9b313e41a984cb58c5809482aefd36e",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#3C3025",
+            "Opacity": "0.91",
+            "Shape": "四角"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "text:6",
+      "Name": "おはじき\nチェインズ",
+      "ParentId": null,
+      "Active": true,
+      "Order": 6,
+      "Transform": {
+        "X": 360,
+        "Y": 155,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 670,
+        "Height": 180
+      },
+      "Components": [
+        {
+          "Id": "b6dfbf8b85a14525b464c1a9a3b0ac9b",
+          "Type": "Text",
+          "Enabled": true,
+          "Values": {
+            "Text": "おはじき\nチェインズ",
+            "FontSize": "66",
+            "Color": "#FFF3D7",
+            "Bold": "True"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "開始帯:7",
+      "Name": "開始帯",
+      "ParentId": null,
+      "Active": true,
+      "Order": 7,
+      "Transform": {
+        "X": 360,
+        "Y": 1107.5,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 720,
+        "Height": 345
+      },
+      "Components": [
+        {
+          "Id": "bd1856f039fc480a9ef42c483309d978",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#3C3025",
+            "Opacity": "0.93",
+            "Shape": "四角"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "title.start:8",
+      "Name": "title.start",
+      "ParentId": null,
+      "Active": true,
+      "Order": 8,
+      "Transform": {
+        "X": 360,
+        "Y": 1023,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 560,
+        "Height": 88
+      },
+      "Components": [
+        {
+          "Id": "2783ed36905445bcb311ebf0e663df4c",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#3C3025",
+            "Opacity": "0.17",
+            "Shape": "四角"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "title.start:9",
+      "Name": "title.start",
+      "ParentId": null,
+      "Active": true,
+      "Order": 9,
+      "Transform": {
+        "X": 360,
+        "Y": 1019,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 560,
+        "Height": 88
+      },
+      "Components": [
+        {
+          "Id": "7ef98c37d757427baec16135955d0fd3",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#347F79",
+            "Opacity": "1",
+            "Shape": "四角"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "text:10",
+      "Name": "タッチしてスタート",
+      "ParentId": null,
+      "Active": true,
+      "Order": 10,
+      "Transform": {
+        "X": 360,
+        "Y": 1019,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 550,
+        "Height": 84
+      },
+      "Components": [
+        {
+          "Id": "fc703c40c6df42d697c4d7614c783e50",
+          "Type": "Text",
+          "Enabled": true,
+          "Values": {
+            "Text": "タッチしてスタート",
+            "FontSize": "34",
+            "Color": "#FFFFFF",
+            "Bold": "True"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "title.backup:11",
+      "Name": "title.backup",
+      "ParentId": null,
+      "Active": true,
+      "Order": 11,
+      "Transform": {
+        "X": 360,
+        "Y": 1132,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 410,
+        "Height": 56
+      },
+      "Components": [
+        {
+          "Id": "68339b513d7443f0a8bba0bc82f3d9d6",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#3C3025",
+            "Opacity": "0.17",
+            "Shape": "四角"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "title.backup:12",
+      "Name": "title.backup",
+      "ParentId": null,
+      "Active": true,
+      "Order": 12,
+      "Transform": {
+        "X": 360,
+        "Y": 1128,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 410,
+        "Height": 56
+      },
+      "Components": [
+        {
+          "Id": "d2a329a21543410d9826fc86169fa66a",
+          "Type": "Sprite",
+          "Enabled": true,
+          "Values": {
+            "Texture": "",
+            "Color": "#3C3025",
+            "Opacity": "1",
+            "Shape": "四角"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "text:13",
+      "Name": "バックアップ連携",
+      "ParentId": null,
+      "Active": true,
+      "Order": 13,
+      "Transform": {
+        "X": 360,
+        "Y": 1128,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 400,
+        "Height": 52
+      },
+      "Components": [
+        {
+          "Id": "069912efc92448048e1f5da0b479c806",
+          "Type": "Text",
+          "Enabled": true,
+          "Values": {
+            "Text": "バックアップ連携",
+            "FontSize": "23",
+            "Color": "#FFFFFF",
+            "Bold": "True"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "text:14",
+      "Name": "Ver. 1.000",
+      "ParentId": null,
+      "Active": true,
+      "Order": 14,
+      "Transform": {
+        "X": 360,
+        "Y": 1217,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 560,
+        "Height": 50
+      },
+      "Components": [
+        {
+          "Id": "5e9cd0fd6ae74d8cbf2dd130b5b2a8f6",
+          "Type": "Text",
+          "Enabled": true,
+          "Values": {
+            "Text": "Ver. 1.000",
+            "FontSize": "20",
+            "Color": "#FFF3D7",
+            "Bold": "False"
+          }
+        }
+      ]
+    },
+    {
+      "Id": "17204e4e64f547f8ad56ae418c4278bb",
+      "Name": "おはじきチェインズ・ゲーム管理",
+      "ParentId": null,
+      "Active": true,
+      "Order": 0,
+      "Transform": {
+        "X": 0,
+        "Y": 0,
+        "Rotation": 0,
+        "ScaleX": 1,
+        "ScaleY": 1,
+        "Width": 64,
+        "Height": 64
+      },
+      "Components": [
+        {
+          "Id": "fdbce762e77549bdbe0686e56623ee82",
+          "Type": "OhajikiGame",
+          "Enabled": true,
+          "Values": {
+            "MasterData": "Assets/Data/MasterData.xlsx"
+          }
+        }
+      ]
+    }
+  ],
+  "Transitions": []
+}

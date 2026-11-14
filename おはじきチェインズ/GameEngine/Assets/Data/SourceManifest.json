@@ -1,0 +1,22 @@
+{
+  "Assets\\Ohajiki\\Scripts\\SpiritDefinition.cs": "d2b733b3378875d1734f0e63f638671299296bc063f52338d8d904b0b72008cf",
+  "Assets\\Ohajiki\\Scripts\\BattleTuning.cs": "adac0633b7950c7bae90278ae4b751c4f555eb11c74b2a0e30f24d5c04bed831",
+  "Assets\\Ohajiki\\Scripts\\BattleRules.cs": "ec40674b1403a7f700c6299eac68a366c4e81f6b5961bad9f5c67127ee0982c5",
+  "Assets\\Ohajiki\\Scripts\\ShotSimulation.cs": "9e3fe9204f5419005ff01c9b4136be6a025afbbf424cf59c5beaa151d57580f6",
+  "Assets\\Ohajiki\\Scripts\\PlayerProgress.cs": "fc51d96bb3dd0d2be244b291708c85980e343e4d17d53dd04091aeb109103c22",
+  "Assets\\Ohajiki\\Scripts\\HubConfig.cs": "603f183660fb306940bdba445892c42cb2935053500e48569f19c54336fd79a8",
+  "Assets\\Ohajiki\\Scripts\\PlayerSession.cs": "b574023be3c9e20945283c8bcdb4a3541acf388a3557f9651d6ebdfef7c39268",
+  "Assets\\Ohajiki\\Scripts\\PlayerSession.Gacha.cs": "7ec95d0ab6d624f06f98689773095e144987c5e9da389c69573379cc354dd129",
+  "Assets\\Ohajiki\\Scripts\\PlayerSession.Shop.cs": "786b6845045f136e5298b38ce2fde54c6136dc7ceef80ef6c0b8c0bf09421bdc",
+  "Assets\\Ohajiki\\Scripts\\PlayerSession.Quests.cs": "a99d1214d3a778909dac629803a7a3e4f0423184340c1d55509c4def66785756",
+  "Assets\\Ohajiki\\Scripts\\GachaRules.cs": "410a40fc74c92f980c92ca8d0900cae989fd703c700ddf1fd4c44f3cfd115a60",
+  "Assets\\Ohajiki\\Scripts\\ShopConfig.cs": "e4fbf2359ed0b550b0aa9ccc35e93b6e4e2901ab1217ec5ebf1d71eee94b6923",
+  "Assets\\Ohajiki\\Scripts\\ShopState.cs": "c008fd64635a7ac471173cd345745acf2fbc6a92ccf81c2b136cba905a875b46",
+  "Assets\\Ohajiki\\Scripts\\QuestCatalog.cs": "03690a9b1c973bac4e075a5e098ef13ae6fb09172dbe4d6505184a35cee467db",
+  "Assets\\Ohajiki\\Scripts\\MasterConstants.cs": "876df0006493ae91eb587dfa3e25046f8cfd07c44221b4e9df265a40aa381f4d",
+  "Assets\\Ohajiki\\Scripts\\MasterGameData.cs": "43bd4f9d8e48fd40f6d3df6f6bfb28d67fe7c821de613413d25322b7a8dacb07",
+  "Assets\\Ohajiki\\HubConfig.asset": "2b5dbd6d5d917e25b5c3dbab1ecec93706172c76095bc1e7b93a0fbf929db77e",
+  "Assets\\Ohajiki\\BattleTuning.asset": "861a55048c5b6c7d334d5f44b6d9687c51d9514e35ff170719bed25390d7ea6b",
+  "Assets\\Ohajiki\\ShopConfig.asset": "1cb57121ef1bb7c9d77c039effa7815cc2a582913f193bc6b0c35c06f467a5d2",
+  "../MasterData.xlsx": "6dcd8caf8428fd77ac8c54310ecb9a78c5a9f2a31a1b7b45c53390bf41514236"
+}

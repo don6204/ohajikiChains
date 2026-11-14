@@ -115,7 +115,7 @@ namespace Ohajiki
             float deadline=Time.realtimeSinceStartup+40;
             while(app.Battle.Phase!=BattlePhase.Finished && Time.realtimeSinceStartup<deadline)yield return null;
             Require(app.Battle.Phase==BattlePhase.Finished,"battle completion");
-            Require(!app.Battle.View.Feedback.DamageBankVisible,"result hides damage bank");
+            Require(!app.Battle.View.Feedback.HitCounterVisible,"result hides damage bank");
             Require(session.Progress.Coins>coins-cost && session.Progress.TotalExperience>0,"reward applied");
             yield return Capture("08-result");
             app.ReturnHome();yield return null;

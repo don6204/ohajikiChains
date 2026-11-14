@@ -37,6 +37,7 @@ namespace Ohajiki
         public int Matched { get; private set; }
         public int Collected { get; private set; }
         public float WeightedContacts { get; private set; }
+        public double DamageWeight { get; private set; }
         public int ResetCount { get; private set; }
         public int AllClearCount { get; private set; }
         public bool AwaitingAllClearRefill => allClearAt >= 0;
@@ -126,6 +127,7 @@ namespace Ohajiki
             shotElement = spirit.element;
             Matched = Collected = 0;
             WeightedContacts = elapsed = 0;
+            DamageWeight=0;
             allClearAt = -1;
             actionSplitUsed = false;
             projectiles.Clear();
@@ -228,6 +230,7 @@ namespace Ohajiki
             charge.Active = false;
             Collected++;
             WeightedContacts += projectile.AttackMultiplier;
+            DamageWeight=Math.Min(double.MaxValue,DamageWeight+projectile.AttackMultiplier*BattleRules.HitDamageMultiplier(Collected));
             bool same = charge.Element == shotElement;
             if (same) Matched++;
             CollectedCharge?.Invoke(index, same);
