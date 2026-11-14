@@ -20,7 +20,7 @@ namespace Ohajiki
             SettingButton(list,"図鑑",ShowCatalog);
             SettingButton(list,"データ引継ぎ",null);
             SettingButton(list,"お問い合わせ",null);
-            SettingButton(list,"ご意見・ご要望",null);
+            SettingButton(list,"ご意見・ご要望",()=>Application.OpenURL("https://forms.cloud.microsoft/r/Upav9XGGnC"));
             SettingButton(list,"公式サイト",null);
             SettingButton(list,"公式X",()=>Application.OpenURL(TitleView.SocialUrl));
             SettingButton(list,"利用規約",null);

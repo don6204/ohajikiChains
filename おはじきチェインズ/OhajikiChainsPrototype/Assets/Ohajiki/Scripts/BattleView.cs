@@ -408,8 +408,8 @@ namespace Ohajiki
             bool impact=phase == BattlePhase.Impact || phase == BattlePhase.NormalImpact;
             float elapsed=progress*(phase==BattlePhase.NormalImpact?Mathf.Max(.05f,tuning.normalImpactSeconds):tuning.impactSeconds);
             // Only the struck bar and its fill move. The HUD, HP text and board stay fixed.
-            float shake=impact && shakeHp && elapsed<.3f
-                ? 5f*Mathf.Cos(elapsed*Mathf.PI*48)*Mathf.Pow(1-elapsed/.3f,2):0;
+            float shake=impact && shakeHp && elapsed<.5f
+                ? 5f*Mathf.Cos(elapsed*Mathf.PI*48)*Mathf.Pow(1-elapsed/.5f,2):0;
             SetHpBarOffsets(shakeEnemyHp?0:shake,shakeEnemyHp?shake:0);
             impactPanel.gameObject.SetActive(impact);
             if(impact)

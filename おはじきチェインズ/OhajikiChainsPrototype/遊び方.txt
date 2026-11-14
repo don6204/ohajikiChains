@@ -1,5 +1,5 @@
-おはじきチェインズ / HPバーシェイク時間調整版 1.020
-更新日 2026-11-14
+おはじきチェインズ / ご意見・ご要望フォーム対応版 8.5 α
+更新日 2026-11-15
 
 起動
 Unity Hub へこのフォルダーを追加し、Unity 6000.3.21f1 で開きます。
@@ -7,9 +7,9 @@ Assets/Ohajiki/Scenes/Prototype.unity を開いて Play を押します。
 Editor は C:/Program Files/Unity/Hub/Editor/6000.3.21f1/Editor/Unity.exe に導入しています。
 Windows ビルドは Direct3D 11 を使用します。
 Windows ビルド用メソッドは PrototypeBuilder.Build です。
-出力先は Build/20261114_HpBarShakeDuration/OhajikiChains.exe です。
+出力先は Build/Windows_V8.5_α/Windows_V8.5_α.exe です。
 通常ダメージはダメージUI着弾時にまとめて適用します。HP0時のターン終了待機は維持します。
-今回の変更内容は Docs/20261114_HPバーシェイク時間調整.txt を参照してください。
+今回の変更内容は Docs/Windows_V8.5_α.txt を参照してください。
 
 クエスト
 ホームの「スピリットバトル」からクエストの種類を選択します。

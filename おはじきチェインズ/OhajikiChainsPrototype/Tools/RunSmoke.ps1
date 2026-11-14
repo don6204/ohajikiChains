@@ -3,14 +3,15 @@ param(
     [string]$Mode = 'master',
     [int]$TimeoutSeconds = 900,
     [string]$ReviewDirectory,
-    [string]$BuildDirectory
+    [string]$BuildDirectory,
+    [string]$PlayerFileName = 'Windows_V8.5_α.exe'
 )
 $ErrorActionPreference = 'Stop'
 $projectRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$buildRoot = Join-Path $projectRoot 'Build\20261114_HpBarShakeDuration'
+$buildRoot = Join-Path $projectRoot 'Build\Windows_V8.5_α'
 if ($BuildDirectory) { $buildRoot = [System.IO.Path]::GetFullPath($BuildDirectory) }
-$playerPath = Join-Path $buildRoot 'OhajikiChains.exe'
-$reviewRoot = [System.IO.Path]::GetFullPath((Join-Path $projectRoot '..\Review\20261114_hp_bar_shake_duration'))
+$playerPath = Join-Path $buildRoot $PlayerFileName
+$reviewRoot = [System.IO.Path]::GetFullPath((Join-Path $projectRoot '..\Review\Windows_V8.5_α'))
 if ($ReviewDirectory) { $reviewRoot = [System.IO.Path]::GetFullPath($ReviewDirectory) }
 New-Item -ItemType Directory -Path $reviewRoot -Force | Out-Null
 if (-not (Test-Path -LiteralPath $playerPath -PathType Leaf)) { throw "Build missing: $playerPath" }
