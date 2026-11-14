@@ -20,7 +20,7 @@ namespace Ohajiki.Tests
         {Object.DestroyImmediate(spirit);Object.DestroyImmediate(tuning);}
 
         [TestCase(false)] [TestCase(true)]
-        public void PhysicalContactsGrowIndividuallyAndFinishWithoutDoubleDamage(bool enemy)
+        public void PhysicalContactsAccumulateGrowingDamageAndApplyTogetherAtShotEnd(bool enemy)
         {
             var sim=new ShotSimulation(tuning);var state=new BattleState(tuning);
             if(enemy)state.Resolve(false,spirit,0,0,tuning);
@@ -29,8 +29,9 @@ namespace Ohajiki.Tests
             foreach(var charge in sim.Charges)charge.Active=false;
             sim.Prepare(enemy,312);state.BeginShot(enemy,spirit);
             Assert.IsTrue(sim.Launch((enemy?Vector2.down:Vector2.up)*300,spirit));
-            sim.CollectedCharge+=(index,matched)=>state.ApplyContactDamage(enemy,spirit,
-                BattleRules.ContactDamage(spirit.Attack,sim.DamageWeight,spirit.element,target.Element,tuning));
+            int displayedDamage=0;
+            sim.CollectedCharge+=(index,matched)=>displayedDamage=
+                BattleRules.ContactDamage(spirit.Attack,sim.DamageWeight,spirit.element,target.Element,tuning);
             double[] weights={1,2.02,3.0604,4.121608};
             int[] cumulative={100,202,306,412};
             for(int i=0;i<weights.Length;i++)
@@ -40,11 +41,12 @@ namespace Ohajiki.Tests
                 sim.Tick(.0001f);
                 Assert.AreEqual(i+1,sim.Collected);
                 Assert.AreEqual(weights[i],sim.DamageWeight,1e-9);
-                Assert.AreEqual(before-cumulative[i],target.Hp,"HP must change on this contact");
+                Assert.AreEqual(cumulative[i],displayedDamage,"each contact increases the damage display");
+                Assert.AreEqual(before,target.Hp,"normal damage is held until shot end");
             }
             sim.CancelShot();
             state.ResolveNormal(enemy,spirit,sim.Collected,0,tuning,sim.DamageWeight);
-            Assert.AreEqual(before-412,target.Hp,"no second charge at the zone stage");
+            Assert.AreEqual(before-412,target.Hp,"the complete normal damage is applied once at shot end");
             Assert.AreEqual(71,state.ResolveSkill().appliedSkillDamage,"hit growth does not multiply skills");
             Assert.AreEqual(before-483,target.Hp);
         }

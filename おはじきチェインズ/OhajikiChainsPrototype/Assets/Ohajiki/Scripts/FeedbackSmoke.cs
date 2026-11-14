@@ -19,6 +19,26 @@ namespace Ohajiki
         public void Begin(PrototypeBattle owner,BattleTuning config){battle=owner;tuning=config;StartCoroutine(Run());}
         void Check(bool condition,string message){if(!condition){Application.Quit(2);throw new InvalidOperationException("FEEDBACK SMOKE: "+message);}}
         void Capture(string name) => ScreenCapture.CaptureScreenshot(Path.Combine(output,name+".png"));
+        void CheckHpBars()
+        {
+            var player=(RectTransform)battle.View.transform.Find("Screen/PlayerFill");
+            var enemy=(RectTransform)battle.View.transform.Find("Screen/Enemy/EnemyFill");
+            Check(player!=null && enemy!=null,"both HP bars exist");
+            Check(Mathf.Abs(player.sizeDelta.x-648f*battle.State.Player.Hp/battle.State.Player.MaxHp)<.001f &&
+                Mathf.Abs(enemy.sizeDelta.x-246f*battle.State.Enemy.Hp/battle.State.Enemy.MaxHp)<.001f,
+                "HP bars match model immediately, without gradual drain");
+        }
+        void CheckDamageLayout(RectTransform bank)
+        {
+            Canvas.ForceUpdateCanvases();
+            var label=bank.GetComponentInChildren<TMP_Text>();label.ForceMeshUpdate();
+            Check(!label.isTextOverflowing && label.textInfo.lineCount==1,"damage digits fit on one line");
+            var corners=new Vector3[4];bank.GetWorldCorners(corners);
+            foreach(var corner in corners)Check(corner.x>=0 && corner.x<=Screen.width && corner.y>=0 && corner.y<=Screen.height,"damage burst stays on screen at maximum size");
+            var enemyPanel=(RectTransform)battle.View.transform.Find("Screen/Enemy");
+            var enemyCorners=new Vector3[4];enemyPanel.GetWorldCorners(enemyCorners);
+            Check(corners[1].y<enemyCorners[0].y,"growing damage UI stays clear of the enemy HP panel");
+        }
         void PrepareDurableCombatants()
         {
             // The presentation test needs both damage stages and a complete enemy turn,
@@ -81,17 +101,17 @@ namespace Ohajiki
                 PlaceContact(0,battle.Simulation.Velocity.normalized);
             }
             float hitDeadline=Time.realtimeSinceStartup+2;
-            while(target.Hp>0 && Time.realtimeSinceStartup<hitDeadline)yield return null;
+            while(battle.Simulation.Collected==0 && Time.realtimeSinceStartup<hitDeadline)yield return null;
             var shotPhase=enemy?BattlePhase.EnemyShot:BattlePhase.PlayerShot;
-            Check(target.Hp==0 && battle.Phase==shotPhase && battle.Simulation.Moving,"HP zero keeps the current shot moving");
-            Check(!battle.View.OverlayVisible && battle.State.ShotInProgress,"no result at lethal contact");
-            Check(battle.State.Won==!enemy,"first zero HP records the correct winner");
+            Check(battle.Simulation.Collected>0 && target.Hp==1 && battle.Phase==shotPhase && battle.Simulation.Moving,"lethal accumulated damage leaves HP unchanged during the shot");
+            Check(!battle.View.OverlayVisible && battle.State.ShotInProgress && !battle.State.Finished,"no result before shot-end settlement");
+            CheckHpBars();
             string name=enemy?"10-player-zero":"09-enemy-zero";
-            Capture(name+"-during-shot");
+            Capture(name+"-before-settlement");
             PlaceContact(1,battle.Simulation.Velocity.normalized);
             battle.TogglePause();Vector2 frozen=battle.Simulation.Position;
             yield return new WaitForSeconds(.2f);
-            Check(battle.Phase==shotPhase && battle.Simulation.Position==frozen && !battle.View.OverlayVisible,"zero HP can pause without transitioning");
+            Check(battle.Phase==shotPhase && battle.Simulation.Position==frozen && target.Hp==1 && !battle.View.OverlayVisible,"pause does not apply accumulated damage");
             battle.TogglePause();
             var actual=new List<BattlePhase>();var previous=shotPhase;
             float deadline=Time.realtimeSinceStartup+12;
@@ -99,9 +119,13 @@ namespace Ohajiki
             {
                 Check(!battle.View.OverlayVisible && battle.Progress.Coins==coinsBefore,"no scene/result or reward before turn completion");
                 Check(battle.Phase!=BattlePhase.Ready && battle.Phase!=BattlePhase.EnemyThinking,"no following side starts after defeat");
+                if(battle.Phase==shotPhase)Check(target.Hp==1,"contacts do not drain HP during the shot");
+                else Check(target.Hp==0 && battle.State.Won==!enemy,"shot-end settlement preserves the first defeat");
+                CheckHpBars();
                 if(battle.Phase!=previous)
                 {
                     previous=battle.Phase;actual.Add(previous);
+                    if(previous==BattlePhase.Charging)Capture(name+"-settled-zone");
                     if(previous==BattlePhase.CutIn)Capture(name+"-cutin");
                     if(previous==BattlePhase.Impact)Capture(name+"-skill");
                 }
@@ -109,7 +133,8 @@ namespace Ohajiki
             }
             Check(actual.SequenceEqual(new[]{BattlePhase.Charging,BattlePhase.CutIn,BattlePhase.Impact}),"lethal shot completes zone, slide and skill in order");
             Check(battle.Phase==BattlePhase.Finished && battle.View.OverlayVisible,"result opens only after the skill presentation");
-            Check(battle.LastAction.contacts>=2 && battle.View.Feedback.DisplayedHits>=2,"contacts after zero HP still count");
+            Check(battle.LastAction.contacts>=2 && battle.View.Feedback.ContactCount>=2,"the full shot contributes to settlement");
+            Check(battle.View.Feedback.DisplayedDamage==battle.LastAction.normalDamage,"lethal shot keeps the complete damage total");
             Check(!battle.State.ActionPending && !battle.State.ShotInProgress && battle.State.Won==!enemy,"turn fully resolved with original outcome");
             long coinsAfter=battle.Progress.Coins;
             yield return new WaitForSeconds(.2f);
@@ -152,49 +177,65 @@ namespace Ohajiki
             // Isolate presentation so numeric feedback can be inspected at controlled values.
             battle.enabled=false;
             var feedback=battle.View.Feedback;
-            feedback.BeginShot(false,Element.Fire);feedback.SetHitCounterVisible(true);
+            feedback.BeginShot(false,Element.Fire);feedback.SetDamageCounterVisible(true);
             yield return new WaitForSeconds(.1f);
-            Color yellow=feedback.HitNumberColor,background=feedback.HitCounterColor;
+            Color yellow=feedback.DamageNumberColor,background=feedback.DamageCounterColor;
             var bankPosition=feedback.BankPosition;var bankRotation=feedback.BankRotation;
-            var numberPosition=feedback.HitNumberPosition;var restingScale=feedback.BankScale;
-            Check(yellow.r>.7f && yellow.g>.7f && yellow.b<.2f,"hit digits are yellow");
-            var bank=feedback.transform.Find("Hit counter");
-            Check(bank!=null && bank.GetComponentsInChildren<TMP_Text>().Length==1,"counter contains hit number");
-            Check(feedback.DisplayedHits==0,"zero hits before first contact");
-            foreach(int hits in new[]{32,33,34})
+            var numberPosition=feedback.DamageNumberPosition;var restingScale=feedback.BankScale;
+            Check(yellow.r>.7f && yellow.g>.7f && yellow.b<.2f,"damage digits are yellow");
+            var bank=feedback.transform.Find("Damage counter");
+            Check(bank!=null && bank.GetComponentsInChildren<TMP_Text>().Length==1,"counter contains damage number");
+            Check(feedback.DisplayedDamage==0,"zero damage before first contact");
+            int contact=0;
+            foreach(int damage in new[]{32,33,34})
             {
-                feedback.Contact(new Vector2(320,330),Element.Fire,true,hits,0,99999);
-                Check(feedback.DisplayedHits==hits,"hits update immediately, independently of damage");
-                Check(bank.GetComponentInChildren<TMP_Text>().text==hits.ToString(),"visible text is exact hit count");
-                Check(feedback.HitNumberScale.x>1.2f && feedback.BankScale==restingScale,"only digits pop; burst is stationary");
-                Check(feedback.HitNumberPosition==numberPosition && feedback.BankPosition==bankPosition && feedback.BankRotation==bankRotation,"pop keeps all centers fixed");
-                yield return new WaitForEndOfFrame();Capture("00-hit-"+hits+"-pop");yield return null;
+                feedback.Contact(new Vector2(320,330),Element.Fire,true,++contact,0,damage);
+                Check(feedback.DisplayedDamage==damage,"damage updates immediately, independently of hit count");
+                Check(bank.GetComponentInChildren<TMP_Text>().text==damage.ToString(),"visible text is exact damage");
+                Check(feedback.DamageNumberScale.x>1.2f && feedback.BankScale==restingScale,"only digits pop; burst is stationary");
+                Check(feedback.DamageNumberPosition==numberPosition && feedback.BankPosition==bankPosition && feedback.BankRotation==bankRotation,"pop keeps all centers fixed");
+                yield return new WaitForEndOfFrame();Capture("00-damage-"+damage+"-pop");yield return null;
                 yield return new WaitForSeconds(.045f);
-                Check(feedback.HitNumberPosition!=numberPosition && feedback.BankPosition==bankPosition && feedback.BankScale==restingScale,"only digits shake");
-                feedback.SetPaused(true);var frozen=feedback.HitNumberScale;var frozenPosition=feedback.HitNumberPosition;
-                yield return new WaitForSeconds(.2f);Check(feedback.HitNumberScale==frozen && feedback.HitNumberPosition==frozenPosition,"pause freezes hit animation");
+                Check(feedback.DamageNumberPosition!=numberPosition && feedback.BankPosition==bankPosition && feedback.BankScale==restingScale,"only digits shake");
+                feedback.SetPaused(true);var frozen=feedback.DamageNumberScale;var frozenPosition=feedback.DamageNumberPosition;
+                yield return new WaitForSeconds(.2f);Check(feedback.DamageNumberScale==frozen && feedback.DamageNumberPosition==frozenPosition,"pause freezes damage animation");
                 feedback.SetPaused(false);yield return new WaitForSeconds(.3f);
-                Check(feedback.HitNumberScale==Vector3.one && feedback.BankScale==restingScale,"pop settles to same size");
-                Check(feedback.HitNumberPosition==numberPosition,"digits return to center");
-                Check(feedback.HitNumberColor.g<yellow.g && feedback.HitCounterColor==background,"digits progress toward red; burst color stays fixed");
-                Capture("00-hit-"+hits+"-settled");yield return null;
+                Check(feedback.DamageNumberScale==Vector3.one && feedback.BankScale==restingScale,"pop settles to same size");
+                Check(feedback.DamageNumberPosition==numberPosition,"digits return to center");
+                Check(feedback.DamageNumberColor.g<yellow.g && feedback.DamageCounterColor==background,"digits progress toward red; burst color stays fixed");
+                Capture("00-damage-"+damage+"-settled");yield return null;
             }
-            for(int hits=35;hits<=128;hits++)feedback.Contact(Vector2.zero,Element.Fire,false,hits,0,1000000);
-            Check(feedback.DisplayedHits==128,"rapid and refill contacts never lose hits");
+            int[] damageSteps={0,499,500,999,1000,2499,2500,1000000,int.MaxValue};
+            float[] scales={1,1,1.1f,1.1f,1.2f,1.4f,1.5f,1.5f,1.5f};
+            for(int i=0;i<damageSteps.Length;i++)
+            {
+                feedback.BeginShot(false,Element.Fire);feedback.SetDamageCounterVisible(true);
+                feedback.Contact(Vector2.zero,Element.Fire,false,1,0,damageSteps[i]);
+                Check(Mathf.Abs(feedback.DamageSizeMultiplier-scales[i])<.0001f &&
+                    Mathf.Abs(feedback.BankScale.x/restingScale.x-scales[i])<.0001f,"500 damage size boundary "+damageSteps[i]);
+                Check(feedback.BankPosition==bankPosition && feedback.BankRotation==bankRotation,"growth keeps the burst center fixed");
+                CheckDamageLayout((RectTransform)bank);
+                yield return new WaitForSeconds(.25f);
+                CheckDamageLayout((RectTransform)bank);
+                Capture("00-size-"+damageSteps[i]);yield return null;
+            }
+            feedback.BeginShot(false,Element.Fire);feedback.SetDamageCounterVisible(true);
+            for(int hits=4;hits<=128;hits++)feedback.Contact(Vector2.zero,Element.Fire,false,hits,0,hits*1000);
+            Check(feedback.DisplayedDamage==128000,"rapid and refill contacts never lose accumulated damage");
             feedback.LockTotal(1234567);
-            Check(feedback.DisplayedHits==128 && feedback.DamageTarget==1234567,"locking damage does not replace hits");
+            Check(feedback.DisplayedDamage==1234567 && bank.GetComponentInChildren<TMP_Text>().text==1234567.ToString("N0"),"locking shows the exact final damage");
             feedback.BeginShot(false,Element.Fire);
-            feedback.SetHitCounterVisible(true);
-            feedback.Contact(Vector2.zero,Element.Fire,false,feedback.HitColorFullAt/2,0,1);
-            Color halfway=feedback.HitNumberColor;
-            yield return new WaitForSeconds(.25f);Capture("00-hit-half-orange");yield return null;
-            feedback.Contact(Vector2.zero,Element.Fire,false,feedback.HitColorFullAt,0,1);
-            Color red=feedback.HitNumberColor;
-            Check(feedback.HitCounterVisible,"color endpoint fixture is visible");
-            Check(halfway.g<yellow.g && halfway.g>red.g && red.g<.15f,"yellow to orange to red uses hits, not damage");
-            yield return new WaitForSeconds(.25f);Capture("00-hit-full-red");yield return null;
+            feedback.SetDamageCounterVisible(true);
+            feedback.Contact(Vector2.zero,Element.Fire,false,1,0,feedback.DamageColorFullAt/2);
+            Color halfway=feedback.DamageNumberColor;
+            yield return new WaitForSeconds(.25f);Capture("00-damage-half-orange");yield return null;
+            feedback.Contact(Vector2.zero,Element.Fire,false,2,0,feedback.DamageColorFullAt);
+            Color red=feedback.DamageNumberColor;
+            Check(feedback.DamageCounterVisible,"color endpoint fixture is visible");
+            Check(halfway.g<yellow.g && halfway.g>red.g && red.g<.15f,"yellow to orange to red follows damage");
+            yield return new WaitForSeconds(.25f);Capture("00-damage-full-red");yield return null;
             feedback.BeginShot(true,Element.Water);
-            Check(feedback.DisplayedHits==0 && feedback.HitNumberScale==Vector3.one && feedback.HitNumberColor==yellow,"enemy shot resets hits, color and pulse");
+            Check(feedback.DisplayedDamage==0 && feedback.DamageNumberScale==Vector3.one && feedback.DamageNumberColor==yellow && feedback.BankScale==restingScale,"enemy shot resets damage, size, color and pulse");
 
             // Display a deterministic reference frame through the normal view and feedback APIs.
             var fixture=new ShotSimulation(tuning);
@@ -218,40 +259,45 @@ namespace Ohajiki
                 battle.PlayerCard,battle.EnemyCard,BattlePhase.PlayerShot,false,battle.Progress);
             feedback.Contact(fixture.Charges[0].Position,battle.PlayerCard.element,true,32,1,1000);
             yield return new WaitForSeconds(1.2f);
-            Check(feedback.DisplayedHits==32 && feedback.BankScale==restingScale,"reference frame shows 32 hits, not 1000 damage");
+            Check(feedback.DisplayedDamage==1000,"reference frame shows 1000 damage from 32 hits");
             var levelPanel=battle.View.GetComponentsInChildren<RectTransform>().FirstOrDefault(rect=>rect.name=="EffectLevel");
             Check(levelPanel!=null,"left skill level panel visible");
             var levelTexts=levelPanel.GetComponentsInChildren<TMP_Text>();
             Check(levelTexts.Length==2 && levelTexts.Any(text=>text.text=="ノーマルスキル") &&
                 levelTexts.Any(text=>text.text=="LV2"),"left panel shows normal skill and LV2");
             CheckLevelTextLayout(levelTexts);
-            Capture("00d-reference-32-hits-lv2");yield return null;
+            feedback.Contact(fixture.Charges[0].Position,battle.PlayerCard.element,true,33,1,2500);
+            yield return new WaitForSeconds(.25f);CheckDamageLayout((RectTransform)bank);
+            Capture("00d-reference-2500-damage-lv2");yield return null;
             Screen.SetResolution(480,800,FullScreenMode.Windowed);
             yield return new WaitForSeconds(.3f);
             CheckLevelTextLayout(levelTexts);
+            CheckDamageLayout((RectTransform)bank);
             Capture("00e-reference-480x800");yield return null;
             Screen.SetResolution(720,900,FullScreenMode.Windowed);
             yield return new WaitForSeconds(.3f);
             CheckLevelTextLayout(levelTexts);
+            CheckDamageLayout((RectTransform)bank);
             Capture("00f-reference-720x900");yield return null;
             Screen.SetResolution(540,960,FullScreenMode.Windowed);
             yield return new WaitForSeconds(.3f);
             battle.enabled=true;battle.Restart();
-            Check(!battle.View.Feedback.HitCounterVisible,"damage bank hidden before shot");
+            Check(!battle.View.Feedback.DamageCounterVisible,"damage bank hidden before shot");
             Check(FindObjectsByType<AudioSource>(FindObjectsSortMode.None).Length==0,"no SE sources");
             // Session loadouts are cloned. This fixture does not edit the user's spirit assets.
             battle.PlayerCard.skill=Skill.Attack;battle.PlayerCard.skillPower=new[]{70f};
             int enemyHp=battle.State.Enemy.Hp,playerHp=battle.State.Player.Hp;
-            Debug.Log("FEEDBACK BUILD: permanent contact damage, growth=1.02, hitRedAt="+feedback.HitColorFullAt);
+            Debug.Log("FEEDBACK BUILD: damage UI, 500 damage/+10% max1.5, shot-end HP settlement, growth=1.02, damageRedAt="+feedback.DamageColorFullAt);
             Capture("01-ready");yield return null;
             Check(battle.Shoot(new Vector2(100,450)),"launch");
-            Check(battle.View.Feedback.HitCounterVisible,"damage bank appears on shot");
+            Check(battle.View.Feedback.DamageCounterVisible,"damage bank appears on shot");
             bool pausedOnce=false,sawEffects=false;
             int frame=0,contacts=0;float nextCapture=0,cutInAt=-1,flightAt=-1,deadline=Time.realtimeSinceStartup+40;
             BattlePhase prior=battle.Phase;
             while(Time.realtimeSinceStartup<deadline)
             {
                 Check(battle.View.ScreenPosition==Vector2.zero,"screen remains stationary during shots and both damage stages");
+                CheckHpBars();
                 var phase=battle.Phase;bool captured=false;
                 if(phase==BattlePhase.PlayerShot || phase==BattlePhase.EnemyShot || phase==BattlePhase.Charging)
                 {
@@ -260,8 +306,12 @@ namespace Ohajiki
                     var target=enemy?battle.State.Player:battle.State.Enemy;
                     var spirit=enemy?battle.EnemyCard:battle.PlayerCard;
                     int raw=BattleRules.ContactDamage(spirit.Attack*source.AttackMultiplier,battle.Simulation.DamageWeight,spirit.element,target.Element,tuning);
-                    Check((enemy?playerHp:enemyHp)-target.Hp==target.MitigatedDamage(raw),"contact-time HP equals cumulative contact damage for both sides");
-                    Check(phase!=BattlePhase.Charging || !battle.State.ActionPending,"zone does not reapply contacts");
+                    if(phase==BattlePhase.Charging)
+                    {
+                        Check((enemy?playerHp:enemyHp)-target.Hp==target.MitigatedDamage(raw),"normal damage is settled in full as the shot ends");
+                        Check(battle.State.ActionPending,"zone follows the one-time normal settlement");
+                    }
+                    else Check(target.Hp==(enemy?playerHp:enemyHp),"HP stays unchanged while charge damage accumulates");
                 }
                 {
                     Check(phase!=BattlePhase.DamageFlight && phase!=BattlePhase.NormalImpact,"no damage presentation phases");
@@ -271,26 +321,26 @@ namespace Ohajiki
                 {
                     contacts=battle.Simulation.Collected;
                     Check(battle.View.Feedback.ContactCount==contacts,"contact count");
-                    Check(battle.View.Feedback.DisplayedHits==contacts,"real shot counter equals consumed charges");
+                    Check(battle.View.Feedback.DisplayedDamage==battle.View.Feedback.DamageTarget,"real shot displays cumulative damage immediately");
                     Check(battle.View.Feedback.DamageTarget==BattleRules.ContactDamage(battle.PlayerCard.Attack*battle.State.Player.AttackMultiplier,battle.Simulation.DamageWeight,battle.PlayerCard.element,battle.State.Enemy.Element,tuning),"damage counter");
                     sawEffects|=battle.View.Feedback.ActiveBursts>0;
                     if(!pausedOnce)
                     {
-                        pausedOnce=true;battle.TogglePause();float number=battle.View.Feedback.DisplayedHits;
+                        pausedOnce=true;battle.TogglePause();float number=battle.View.Feedback.DisplayedDamage;
                         var position=battle.Simulation.Position;int bursts=battle.View.Feedback.ActiveBursts;
                         int frozenHp=battle.State.Enemy.Hp;
                         Capture("02-contact");captured=true;yield return new WaitForSeconds(.25f);
-                        Check(battle.Simulation.Position==position && battle.View.Feedback.DisplayedHits==number && battle.View.Feedback.ActiveBursts==bursts,"pause freezes effects");
-                        Check(battle.State.Enemy.Hp==frozenHp,"pause freezes contact damage");
-                        Check(battle.View.Feedback.HitCounterVisible,"paused shot keeps damage bank");
+                        Check(battle.Simulation.Position==position && battle.View.Feedback.DisplayedDamage==number && battle.View.Feedback.ActiveBursts==bursts,"pause freezes effects");
+                        Check(battle.State.Enemy.Hp==frozenHp,"pause does not settle the shot");
+                        Check(battle.View.Feedback.DamageCounterVisible,"paused shot keeps damage bank");
                         battle.TogglePause();
                     }
                 }
                 if(phase!=prior)
                 {
                     phases.Add(phase);prior=phase;Debug.Log($"FEEDBACK PHASE {phase} player={battle.State.Player.Hp} enemy={battle.State.Enemy.Hp} pending={battle.State.ActionPending}");
-                    if(phase==BattlePhase.EnemyThinking)Check(!battle.View.Feedback.HitCounterVisible,"enemy waiting hides damage bank");
-                    if(phase==BattlePhase.EnemyShot)Check(battle.View.Feedback.HitCounterVisible,"enemy shot shows damage bank");
+                    if(phase==BattlePhase.EnemyThinking)Check(!battle.View.Feedback.DamageCounterVisible,"enemy waiting hides damage bank");
+                    if(phase==BattlePhase.EnemyShot)Check(battle.View.Feedback.DamageCounterVisible,"enemy shot shows damage bank");
                     if(phase==BattlePhase.NormalImpact || phase==BattlePhase.CutIn)
                     {
                         Check(battle.State.ActionPending,"pending normal action");
@@ -325,12 +375,12 @@ namespace Ohajiki
             Check(phases.Count==expected.Length,"phase count: "+string.Join(",",phases));
             for(int i=0;i<expected.Length;i++)Check(phases[i]==expected[i],"phase order "+i);
             Check(sawEffects && pausedOnce && battle.Simulation.ResetCount>=3,"effects, pause, action-end and optional all-clear refills");
-            Check(!battle.View.Feedback.HitCounterVisible,"next turn hides damage bank");
+            Check(!battle.View.Feedback.DamageCounterVisible,"next turn hides damage bank");
             Capture("07-next-turn-hidden");
             yield return null;
             Check(battle.View.Feedback.ActiveBursts<=battle.View.Feedback.PoolCapacity,"bounded effect pool");
             battle.Restart();Check(battle.View.Feedback.DamageTarget==0 && battle.View.Feedback.ActiveBursts==0 && !battle.State.ActionPending,"restart cleanup");
-            Check(!battle.View.Feedback.HitCounterVisible,"retry hides damage bank");
+            Check(!battle.View.Feedback.DamageCounterVisible,"retry hides damage bank");
             {
                 float oldLimit=tuning.maximumShotSeconds,oldDeceleration=tuning.deceleration;
                 tuning.maximumShotSeconds=1.5f;tuning.deceleration=1;
@@ -355,7 +405,7 @@ namespace Ohajiki
             yield return new WaitForSeconds(.4f);
             if(FindObjectsByType<BattleFeedback>(FindObjectsSortMode.None).Length!=0 || FindObjectsByType<AudioSource>(FindObjectsSortMode.None).Length!=0)
             {Debug.LogError("FEEDBACK SMOKE: home cleanup");Application.Quit(2);yield break;}
-            Debug.Log("FEEDBACK SMOKE PASS: permanent contact damage with 1.02 growth, hit UI, zero HP continues shot/zone/slide/skill, no early result/reward or following turn, lethal skill completes, pause, retry and cleanup.");
+            Debug.Log("FEEDBACK SMOKE PASS: cumulative damage UI, reference digit pop/shake, 500 damage/+10% max1.5, size boundaries/3 resolutions, HP held during shots then applied instantly once, zero HP waits for zone/slide/skill, no early result/reward or following turn, pause, retry and cleanup.");
             Application.Quit(0);
         }
     }

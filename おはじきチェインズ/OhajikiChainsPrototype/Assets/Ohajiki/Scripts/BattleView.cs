@@ -216,7 +216,7 @@ namespace Ohajiki
             bool feedbackVisible=phase==BattlePhase.PlayerShot || phase==BattlePhase.EnemyShot ||
                 phase==BattlePhase.Charging || phase==BattlePhase.DamageFlight || phase==BattlePhase.NormalImpact ||
                 phase==BattlePhase.CutIn || phase==BattlePhase.Impact;
-            Feedback.SetHitCounterVisible(feedbackVisible);
+            Feedback.SetDamageCounterVisible(feedbackVisible);
             // Avoid showing fragments of these secondary labels behind the shot feedback.
             turnText.gameObject.SetActive(!feedbackVisible);
             deckText.gameObject.SetActive(!feedbackVisible);

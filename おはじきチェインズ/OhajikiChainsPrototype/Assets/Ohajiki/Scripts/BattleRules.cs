@@ -174,7 +174,8 @@ namespace Ohajiki
         }
         public ActionResult ResolveNormal(bool enemy, SpiritDefinition spirit, int contacts, int matched, BattleTuning tuning) =>
             ResolveNormal(enemy, spirit, contacts, matched, tuning, BattleRules.ContactWeight(contacts));
-        // Contact-time delivery. Cumulative mitigation preserves one action's
+        // Legacy model API; the game controller now settles at shot end instead.
+        // Cumulative mitigation preserves one action's
         // fixed guard budget and percentage rounding instead of charging them per hit.
         public int ApplyContactDamage(bool enemy,SpiritDefinition spirit,int cumulativeRawDamage)
         {

@@ -1,4 +1,14 @@
-## Current permanent contact damage and hit growth — 2026-11-14
+## Current damage UI and shot-end settlement — 2026-11-14
+
+Version1.011 follows the user's latest explicit correction: revert the hit counter to cumulative normal damage, stop reducing HP on each charge, and apply the full normal damage instantly when the shot stops (before the zone phase). ResolveNormal runs once at shot end; OnCollected only updates feedback. HP bars/text show authoritative HP immediately, without interpolation. Skill resolves during its normal stage. Keep first-defeat recording and wait through zone → slide → skill before showing results, even after HP0.
+
+The latest structured answer explicitly selected **500 damage per +10%, maximum1.5x**, superseding the immediately preceding100-damage message. UI growth resets per shot; 2500 reaches the cap. Reference video was re-extracted: tilted digits pop/shake briefly as damage increases; the burst center and screen stay still. Base counter geometry is sized to fit at its maximum. Color now uses damage against existing damageColorFullAt=600. DisplayedDamage is the cumulative raw normal attack; actual HP loss still applies guard and HP clamp. Existing1.02 per-hit growth and special-charge mechanics remain. ApplyContactDamage is a legacy model API only, not called by the game controller.
+
+These latest instructions supersede ALL earlier notes below claiming permanent contact-time damage or a hit-count HUD. Ordinary PrototypeBuilder.Build outputs Build/20261114_DamageUI/OhajikiChains.exe. Source Excel is read-only. Details: ../20261114_ダメージUIと一括ダメージ.txt; evidence: sibling Review/20261114_damage_ui.
+
+Validation: 203/203 EditMode tests passed; Windows build and feedback/board/title/master player checks passed with exit0. Runtime checks cover500-step thresholds and1.5x cap, immediate displayed damage, digit-only pulse/shake, three resolutions, no enemy-HP overlap, exact HP bars without tweening, HP held during both sides' shots then settled once at stop, and complete lethal-turn presentation. Captures for reference animation, maximum size and HP-before/after settlement were visually checked. Workbook hashes stayed unchanged: spec BCCE62A0E97B13A6CE52DA936246E1C81166AE7EA7B392889FF20CB5BD3DCFCD; master B63E08945A5ABE86CB5602BC59EF1740D27151C09F063AD0FEE5661BBB333BA5. Existing Unity license/shutdown warnings remain. Mobile hardware not tested.
+
+## Historical permanent contact damage and hit growth — 2026-11-14 (delivery/UI superseded above)
 
 Version1.010: the user formally adopted contact-time damage and waiting until the entire active turn presentation ends after HP0. These are permanent instructions for future builds, pending the user's later Excel update. This overrides ALL older one-build-only / revert-next-build notes below. Keep shot → zone → character slide → skill without damage flight/impact; no early result, reward, refill or next side after lethal damage. Preserve the first recorded defeat, pause/retry and practice behavior.
 

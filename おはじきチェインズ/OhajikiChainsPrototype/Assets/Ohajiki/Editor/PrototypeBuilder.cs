@@ -82,7 +82,7 @@ public static class PrototypeBuilder
         EditorSceneManager.SaveScene(scene, scenePath);
         EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(scenePath, true) };
         PlayerSettings.productName = "Ohajiki Chains Prototype";
-        PlayerSettings.bundleVersion = "1.010";
+        PlayerSettings.bundleVersion = "1.011";
         PlayerSettings.companyName = "OhajikiPrototype";
         PlayerSettings.defaultScreenWidth = 540; PlayerSettings.defaultScreenHeight = 960;
         PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
@@ -279,7 +279,7 @@ public static class PrototypeBuilder
         string chargePercentages=string.Join(", ",buildTuning.specialChargeProbabilities.Select(p=>
             (p*100).ToString("0.##",System.Globalization.CultureInfo.InvariantCulture)+"%"));
         string normalPercentage=((1-buildTuning.specialChargeProbabilities.Sum())*100).ToString("0.##",System.Globalization.CultureInfo.InvariantCulture);
-        const string output="Build/20261114_HitDamageGrowth";
+        const string output="Build/20261114_DamageUI";
         Directory.CreateDirectory(output);
         var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
             scenes = new[] { Root + "Scenes/Prototype.unity" },
@@ -303,12 +303,13 @@ public static class PrototypeBuilder
             "\nCharge probabilities: "+chargePercentages+" (normal "+normalPercentage+"%); warp to opponent launch position."+
             "\n8x8 board; no screen shake; gold all-clear scroll 1.5 seconds; refill after 5 moving seconds."+
             "\nCharge diameter 44; vertical centers 22%-78%; rims clear both launch zones."+
-            "\nHit UI: tilted digits only shake/pop; stationary burst; yellow to red, full at "+buildTuning.damageColorFullAt+" hits."+
-            "\nPermanent contact-time damage; shot -> zone -> slide -> skill. No trial symbol or alternative build method."+
+            "\nDamage UI: cumulative normal damage, tilted digits pop/shake per reference video; fixed burst center; yellow to red at "+buildTuning.damageColorFullAt+" damage."+
+            "\nDamage UI size: +10% per 500 damage, capped at 1.5x. Latest planner reply supersedes the earlier 100-damage proposal."+
+            "\nNormal HP damage applies instantly once at shot end. No gradual drain. Shot -> zone -> slide -> skill."+
             "\nContact n: attack * contact factor * affinity * per-projectile boost * 1.02^(n-1). Resets on each shot."+
             "\nHP zero: finish the active shot, zone, slide and skill before showing results. First defeat is preserved."+
             "\nBuilt UTC: "+System.DateTime.UtcNow.ToString("O"));
-        File.Copy("Docs/20261114_正式採用とヒット倍率.txt",output+"/正式仕様と変更.txt",true);
+        File.Copy("Docs/20261114_ダメージUIと一括ダメージ.txt",output+"/変更内容と検証.txt",true);
         Debug.Log("BUILD PASS: " + report.summary.totalSize + " bytes");
     }
 }

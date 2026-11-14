@@ -27,32 +27,33 @@ namespace Ohajiki
         TMP_Text flightNumber;
         TMP_Text number,celebration,allClear;
         Burst[] bursts;
-        readonly Vector2 bankCenter=new Vector2(530,990);
+        readonly Vector2 bankCenter=new Vector2(530,970);
         readonly Vector2 numberCenter=new Vector2(190,130);
-        const float NumberTilt=-17, HitRestScale=.72f, HitPulseSeconds=.18f;
+        const float NumberTilt=-17, DamageRestScale=.6f, DamagePulseSeconds=.18f;
         readonly Color gold=new Color(1,.82f,.12f);
         readonly Color[] colors={new Color(1,.27f,.055f),new Color(.08f,.68f,1),new Color(.28f,.90f,.17f),new Color(.70f,.3f,1)};
         Vector2 shotPosition,chargeStart,impactCenter;
         int burstCursor,lastTarget,lastContacts,lastLevel=1,lastTier;
-        float impactAge=10,celebrateAge=10,lockAge=10,allClearAge,hitPulseAge=1;
+        float impactAge=10,celebrateAge=10,lockAge=10,allClearAge,damagePulseAge=1;
         bool paused,showBeam,charging;
         public int DamageTarget=>lastTarget;
         public int ContactCount=>lastContacts;
-        public int DisplayedHits=>lastContacts;
-        // Preserve the workbook's existing color endpoint; its input is now hits.
-        public int HitColorFullAt=>Mathf.Max(1,tuning.damageColorFullAt);
+        public int DisplayedDamage=>lastTarget;
+        public int DamageColorFullAt=>Mathf.Max(1,tuning.damageColorFullAt);
+        // Planner-approved steps: 500 damage adds 10%, capped at +50%.
+        public float DamageSizeMultiplier=>1+Mathf.Clamp(lastTarget/500,0,5)*.1f;
         public bool DamageVisualsVisible=>flightNumber.gameObject.activeInHierarchy || impactBurst.color.a>0 || impactRing.color.a>0;
         public Vector3 BankScale=>bank.localScale;
-        public bool HitCounterVisible=>bank.gameObject.activeInHierarchy;
-        public Color HitCounterColor=>bankBurst.color;
-        public Color HitNumberColor=>number.color;
-        public Vector3 HitNumberScale=>number.rectTransform.localScale;
+        public bool DamageCounterVisible=>bank.gameObject.activeInHierarchy;
+        public Color DamageCounterColor=>bankBurst.color;
+        public Color DamageNumberColor=>number.color;
+        public Vector3 DamageNumberScale=>number.rectTransform.localScale;
         public Vector2 BankPosition=>bank.anchoredPosition;
         public Quaternion BankRotation=>bank.localRotation;
-        public Vector2 HitNumberPosition=>number.rectTransform.anchoredPosition;
+        public Vector2 DamageNumberPosition=>number.rectTransform.anchoredPosition;
         public bool AllClearVisible=>allClear.gameObject.activeInHierarchy;
         public Vector2 AllClearPosition=>allClear.rectTransform.anchoredPosition;
-        public void SetHitCounterVisible(bool visible)=>bank.gameObject.SetActive(visible);
+        public void SetDamageCounterVisible(bool visible)=>bank.gameObject.SetActive(visible);
         public int ActiveBursts {get {int n=0;foreach(var b in bursts)if(b.active)n++;return n;}}
         public int PoolCapacity=>bursts.Length;
         public void Initialize(RectTransform board,TMP_FontAsset font,SpiritUiSkin skin,BattleTuning config)
@@ -73,9 +74,9 @@ namespace Ohajiki
                 b.root.gameObject.SetActive(false);bursts[i]=b;
             }
             celebration=Label(transform,"",new Vector2(360,879),new Vector2(600,80),45,gold);
-            // Spec 13 M8:M12: only the tilted digits move; the burst stays fixed.
-            bank=ui.Rect(transform,"Hit counter",bankCenter.x,bankCenter.y,380,260);bank.pivot=new Vector2(.5f,.5f);
-            bankBurst=Graphic(bank,"Hit burst",Resources.Load<Sprite>("UI/HitCounterBurst")??skin.DamageBurst,numberCenter,1);
+            // Reference video: tilted digits pop and shake; the burst center stays fixed.
+            bank=ui.Rect(transform,"Damage counter",bankCenter.x,bankCenter.y,380,260);bank.pivot=new Vector2(.5f,.5f);
+            bankBurst=Graphic(bank,"Damage burst",Resources.Load<Sprite>("UI/HitCounterBurst")??skin.DamageBurst,numberCenter,1);
             bankBurst.rectTransform.sizeDelta=new Vector2(380,260);
             number=ui.Label(bank,"0",numberCenter.x,numberCenter.y,250,120,96,gold,true);
             number.rectTransform.pivot=new Vector2(.5f,.5f);
@@ -118,7 +119,7 @@ namespace Ohajiki
             foreach(var b in bursts){b.active=false;b.root.gameObject.SetActive(false);}
             foreach(var ray in impactRays)ray.color=Color.clear;
             paused=showBeam=charging=false;
-            lastTarget=lastContacts=lastTier=0;lastLevel=1;hitPulseAge=HitPulseSeconds;
+            lastTarget=lastContacts=lastTier=0;lastLevel=1;damagePulseAge=DamagePulseSeconds;
             impactAge=MasterConstants.GetFloat("BattleFeedback.impactVisualSeconds",.55f);
             celebrateAge=MasterConstants.GetFloat("BattleFeedback.celebrationSeconds",.72f);lockAge=10;
             allClearAge=0;allClear.gameObject.SetActive(false);
@@ -127,9 +128,9 @@ namespace Ohajiki
             number.rectTransform.anchoredPosition=numberCenter;number.rectTransform.localRotation=Quaternion.Euler(0,0,NumberTilt);
             celebration.text="";
             impactRing.color=impactBurst.color=beam.color=chargeOrb.color=Color.clear;
-            AnimateHitCounter();
+            AnimateDamageCounter();
             HideFlight();
-            SetHitCounterVisible(false);
+            SetDamageCounterVisible(false);
         }
         public void BeginShot(bool isEnemy,Element element)
         {ResetFeedback();}
@@ -141,21 +142,22 @@ namespace Ohajiki
         }
         public void MoveShot(Vector2 position)=>shotPosition=board.anchoredPosition+position;
         public void SetPaused(bool value)=>paused=value;
-        void AnimateHitCounter()
+        void AnimateDamageCounter()
         {
             bankBurst.color=Color.white;
             number.color=Color.Lerp(new Color(1,.88f,.08f),new Color(1,.08f,.035f),
-                Mathf.Clamp01((float)lastContacts/HitColorFullAt));
-            float pulse=1-Mathf.SmoothStep(0,1,Mathf.Clamp01(hitPulseAge/HitPulseSeconds));
-            bank.localScale=new Vector3(HitRestScale,HitRestScale,1);
+                Mathf.Clamp01((float)lastTarget/DamageColorFullAt));
+            float pulse=1-Mathf.SmoothStep(0,1,Mathf.Clamp01(damagePulseAge/DamagePulseSeconds));
+            float scale=DamageRestScale*DamageSizeMultiplier;
+            bank.localScale=new Vector3(scale,scale,1);
             number.rectTransform.localScale=Vector3.one*(1+.24f*pulse);
             number.rectTransform.anchoredPosition=numberCenter+new Vector2(
-                Mathf.Sin(hitPulseAge*105)*3,Mathf.Sin(hitPulseAge*81)*2)*pulse;
+                Mathf.Sin(damagePulseAge*105)*3,Mathf.Sin(damagePulseAge*81)*2)*pulse;
             number.rectTransform.localRotation=Quaternion.Euler(0,0,NumberTilt);
         }
         public void Contact(Vector2 position,Element element,bool same,int contacts,int matched,int total)
         {
-            int level=BattleRules.EffectLevel(matched,tuning),delta=Mathf.Max(0,contacts-lastContacts),tier=0;
+            int level=BattleRules.EffectLevel(matched,tuning),delta=Mathf.Max(0,total-lastTarget),tier=0;
             if(tuning.contactCelebrationThresholds!=null)foreach(int threshold in tuning.contactCelebrationThresholds)if(contacts>=threshold)tier++;
             bool levelUp=level>lastLevel;
             if(tier>lastTier || levelUp)
@@ -164,9 +166,9 @@ namespace Ohajiki
                 celebrateAge=0;celebration.color=tier>lastTier?gold:new Color(.55f,1,.64f);
             }
             lastTarget=total;lastContacts=contacts;lastLevel=level;lastTier=tier;
-            number.text=contacts.ToString("N0");
-            if(delta>0)hitPulseAge=0;
-            AnimateHitCounter();
+            number.text=total.ToString("N0");
+            if(delta>0)damagePulseAge=0;
+            AnimateDamageCounter();
             var b=bursts[burstCursor++%bursts.Length];b.age=0;b.rotation=contacts*29;b.active=true;
             b.origin=board.anchoredPosition+position;b.color=colors[(int)element];
             b.scale=(same?MasterConstants.GetFloat("BattleFeedback.sameContactScale",1.15f):MasterConstants.GetFloat("BattleFeedback.otherContactScale",.82f))*
@@ -178,8 +180,9 @@ namespace Ohajiki
         public void LockTotal(int total)
         {
             charging=true;lastTarget=total;lockAge=0;
+            number.text=total.ToString("N0");AnimateDamageCounter();
             chargeStart=shotPosition;
-            celebration.text=$"{lastContacts} HIT  TOTAL!";celebrateAge=0;celebration.color=gold;
+            celebration.text=$"{total:N0} DAMAGE";celebrateAge=0;celebration.color=gold;
         }
         public void Impact(bool isSkill,bool isEnemy,bool support)
         {
@@ -223,7 +226,7 @@ namespace Ohajiki
         void Update()
         {
             if(tuning==null || paused)return;
-            float dt=Mathf.Min(Time.deltaTime,.05f);hitPulseAge+=dt;impactAge+=dt;celebrateAge+=dt;lockAge+=dt;
+            float dt=Mathf.Min(Time.deltaTime,.05f);damagePulseAge+=dt;impactAge+=dt;celebrateAge+=dt;lockAge+=dt;
             if(AllClearVisible)
             {
                 allClearAge+=dt;
@@ -231,7 +234,7 @@ namespace Ohajiki
                 allClear.rectTransform.anchoredPosition=new Vector2(Mathf.Lerp(930,-210,p),100);
                 if(p>=1)allClear.gameObject.SetActive(false);
             }
-            AnimateHitCounter();
+            AnimateDamageCounter();
             float cp=Mathf.Clamp01(celebrateAge/MasterConstants.GetFloat("BattleFeedback.celebrationSeconds",.72f));celebration.alpha=1-cp;
             celebration.rectTransform.anchoredPosition=new Vector2(360,879+cp*16);
             celebration.rectTransform.localScale=Vector3.one*(1+.35f*Mathf.Exp(-cp*7));

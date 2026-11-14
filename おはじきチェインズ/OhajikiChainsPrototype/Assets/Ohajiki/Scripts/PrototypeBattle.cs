@@ -139,6 +139,9 @@ namespace Ohajiki
                 }
                 if(!Simulation.Moving)
                 {
+                    // Settle the accumulated normal attack once, as the shot ends.
+                    // Refresh below updates HP text/bars immediately, without a drain tween.
+                    LastAction=State.ResolveNormal(enemyActing,actingSpirit,Simulation.Collected,Simulation.Matched,tuning,Simulation.DamageWeight);
                     View.Feedback.LockTotal(CurrentNormalDamage());
                     Enter(BattlePhase.Charging); View.SetStatus("ゾーンエフェクト → キャラスライド → スキル発動");
                 }
@@ -151,7 +154,6 @@ namespace Ohajiki
             switch(Phase)
             {
                 case BattlePhase.Charging:
-                    LastAction=State.ResolveNormal(enemyActing,actingSpirit,Simulation.Collected,Simulation.Matched,tuning,Simulation.DamageWeight);
                     Enter(BattlePhase.CutIn);break;
                 case BattlePhase.CutIn:
                     LastAction=State.ResolveSkill();
@@ -284,7 +286,6 @@ namespace Ohajiki
         {
             var charge=Simulation.Charges[index];
             int normalDamage=CurrentNormalDamage();
-            State.ApplyContactDamage(enemyActing,actingSpirit,normalDamage);
             View.Feedback.Contact(charge.Position,charge.Element,same,Simulation.Collected,Simulation.Matched,normalDamage);
             Refresh();
         }
