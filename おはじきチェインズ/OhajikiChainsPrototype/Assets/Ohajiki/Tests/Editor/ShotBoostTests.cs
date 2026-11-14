@@ -26,19 +26,19 @@ namespace Ohajiki.Tests
                 }
                 Hit(SpecialCharge.AttackBoost);
                 Assert.AreEqual(1,sim.Collected);
-                Assert.AreEqual(1,sim.DamageWeight,1e-9);
+                Assert.AreEqual(tuning.specialAttackMultiplier,sim.DamageWeight,1e-6);
                 Hit(SpecialCharge.None);
                 Assert.AreEqual(2,sim.Collected);
-                Assert.AreEqual(1+tuning.specialAttackMultiplier,sim.WeightedContacts,.0001f);
-                Assert.AreEqual(1+1.02*tuning.specialAttackMultiplier,sim.DamageWeight,1e-9);
+                Assert.AreEqual(2*tuning.specialAttackMultiplier,sim.WeightedContacts,.0001f);
+                Assert.AreEqual(2.05*tuning.specialAttackMultiplier,sim.DamageWeight,1e-6);
                 float speed=sim.Velocity.magnitude;
                 Hit(SpecialCharge.SpeedBoost);
                 Assert.AreEqual(3,sim.Collected);
                 Assert.AreEqual(speed*tuning.specialSpeedMultiplier,sim.Velocity.magnitude,.01f);
                 Hit(SpecialCharge.None);
                 Assert.AreEqual(4,sim.Collected);
-                Assert.AreEqual(1+3*tuning.specialAttackMultiplier,sim.WeightedContacts,.0001f);
-                Assert.AreEqual(1+3.121608*tuning.specialAttackMultiplier,sim.DamageWeight,1e-9);
+                Assert.AreEqual(4*tuning.specialAttackMultiplier,sim.WeightedContacts,.0001f);
+                Assert.AreEqual(4.30*tuning.specialAttackMultiplier,sim.DamageWeight,1e-6);
                 Assert.AreEqual(speed*tuning.specialSpeedMultiplier,sim.Velocity.magnitude,.01f);
                 sim.CancelShot();
                 sim.Prepare(enemy,312);

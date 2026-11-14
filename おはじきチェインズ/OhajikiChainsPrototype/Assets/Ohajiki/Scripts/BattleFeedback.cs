@@ -29,7 +29,9 @@ namespace Ohajiki
         Burst[] bursts;
         readonly Vector2 bankCenter=new Vector2(530,970);
         readonly Vector2 numberCenter=new Vector2(190,130);
-        const float NumberTilt=-17, DamageRestScale=.6f, DamagePulseSeconds=.18f;
+        float NumberTilt=>tuning.damageNumberTilt;
+        float DamageRestScale=>tuning.damageBaseScale;
+        float DamagePulseSeconds=>tuning.damagePulseSeconds;
         readonly Color gold=new Color(1,.82f,.12f);
         readonly Color[] colors={new Color(1,.27f,.055f),new Color(.08f,.68f,1),new Color(.28f,.90f,.17f),new Color(.70f,.3f,1)};
         Vector2 shotPosition,chargeStart,impactCenter;
@@ -41,7 +43,7 @@ namespace Ohajiki
         public int DisplayedDamage=>lastTarget;
         public int DamageColorFullAt=>Mathf.Max(1,tuning.damageColorFullAt);
         // Planner-approved steps: 500 damage adds 10%, capped at +50%.
-        public float DamageSizeMultiplier=>1+Mathf.Clamp(lastTarget/500,0,5)*.1f;
+        public float DamageSizeMultiplier=>Mathf.Min(tuning.damageSizeMaximum,1+(lastTarget/Mathf.Max(1,tuning.damageSizeStep))*tuning.damageSizeIncrement);
         public bool DamageVisualsVisible=>flightNumber.gameObject.activeInHierarchy || impactBurst.color.a>0 || impactRing.color.a>0;
         public Vector3 BankScale=>bank.localScale;
         public bool DamageCounterVisible=>bank.gameObject.activeInHierarchy;

@@ -32,7 +32,7 @@ namespace Ohajiki.Tests
             tuning.effectThresholds=new[]{2,4}; tuning.contactAttackFactor=.5f; tuning.advantage=2;
             Assert.AreEqual(1,BattleRules.EffectLevel(1,tuning));
             Assert.AreEqual(3,BattleRules.EffectLevel(4,tuning));
-            Assert.AreEqual(412,BattleRules.ContactDamage(100,4,Element.Fire,Element.Wood,tuning));
+            Assert.AreEqual(1400,BattleRules.ContactDamage(100,4,Element.Fire,Element.Wood,tuning));
         }
         [Test] public void AffinityMatchesAllPairs()
         {
@@ -40,8 +40,8 @@ namespace Ohajiki.Tests
             for(int a=0;a<4;a++) for(int b=0;b<4;b++)
                 Assert.AreEqual(expected[a,b],BattleRules.Affinity((Element)a,(Element)b,tuning),.0001f);
         }
-        [TestCase(0,0)] [TestCase(1,30)] [TestCase(4,124)] [TestCase(10,328)]
-        public void NormalAttackIncludesGeometricHitGrowth(int contacts,int expected) =>
+        [TestCase(0,0)] [TestCase(1,200)] [TestCase(4,860)] [TestCase(10,2450)]
+        public void NormalAttackIncludesLinearHitGrowth(int contacts,int expected) =>
             Assert.AreEqual(expected,BattleRules.ContactDamage(200,contacts,Element.Fire,Element.Fire,tuning));
         [Test] public void DeckHoldsOtherThreeAndDoesNotRepeatBeforeExhaustion()
         {

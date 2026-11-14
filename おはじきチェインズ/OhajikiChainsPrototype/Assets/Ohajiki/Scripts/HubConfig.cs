@@ -53,10 +53,11 @@ namespace Ohajiki
         public SpiritDefinition[] catalog;
         [Min(12)] public int startingOwnedCount = 12;
         [Range(1, 5)] public int deckSlots = 3;
-        [Header("仮の初期資源 / アプリ終了でリセット")]
+        [Header("新規プレイヤーの初期資源")]
         [Min(0)] public int startingCoins = 5000;
         [Min(0)] public int startingGems = 0;
-        [Min(1)] public int maximumEnergy = 5;
+        [Min(1)] public int maximumEnergy = 10;
+        [Min(1)] public float energyRecoverySeconds = 300;
         [Min(0)] public int energyPerRank = 1;
         [Min(1)] public int energyRefillGems = 1;
         [Min(0)] public int baseFriendCapacity = 10;
@@ -89,7 +90,7 @@ namespace Ohajiki
                 if (spirit == null || !spirit.IsValid) { error = "所持キャラの設定に不備があります"; return false; }
             if (startingOwnedCount < SpiritDeck.Size || startingOwnedCount > catalog.Length)
             { error = "初期所持数は12体以上、カタログ数以下が必要です"; return false; }
-            if (deckSlots < 1 || maximumEnergy < 1 || energyPerRank<0 || energyRefillGems<1 || baseFriendCapacity<0 || friendsPerRank<0 || battleEnergyCost < 0 || battleEnergyCost > maximumEnergy ||
+            if (deckSlots < 1 || maximumEnergy < 1 || energyRecoverySeconds<1 || float.IsNaN(energyRecoverySeconds) || float.IsInfinity(energyRecoverySeconds) || energyPerRank<0 || energyRefillGems<1 || baseFriendCapacity<0 || friendsPerRank<0 || battleEnergyCost < 0 || battleEnergyCost > maximumEnergy ||
                 maxSpiritLevel < 1 || maxSpiritLevel > 60 || spiritExperienceBase < 1 || spiritExperiencePerLevel < 0 ||
                 battleSpiritExperienceMultiplier < 0 || float.IsNaN(battleSpiritExperienceMultiplier) || float.IsInfinity(battleSpiritExperienceMultiplier) || upgradeCoinUnit < 0 || startingCoins < 0 || startingMaterials < 0 || startingGems<0 ||
                 firstSingleGems<0 || singleGems<0 || tenGems<0 || tenBonusGems<0 || featuredCycleSeconds<.5f)

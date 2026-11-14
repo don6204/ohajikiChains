@@ -229,15 +229,17 @@ namespace Ohajiki
             if (!charge.Active || !Moving) return;
             charge.Active = false;
             Collected++;
+            // The boost starts at this contact, including its own damage contribution.
+            if(charge.Special==SpecialCharge.AttackBoost)
+                projectile.AttackMultiplier=Mathf.Min(tuning.maximumContactMultiplier,projectile.AttackMultiplier*tuning.specialAttackMultiplier);
             WeightedContacts += projectile.AttackMultiplier;
-            DamageWeight=Math.Min(double.MaxValue,DamageWeight+projectile.AttackMultiplier*BattleRules.HitDamageMultiplier(Collected));
+            DamageWeight=Math.Min(double.MaxValue,DamageWeight+projectile.AttackMultiplier*BattleRules.HitDamageMultiplier(Collected,tuning.contactAttackFactor));
             bool same = charge.Element == shotElement;
             if (same) Matched++;
             CollectedCharge?.Invoke(index, same);
             switch (charge.Special)
             {
                 case SpecialCharge.AttackBoost:
-                    projectile.AttackMultiplier = Mathf.Min(tuning.maximumContactMultiplier, projectile.AttackMultiplier * tuning.specialAttackMultiplier);
                     break;
                 case SpecialCharge.SpeedBoost:
                     projectile.Velocity = Vector2.ClampMagnitude(projectile.Velocity * tuning.specialSpeedMultiplier, tuning.maximumShotSpeed);

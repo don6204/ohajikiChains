@@ -176,8 +176,11 @@ namespace Ohajiki
             if(session.Energy<main.energyCost)session.TryRefillEnergy(out _);
             long xp=session.Progress.TotalExperience,coins=session.Progress.Coins;
             app.EnterQuest(main.id);yield return new WaitForSeconds(.2f);
-            app.Battle.State.Player.Receive(app.Battle.State.Player.MaxHp);app.Battle.Shoot(Vector2.up*400);
-            yield return new WaitForSeconds(.2f);
+            Require(app.Battle.Shoot(Vector2.up*400),"launch before the lethal test fixture");
+            app.Battle.State.Player.Receive(app.Battle.State.Player.MaxHp);
+            Require(app.Battle.Phase==BattlePhase.PlayerShot,"lethal damage waits for the active shot");
+            float defeatDeadline=Time.realtimeSinceStartup+35;
+            while(app.Battle.Phase!=BattlePhase.Finished && Time.realtimeSinceStartup<defeatDeadline)yield return null;
             Require(app.Battle.Phase==BattlePhase.Finished&&session.Progress.TotalExperience==xp&&session.Progress.Coins==coins,"defeat gives no rewards");
             app.ReturnHome();yield return null;
             app.EnterQuest(practiceQuest.id);yield return new WaitForSeconds(.2f);

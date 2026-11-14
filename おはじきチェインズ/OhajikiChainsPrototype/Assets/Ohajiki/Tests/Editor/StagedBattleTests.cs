@@ -19,15 +19,15 @@ namespace Ohajiki.Tests
         {
             var state=new BattleState(tuning);
             var normal=state.ResolveNormal(false,spirit,4,0,tuning);
-            Assert.AreEqual(62,normal.appliedNormalDamage);Assert.AreEqual(1138,state.Enemy.Hp);
+            Assert.AreEqual(430,normal.appliedNormalDamage);Assert.AreEqual(770,state.Enemy.Hp);
             Assert.IsTrue(state.ActionPending);Assert.IsFalse(state.EnemyActsNext);Assert.AreEqual(0,normal.appliedSkillDamage);
             var full=state.ResolveSkill();
-            Assert.AreEqual(71,full.appliedSkillDamage);Assert.AreEqual(133,full.appliedDamage);Assert.AreEqual(1067,state.Enemy.Hp);
+            Assert.AreEqual(71,full.appliedSkillDamage);Assert.AreEqual(501,full.appliedDamage);Assert.AreEqual(699,state.Enemy.Hp);
             Assert.IsFalse(state.ActionPending);Assert.IsTrue(state.EnemyActsNext);Assert.AreEqual(1,state.Turn);
             state.ResolveNormal(true,spirit,4,0,tuning);Assert.AreEqual(1,state.Turn);
             state.ResolveSkill();Assert.AreEqual(2,state.Turn);Assert.IsFalse(state.EnemyActsNext);
         }
-        [TestCase(0,62,71)] [TestCase(30,32,71)] [TestCase(80,0,53)] [TestCase(200,0,0)]
+        [TestCase(0,430,71)] [TestCase(30,400,71)] [TestCase(450,0,51)] [TestCase(600,0,0)]
         public void FixedGuardIsOneSharedBudget(int guard,int normalDamage,int skillDamage)
         {
             var state=new BattleState(tuning);state.Enemy.SetGuard(guard,2,false);
@@ -36,7 +36,7 @@ namespace Ohajiki.Tests
             var full=state.ResolveSkill();Assert.AreEqual(skillDamage,full.appliedSkillDamage);Assert.AreEqual(1,state.Enemy.GuardTurns);
             Assert.AreEqual(normalDamage+skillDamage,full.appliedDamage);
         }
-        [TestCase(0,133)] [TestCase(.25f,100)] [TestCase(.5f,66)] [TestCase(1,0)]
+        [TestCase(0,501)] [TestCase(.25f,376)] [TestCase(.5f,250)] [TestCase(1,0)]
         public void PercentageGuardPreservesCombinedRounding(float guard,int total)
         {
             var state=new BattleState(tuning);state.Enemy.SetGuard(guard,1,true);

@@ -98,10 +98,10 @@ namespace Ohajiki.Tests
             int gems=session.Gems;Assert.IsFalse(session.TryRefillEnergy(out _));Assert.AreEqual(gems,session.Gems);
             session.TryEnterBattle();Assert.IsTrue(session.TryRefillEnergy(out _));Assert.AreEqual(gems-1,session.Gems);
             Assert.IsFalse(session.TryRefillEnergy(out _));Assert.AreEqual(gems-1,session.Gems);
-            session.Progress.Award(100,0,tuning);Assert.AreEqual(6,session.MaximumEnergy);Assert.AreEqual(11,session.FriendCapacity);
-            Assert.IsTrue(session.TryRefillEnergy(out _));Assert.AreEqual(6,session.Energy);
+            session.Progress.Award(100,0,tuning);Assert.AreEqual(11,session.MaximumEnergy);Assert.AreEqual(11,session.FriendCapacity);
+            Assert.IsTrue(session.TryRefillEnergy(out _));Assert.AreEqual(11,session.Energy);
             Assert.IsTrue(session.ApplyShop(ShopCurrency.Gems,session.Gems,Array.Empty<ShopReward>(),out _));session.TryEnterBattle();
-            Assert.IsFalse(session.TryRefillEnergy(out _));Assert.AreEqual(5,session.Energy);
+            Assert.IsFalse(session.TryRefillEnergy(out _));Assert.AreEqual(10,session.Energy);
         }
         [Test] public void QuestLoadoutsOwnEnemiesAndNeverChangeSourceAssets()
         {

@@ -11,7 +11,9 @@ namespace Ohajiki
         public HubConfig Config { get; }
         public PlayerProgress Progress { get; } = new PlayerProgress();
         public int ActiveDeck { get; private set; }
-        public int Energy { get; private set; }
+        int energy,lastEnergyMaximum;
+        DateTimeOffset energyUpdatedAt;
+        public int Energy { get {RefreshEnergy();return energy;} private set {energy=value;} }
         public int Gems { get; private set; }
         public int ShiningStones { get; private set; }
         public int EventPoints { get; private set; }
@@ -24,11 +26,13 @@ namespace Ohajiki
         public PlayerSession(HubConfig config, BattleTuning tuning,Func<DateTimeOffset> clock=null)
         {
             if (!config.Validate(out string error)) throw new ArgumentException(error);
-            Config = config; Energy = config.maximumEnergy; Gems = config.startingGems;
+            Config = config; energy = config.maximumEnergy; Gems = config.startingGems;
             this.clock=clock??(()=>DateTimeOffset.UtcNow);
+            energyUpdatedAt=this.clock();lastEnergyMaximum=MaximumEnergy;
             levels = config.catalog.Select(s => Mathf.Min(s.level,Mathf.Min(s.maxLevel,config.maxSpiritLevel))).ToArray();
             spiritExperience = new long[levels.Length];
             copies=Enumerable.Range(0,levels.Length).Select(i=>i<config.startingOwnedCount?MasterConstants.GetInt("PlayerSession.initialOwnedCopies",1):0).ToArray();
+            InitializeProfile();
             random=new System.Random(tuning.seed+100);
             for (int i = 0; i < materials.Length; i++) materials[i] = config.startingMaterials;
             decks = new int[config.deckSlots][];
@@ -117,6 +121,19 @@ namespace Ohajiki
         {
             if (Energy < Config.battleEnergyCost) return false;
             Energy -= Config.battleEnergyCost; return true;
+        }
+        public bool RefreshEnergy()
+        {
+            var now=clock();int maximum=MaximumEnergy;
+            if(maximum!=lastEnergyMaximum)
+            {if(energy>=lastEnergyMaximum)energyUpdatedAt=now;lastEnergyMaximum=maximum;}
+            if(energy>=maximum){energyUpdatedAt=now;return false;}
+            double elapsed=(now-energyUpdatedAt).TotalSeconds;
+            if(elapsed<Config.energyRecoverySeconds)return false;
+            int recovered=(int)Math.Min(maximum-energy,Math.Floor(elapsed/Config.energyRecoverySeconds));
+            energy+=recovered;
+            energyUpdatedAt=energy>=maximum?now:energyUpdatedAt.AddSeconds(recovered*(double)Config.energyRecoverySeconds);
+            return recovered>0;
         }
         public bool BannerOpen(int index) => index>=0 && index<Config.banners.Length &&
             Config.banners[index].IsOpen(clock());

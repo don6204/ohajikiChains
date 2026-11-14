@@ -37,6 +37,9 @@ namespace Ohajiki
         UnityEngine.UI.Image[] chargeImages, cardImages;
         TMP_Text[] chargeLabels, cardLabels;
         UnityEngine.UI.Image playerFill, enemyFill;
+        RectTransform playerBar,enemyBar;
+        Vector2 playerBarHome,enemyBarHome;
+        bool shakeHp,shakeEnemyHp;
         TMP_Text playerText, enemyText, turnText, statusText, chainText, deckText, overlayTitle, overlayBody, overlayButtonText;
         RectTransform chainPanel;
         Sprite circle;
@@ -99,7 +102,8 @@ namespace Ohajiki
             enemyStatusText.enableAutoSizing = true;
             enemyStatusText.fontSizeMin = 8;
             enemyStatusText.fontSizeMax = 10;
-            Image(Rect("EnemyBar", enemy, 374, 7, 246, 12), new Color(.45f,.32f,.15f));
+            enemyBar=Rect("EnemyBar", enemy, 374, 7, 246, 12);
+            enemyBarHome=enemyBar.anchoredPosition;Image(enemyBar,new Color(.45f,.32f,.15f));
             enemyFill = Image(Rect("EnemyFill", enemy, 374, 7, 246, 12), colors[2]);
             turnText = Label(root, "", 36, 969, 300, 40, 20, muted);
             deckText = Label(root, "", 330, 975, 350, 28, 18, muted, TextAlignmentOptions.Right);
@@ -145,7 +149,8 @@ namespace Ohajiki
             playerText.enableAutoSizing = true;
             playerText.fontSizeMin = 14;
             playerText.fontSizeMax = 20;
-            Panel(root, "PlayerBar", 36, 254, 648, 10, new Color(.45f,.32f,.15f));
+            playerBar=Panel(root, "PlayerBar", 36, 254, 648, 10, new Color(.45f,.32f,.15f));
+            playerBarHome=playerBar.anchoredPosition;
             playerFill = Image(Rect("PlayerFill", root, 36, 254, 648, 10), new Color(.08f,.68f,.44f));
             cardButtons = new UnityEngine.UI.Button[4];
             cardImages = new UnityEngine.UI.Image[4]; cardLabels = new TMP_Text[4]; cardPortraits = new UnityEngine.UI.Image[4];
@@ -212,11 +217,12 @@ namespace Ohajiki
         public void Refresh(ShotSimulation sim, SpiritDeck deck, BattleState state, BattleTuning config, int selected,
             bool showChain, SpiritDefinition active, SpiritDefinition enemy, BattlePhase phase, bool paused, PlayerProgress progress)
         {
-            // Keep the accumulated amount through resolution; no idle or result counter.
+            // Hand the accumulated amount to the flight/impact readout after charging.
             bool feedbackVisible=phase==BattlePhase.PlayerShot || phase==BattlePhase.EnemyShot ||
                 phase==BattlePhase.Charging || phase==BattlePhase.DamageFlight || phase==BattlePhase.NormalImpact ||
                 phase==BattlePhase.CutIn || phase==BattlePhase.Impact;
-            Feedback.SetDamageCounterVisible(feedbackVisible);
+            Feedback.SetDamageCounterVisible(phase==BattlePhase.PlayerShot || phase==BattlePhase.EnemyShot ||
+                phase==BattlePhase.Charging);
             // Avoid showing fragments of these secondary labels behind the shot feedback.
             turnText.gameObject.SetActive(!feedbackVisible);
             deckText.gameObject.SetActive(!feedbackVisible);
@@ -380,7 +386,7 @@ namespace Ohajiki
                 (spirit.skill == Skill.Guard || spirit.skill == Skill.PercentGuard ? $"防御は相手の行動{spirit.guardTurns}回分\n" : "") +
                 ActionDescription(spirit) +
                 ((int)spirit.skill >= (int)Skill.AttackUp && spirit.skill != Skill.Cleanse ? $"能力変化は対象の行動{spirit.statusTurns}回分\n" : "") +
-                $"\n通常攻撃 = 攻撃 × 接触数（強化込み） × {tuning.contactAttackFactor}\n無属性も通常攻撃の接触数に含む\n\n指・ボタンを離すと閉じます";
+                $"\n接触威力 = 攻撃 × (1 + (接触数−1) × {tuning.contactAttackFactor})\n強化・属性相性を反映し、ダメージUI着弾時に一括適用\n無属性も接触数に含む\n\n指・ボタンを離すと閉じます";
             detailPanel.gameObject.SetActive(true);
         }
         string ActionDescription(SpiritDefinition spirit)
@@ -400,12 +406,17 @@ namespace Ohajiki
             energy.gameObject.SetActive(phase == BattlePhase.Charging);
             cutInPanel.gameObject.SetActive(phase == BattlePhase.CutIn);
             bool impact=phase == BattlePhase.Impact || phase == BattlePhase.NormalImpact;
+            float elapsed=progress*(phase==BattlePhase.NormalImpact?Mathf.Max(.05f,tuning.normalImpactSeconds):tuning.impactSeconds);
+            // Only the struck bar and its fill move. The HUD, HP text and board stay fixed.
+            float shake=impact && shakeHp && elapsed<.3f
+                ? 5f*Mathf.Cos(elapsed*Mathf.PI*48)*Mathf.Pow(1-elapsed/.3f,2):0;
+            SetHpBarOffsets(shakeEnemyHp?0:shake,shakeEnemyHp?shake:0);
             impactPanel.gameObject.SetActive(impact);
             if(impact)
             {
                 float kick=Mathf.Exp(-progress*8);
                 impactPanel.localScale=new Vector3(1+.13f*kick,1+.19f*kick,1);
-                targetFlash.color=Color.clear;
+                targetFlash.color=new Color(1,.55f,.08f,(1-progress)*.7f);
                 targetFlash.rectTransform.localRotation=Quaternion.Euler(0,0,progress*26);
             }
             else targetFlash.color=Color.clear;
@@ -431,6 +442,7 @@ namespace Ohajiki
         }
         public void ShowNormalImpact(ActionResult result)
         {
+            shakeHp=result.appliedNormalDamage>0;shakeEnemyHp=!result.enemy;
             supportImpact=false;
             impactCaption.text="通常攻撃";impactUnit.text="DAMAGE";
             impactText.text=$"{result.appliedNormalDamage:N0}";
@@ -441,9 +453,10 @@ namespace Ohajiki
         }
         public void ShowSkillImpact(ActionResult result,SpiritDefinition spirit)
         {
+            shakeHp=result.appliedSkillDamage>0;shakeEnemyHp=!result.enemy;
             supportImpact=spirit.skill!=Skill.Attack && spirit.skill!=Skill.PercentAttack;
-            string effect="発動";
-            impactUnit.text="SKILL";
+            string effect=$"{result.appliedSkillDamage:N0}";
+            impactUnit.text="DAMAGE";
             if(spirit.skill==Skill.Heal || spirit.skill==Skill.PercentHeal){effect=$"+{result.healing:N0}";impactUnit.text="HEAL";}
             if(result.guarding){effect="GUARD";impactUnit.text=$"相手の行動 {spirit.guardTurns}回";}
             if(!string.IsNullOrEmpty(result.statusEffect))
@@ -457,7 +470,15 @@ namespace Ohajiki
             bool bottom=affectsSelf?!result.enemy:result.enemy;
             impactPanel.anchoredPosition=new Vector2(360,bottom?410:866);
             targetFlash.rectTransform.anchoredPosition=bottom?new Vector2(360,278):new Vector2(530,1115);
+            Feedback.Impact(true,result.enemy,affectsSelf);
         }
+        void SetHpBarOffsets(float player,float enemy)
+        {
+            if(playerBar==null || enemyBar==null)return;
+            playerBar.anchoredPosition=playerFill.rectTransform.anchoredPosition=playerBarHome+Vector2.right*player;
+            enemyBar.anchoredPosition=enemyFill.rectTransform.anchoredPosition=enemyBarHome+Vector2.right*enemy;
+        }
+        void OnDisable()=>SetHpBarOffsets(0,0);
         RectTransform Rect(string name, Transform parent, float x, float y, float w, float h)
         {
             var rt = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>(); rt.SetParent(parent, false);

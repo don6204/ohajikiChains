@@ -79,7 +79,7 @@ namespace Ohajiki
             bool available=shop.CanPurchase(product,out string reason);
             ui.Button(content,shop.PremiumActive?"購入済み":available?"プレミアムパスを購入":reason,0,106,656,80,()=>ShowShopConfirmation(product.id),available,HubWidgets.Accent);
             ui.Label(content,shop.PremiumActive?"本日のログインボーナスを受け取りました。":"購入当日から、その日にログインすると宝石を付与。",0,37,656,52,18,HubWidgets.Muted,true);
-            Message("仮購入です。パスと受取履歴はアプリ終了でリセットされます。");
+            Message("仮購入です。パスと受取履歴はこの端末に保存されます。");
         }
         public void ShowShopConfirmation(string id)
         {

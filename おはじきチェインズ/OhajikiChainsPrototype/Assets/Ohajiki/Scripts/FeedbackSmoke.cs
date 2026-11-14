@@ -28,6 +28,43 @@ namespace Ohajiki
                 Mathf.Abs(enemy.sizeDelta.x-246f*battle.State.Enemy.Hp/battle.State.Enemy.MaxHp)<.001f,
                 "HP bars match model immediately, without gradual drain");
         }
+        void CheckHpBarShake()
+        {
+            var player=(RectTransform)battle.View.transform.Find("Screen/PlayerBar");
+            var enemy=(RectTransform)battle.View.transform.Find("Screen/Enemy/EnemyBar");
+            var playerFill=(RectTransform)battle.View.transform.Find("Screen/PlayerFill");
+            var enemyFill=(RectTransform)battle.View.transform.Find("Screen/Enemy/EnemyFill");
+            var playerHome=player.anchoredPosition;var enemyHome=enemy.anchoredPosition;
+            var boardHome=battle.View.Board.anchoredPosition;
+            var enemyPanel=(RectTransform)enemy.parent;var panelHome=enemyPanel.anchoredPosition;
+            foreach(bool enemyAttack in new[]{false,true})
+            {
+                var result=new ActionResult{enemy=enemyAttack,appliedNormalDamage=10};
+                battle.View.ShowNormalImpact(result);
+                battle.View.AnimateAction(BattlePhase.NormalImpact,0,battle.PlayerCard,Vector2.zero,enemyAttack);
+                Check((enemyAttack?player:enemy).anchoredPosition!=(enemyAttack?playerHome:enemyHome),"struck HP bar shakes on arrival");
+                Check((enemyAttack?enemy:player).anchoredPosition==(enemyAttack?enemyHome:playerHome),"other HP bar remains still");
+                Check(playerFill.anchoredPosition==player.anchoredPosition && enemyFill.anchoredPosition==enemy.anchoredPosition,"HP fills and tracks move together");
+                Check(battle.View.ScreenPosition==Vector2.zero && battle.View.Board.anchoredPosition==boardHome && enemyPanel.anchoredPosition==panelHome,"only HP bars move, not screen, board or enemy panel");
+                battle.View.AnimateAction(BattlePhase.NormalImpact,1,battle.PlayerCard,Vector2.zero,enemyAttack);
+                Check(player.anchoredPosition==playerHome && enemy.anchoredPosition==enemyHome,"HP bars return exactly to their starting positions");
+                result.appliedNormalDamage=0;battle.View.ShowNormalImpact(result);
+                battle.View.AnimateAction(BattlePhase.NormalImpact,0,battle.PlayerCard,Vector2.zero,enemyAttack);
+                Check(player.anchoredPosition==playerHome && enemy.anchoredPosition==enemyHome,"zero normal damage does not shake HP bars");
+                result.appliedSkillDamage=0;battle.View.ShowSkillImpact(result,battle.PlayerCard);
+                battle.View.AnimateAction(BattlePhase.Impact,0,battle.PlayerCard,Vector2.zero,enemyAttack);
+                Check(player.anchoredPosition==playerHome && enemy.anchoredPosition==enemyHome,"support or zero skill damage does not shake HP bars");
+            }
+            battle.View.AnimateAction(BattlePhase.Ready,0,battle.PlayerCard,Vector2.zero,false);
+        }
+        void CheckImpactReadout(int damage)
+        {
+            var panel=battle.View.transform.Find("Screen/Impact readout");
+            Check(panel!=null && panel.gameObject.activeInHierarchy,"impact readout is visible");
+            var texts=panel.GetComponentsInChildren<TMP_Text>();
+            Check(texts.Any(text=>text.text=="DAMAGE") && texts.Any(text=>text.text==damage.ToString("N0")),
+                "impact readout shows the applied damage exactly");
+        }
         void CheckDamageLayout(RectTransform bank)
         {
             Canvas.ForceUpdateCanvases();
@@ -104,7 +141,7 @@ namespace Ohajiki
             while(battle.Simulation.Collected==0 && Time.realtimeSinceStartup<hitDeadline)yield return null;
             var shotPhase=enemy?BattlePhase.EnemyShot:BattlePhase.PlayerShot;
             Check(battle.Simulation.Collected>0 && target.Hp==1 && battle.Phase==shotPhase && battle.Simulation.Moving,"lethal accumulated damage leaves HP unchanged during the shot");
-            Check(!battle.View.OverlayVisible && battle.State.ShotInProgress && !battle.State.Finished,"no result before shot-end settlement");
+            Check(!battle.View.OverlayVisible && battle.State.ShotInProgress && !battle.State.Finished,"no result before damage arrival");
             CheckHpBars();
             string name=enemy?"10-player-zero":"09-enemy-zero";
             Capture(name+"-before-settlement");
@@ -119,19 +156,21 @@ namespace Ohajiki
             {
                 Check(!battle.View.OverlayVisible && battle.Progress.Coins==coinsBefore,"no scene/result or reward before turn completion");
                 Check(battle.Phase!=BattlePhase.Ready && battle.Phase!=BattlePhase.EnemyThinking,"no following side starts after defeat");
-                if(battle.Phase==shotPhase)Check(target.Hp==1,"contacts do not drain HP during the shot");
-                else Check(target.Hp==0 && battle.State.Won==!enemy,"shot-end settlement preserves the first defeat");
+                if(battle.Phase==shotPhase || battle.Phase==BattlePhase.Charging || battle.Phase==BattlePhase.DamageFlight)
+                    Check(target.Hp==1 && !battle.State.Finished,"HP remains unchanged through shot, zone and flight");
+                else Check(target.Hp==0 && battle.State.Won==!enemy,"arrival settlement preserves the first defeat");
                 CheckHpBars();
                 if(battle.Phase!=previous)
                 {
                     previous=battle.Phase;actual.Add(previous);
-                    if(previous==BattlePhase.Charging)Capture(name+"-settled-zone");
+                    if(previous==BattlePhase.DamageFlight)Capture(name+"-before-arrival");
+                    if(previous==BattlePhase.NormalImpact)Capture(name+"-settled-impact");
                     if(previous==BattlePhase.CutIn)Capture(name+"-cutin");
                     if(previous==BattlePhase.Impact)Capture(name+"-skill");
                 }
                 yield return null;
             }
-            Check(actual.SequenceEqual(new[]{BattlePhase.Charging,BattlePhase.CutIn,BattlePhase.Impact}),"lethal shot completes zone, slide and skill in order");
+            Check(actual.SequenceEqual(new[]{BattlePhase.Charging,BattlePhase.DamageFlight,BattlePhase.NormalImpact,BattlePhase.CutIn,BattlePhase.Impact}),"lethal shot completes zone, flight, impact, slide and skill in order");
             Check(battle.Phase==BattlePhase.Finished && battle.View.OverlayVisible,"result opens only after the skill presentation");
             Check(battle.LastAction.contacts>=2 && battle.View.Feedback.ContactCount>=2,"the full shot contributes to settlement");
             Check(battle.View.Feedback.DisplayedDamage==battle.LastAction.normalDamage,"lethal shot keeps the complete damage total");
@@ -176,6 +215,7 @@ namespace Ohajiki
             battle.View.HideOverlay();battle.Restart();
             // Isolate presentation so numeric feedback can be inspected at controlled values.
             battle.enabled=false;
+            CheckHpBarShake();
             var feedback=battle.View.Feedback;
             feedback.BeginShot(false,Element.Fire);feedback.SetDamageCounterVisible(true);
             yield return new WaitForSeconds(.1f);
@@ -201,7 +241,9 @@ namespace Ohajiki
                 yield return new WaitForSeconds(.2f);Check(feedback.DamageNumberScale==frozen && feedback.DamageNumberPosition==frozenPosition,"pause freezes damage animation");
                 feedback.SetPaused(false);yield return new WaitForSeconds(.3f);
                 Check(feedback.DamageNumberScale==Vector3.one && feedback.BankScale==restingScale,"pop settles to same size");
-                Check(feedback.DamageNumberPosition==numberPosition,"digits return to center");
+                float centerError=Vector2.Distance(feedback.DamageNumberPosition,numberPosition);
+                Debug.Log($"DAMAGE DIGIT REST error={centerError:R} UI units");
+                Check(centerError<.001f,"digits return to center (within subpixel layout precision)");
                 Check(feedback.DamageNumberColor.g<yellow.g && feedback.DamageCounterColor==background,"digits progress toward red; burst color stays fixed");
                 Capture("00-damage-"+damage+"-settled");yield return null;
             }
@@ -287,11 +329,16 @@ namespace Ohajiki
             // Session loadouts are cloned. This fixture does not edit the user's spirit assets.
             battle.PlayerCard.skill=Skill.Attack;battle.PlayerCard.skillPower=new[]{70f};
             int enemyHp=battle.State.Enemy.Hp,playerHp=battle.State.Player.Hp;
-            Debug.Log("FEEDBACK BUILD: damage UI, 500 damage/+10% max1.5, shot-end HP settlement, growth=1.02, damageRedAt="+feedback.DamageColorFullAt);
+            var playerHpBar=(RectTransform)battle.View.transform.Find("Screen/PlayerBar");
+            var enemyHpBar=(RectTransform)battle.View.transform.Find("Screen/Enemy/EnemyBar");
+            // Use the actual resting layout; RectTransform can round authored coordinates.
+            var playerHpBarHome=playerHpBar.anchoredPosition;var enemyHpBarHome=enemyHpBar.anchoredPosition;
+            Debug.Log($"HP BAR BASELINES player=({playerHpBarHome.x:R},{playerHpBarHome.y:R}) enemy=({enemyHpBarHome.x:R},{enemyHpBarHome.y:R})");
+            Debug.Log("FEEDBACK BUILD: flight-arrival HP settlement, target HP bar shake only, damage UI 500 damage/+10% max1.5, linear contact growth="+tuning.contactAttackFactor+", damageRedAt="+feedback.DamageColorFullAt);
             Capture("01-ready");yield return null;
             Check(battle.Shoot(new Vector2(100,450)),"launch");
             Check(battle.View.Feedback.DamageCounterVisible,"damage bank appears on shot");
-            bool pausedOnce=false,sawEffects=false;
+            bool pausedOnce=false,pausedImpact=false,sawEffects=false;int shakenSides=0;
             int frame=0,contacts=0;float nextCapture=0,cutInAt=-1,flightAt=-1,deadline=Time.realtimeSinceStartup+40;
             BattlePhase prior=battle.Phase;
             while(Time.realtimeSinceStartup<deadline)
@@ -299,23 +346,53 @@ namespace Ohajiki
                 Check(battle.View.ScreenPosition==Vector2.zero,"screen remains stationary during shots and both damage stages");
                 CheckHpBars();
                 var phase=battle.Phase;bool captured=false;
-                if(phase==BattlePhase.PlayerShot || phase==BattlePhase.EnemyShot || phase==BattlePhase.Charging)
+                if(phase==BattlePhase.PlayerShot || phase==BattlePhase.EnemyShot || phase==BattlePhase.Charging || phase==BattlePhase.DamageFlight)
                 {
                     bool enemy=battle.Simulation.EnemySide;
-                    var source=enemy?battle.State.Enemy:battle.State.Player;
                     var target=enemy?battle.State.Player:battle.State.Enemy;
-                    var spirit=enemy?battle.EnemyCard:battle.PlayerCard;
-                    int raw=BattleRules.ContactDamage(spirit.Attack*source.AttackMultiplier,battle.Simulation.DamageWeight,spirit.element,target.Element,tuning);
-                    if(phase==BattlePhase.Charging)
-                    {
-                        Check((enemy?playerHp:enemyHp)-target.Hp==target.MitigatedDamage(raw),"normal damage is settled in full as the shot ends");
-                        Check(battle.State.ActionPending,"zone follows the one-time normal settlement");
-                    }
-                    else Check(target.Hp==(enemy?playerHp:enemyHp),"HP stays unchanged while charge damage accumulates");
+                    Check(target.Hp==(enemy?playerHp:enemyHp),"HP stays unchanged through shot, zone and damage flight");
+                    Check(!battle.State.ActionPending && battle.State.ShotInProgress,"normal settlement waits for arrival");
                 }
+                if(phase==BattlePhase.DamageFlight || phase==BattlePhase.NormalImpact || phase==BattlePhase.CutIn)
                 {
-                    Check(phase!=BattlePhase.DamageFlight && phase!=BattlePhase.NormalImpact,"no damage presentation phases");
-                    Check(!battle.View.DamageVisualsVisible,"no flight, damage readout or HP hit flash");
+                    Check(!feedback.DamageCounterVisible,"flight and impact replace the counter without overlapping damage numbers");
+                    if(phase!=BattlePhase.DamageFlight)
+                    {
+                        int before=battle.Simulation.EnemySide?playerHp:enemyHp;
+                        int now=battle.Simulation.EnemySide?battle.State.Player.Hp:battle.State.Enemy.Hp;
+                        Check(before-now==battle.LastAction.appliedNormalDamage && battle.State.ActionPending,
+                            "normal damage applies once at arrival and is not repeated during impact or slide");
+                    }
+                }
+                if(phase==BattlePhase.DamageFlight)
+                    Check(battle.View.Feedback.DamageVisualsVisible,"damage flight is visible");
+                if(phase==BattlePhase.NormalImpact)
+                {
+                    CheckImpactReadout(battle.LastAction.appliedNormalDamage);
+                    bool enemy=battle.Simulation.EnemySide;
+                    var bar=(RectTransform)battle.View.transform.Find(enemy?"Screen/PlayerBar":"Screen/Enemy/EnemyBar");
+                    var home=enemy?playerHpBarHome:enemyHpBarHome;
+                    if(bar.anchoredPosition!=home)shakenSides|=enemy?2:1;
+                    if(!pausedImpact && battle.LastAction.appliedNormalDamage>0)
+                    {
+                        pausedImpact=true;battle.TogglePause();var frozenBar=bar.anchoredPosition;
+                        int frozenHp=battle.State.Enemy.Hp;Capture("04a-hp-bar-shake-paused");
+                        yield return new WaitForSeconds(.2f);
+                        Check(bar.anchoredPosition==frozenBar && battle.State.Enemy.Hp==frozenHp,"pause freezes HP bar shake without repeated damage");
+                        battle.TogglePause();
+                    }
+                }
+                if(phase==BattlePhase.CutIn)
+                {
+                    Check(Vector2.Distance(playerHpBar.anchoredPosition,playerHpBarHome)<.001f && Vector2.Distance(enemyHpBar.anchoredPosition,enemyHpBarHome)<.001f,
+                        $"both HP bars settle before character slide: player={playerHpBar.anchoredPosition} enemy={enemyHpBar.anchoredPosition}");
+                }
+                if(phase==BattlePhase.Impact)
+                {
+                    Check(!feedback.DamageCounterVisible,"skill readout stays clear of the accumulated damage counter");
+                    var spirit=battle.Simulation.EnemySide?battle.EnemyCard:battle.PlayerCard;
+                    if(spirit.skill==Skill.Attack || spirit.skill==Skill.PercentAttack)
+                        CheckImpactReadout(battle.LastAction.appliedSkillDamage);
                 }
                 if(battle.Simulation.Collected>contacts && phase==BattlePhase.PlayerShot)
                 {
@@ -339,6 +416,7 @@ namespace Ohajiki
                 if(phase!=prior)
                 {
                     phases.Add(phase);prior=phase;Debug.Log($"FEEDBACK PHASE {phase} player={battle.State.Player.Hp} enemy={battle.State.Enemy.Hp} pending={battle.State.ActionPending}");
+                    if(phase==BattlePhase.CutIn)Debug.Log($"HP BAR REST playerError={Vector2.Distance(playerHpBar.anchoredPosition,playerHpBarHome):R} enemyError={Vector2.Distance(enemyHpBar.anchoredPosition,enemyHpBarHome):R} UI units");
                     if(phase==BattlePhase.EnemyThinking)Check(!battle.View.Feedback.DamageCounterVisible,"enemy waiting hides damage bank");
                     if(phase==BattlePhase.EnemyShot)Check(battle.View.Feedback.DamageCounterVisible,"enemy shot shows damage bank");
                     if(phase==BattlePhase.NormalImpact || phase==BattlePhase.CutIn)
@@ -371,10 +449,11 @@ namespace Ohajiki
                 if(phase==BattlePhase.Ready && battle.State.Turn==2)break;
                 yield return null;
             }
-            var expected=new[]{BattlePhase.Charging,BattlePhase.CutIn,BattlePhase.Impact,BattlePhase.EnemyThinking,BattlePhase.EnemyShot,BattlePhase.Charging,BattlePhase.CutIn,BattlePhase.Impact,BattlePhase.Ready};
+            var expected=new[]{BattlePhase.Charging,BattlePhase.DamageFlight,BattlePhase.NormalImpact,BattlePhase.CutIn,BattlePhase.Impact,BattlePhase.EnemyThinking,BattlePhase.EnemyShot,BattlePhase.Charging,BattlePhase.DamageFlight,BattlePhase.NormalImpact,BattlePhase.CutIn,BattlePhase.Impact,BattlePhase.Ready};
             Check(phases.Count==expected.Length,"phase count: "+string.Join(",",phases));
             for(int i=0;i<expected.Length;i++)Check(phases[i]==expected[i],"phase order "+i);
             Check(sawEffects && pausedOnce && battle.Simulation.ResetCount>=3,"effects, pause, action-end and optional all-clear refills");
+            Check(pausedImpact && shakenSides==3,"target-only HP shake verified on both sides and while paused");
             Check(!battle.View.Feedback.DamageCounterVisible,"next turn hides damage bank");
             Capture("07-next-turn-hidden");
             yield return null;
@@ -405,7 +484,7 @@ namespace Ohajiki
             yield return new WaitForSeconds(.4f);
             if(FindObjectsByType<BattleFeedback>(FindObjectsSortMode.None).Length!=0 || FindObjectsByType<AudioSource>(FindObjectsSortMode.None).Length!=0)
             {Debug.LogError("FEEDBACK SMOKE: home cleanup");Application.Quit(2);yield break;}
-            Debug.Log("FEEDBACK SMOKE PASS: cumulative damage UI, reference digit pop/shake, 500 damage/+10% max1.5, size boundaries/3 resolutions, HP held during shots then applied instantly once, zero HP waits for zone/slide/skill, no early result/reward or following turn, pause, retry and cleanup.");
+            Debug.Log("FEEDBACK SMOKE PASS: HP held through shot, zone and flight; applied once on damage arrival on both sides; short target-only HP bar shake, stationary screen/board/enemy panel, no shake for zero damage, exact bar reset and pause; cumulative damage UI, reference digit pop/shake, 500 damage/+10% max1.5, 3 resolutions, zero HP waits for complete impact/slide/skill, no early result/reward or following turn, retry and cleanup.");
             Application.Quit(0);
         }
     }

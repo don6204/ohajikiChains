@@ -84,6 +84,15 @@ namespace Ohajiki.Tests
                 Assert.IsTrue(d.npcs.All(n=>n.deck.Length==12));
                 Assert.IsTrue(d.npcs.Single(n=>n.id=="NPC0000_0003").deck.All(s=>s.level==50));
                 Assert.AreEqual(22,d.battle.chargeRadius);Assert.AreEqual(8,d.battle.boardRows);
+                Assert.AreEqual(Element.Water,d.home.catalog[13].element);Assert.AreEqual(770,d.home.catalog[13].baseHp);
+                Assert.AreEqual(10,d.home.maximumEnergy);Assert.AreEqual(300,d.home.energyRecoverySeconds);
+                var workbook=MasterWorkbook.Read(source);
+                float growth=workbook.Table("定数").Single(r=>r.Required("id")=="BattleTuning.contactAttackFactor").Float("value_float",0);
+                Assert.AreEqual(growth,d.battle.contactAttackFactor,"contact growth follows the current master value");
+                var sourceSpirits=workbook.Index("スピリター");
+                foreach(var spirit in d.home.catalog)
+                    Assert.AreEqual(sourceSpirits[spirit.masterId].Int("atk",0),spirit.baseAttack,"attack imported for "+spirit.masterId);
+                Assert.AreEqual(500,d.battle.damageSizeStep);Assert.AreEqual(.1f,d.battle.damageSizeIncrement);Assert.AreEqual(1.5f,d.battle.damageSizeMaximum);
                 Assert.IsTrue(d.home.quests.quests.All(q=>q.useMasterRewards));
                 Assert.AreEqual(120,d.home.quests.Find("QUEST0000_0000_LV0").experience);
                 Assert.AreEqual(1.0/24,GachaRules.Probability(d.home,d.home.banners[0],0),1e-10);

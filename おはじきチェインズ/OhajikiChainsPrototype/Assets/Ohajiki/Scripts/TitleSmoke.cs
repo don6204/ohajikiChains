@@ -26,6 +26,7 @@ namespace Ohajiki
         }
         static void Require(bool condition,string message){if(!condition)throw new InvalidOperationException(message);}
         UnityEngine.UI.Button Button(string name)=>app.Title.GetComponentsInChildren<UnityEngine.UI.Button>().Single(b=>b.name=="Button_"+name);
+        UnityEngine.UI.Button HubButton(string name)=>app.Hub.GetComponentsInChildren<UnityEngine.UI.Button>().Single(b=>b.name=="Button_"+name);
         void Click(UnityEngine.UI.Button button)
         {
             ExecuteEvents.Execute(button.gameObject,new PointerEventData(EventSystem.current){button=PointerEventData.InputButton.Left},ExecuteEvents.pointerClickHandler);
@@ -44,7 +45,7 @@ namespace Ohajiki
             yield return new WaitForSeconds(.8f);
             var session=app.Session;int energy=session.Energy;
             Require(app.Title!=null && app.Hub==null && app.Battle==null,"starts at title only");
-            Require(app.Title.DisplayVersion=="Ver. 1.011","updated version");
+            Require(app.Title.DisplayVersion=="Ver. 1.020","updated version");
             Require(TitleView.SocialUrl=="https://x.com/don_kng68","specified X destination");
             Capture("01-title");yield return null;
             Screen.SetResolution(480,800,FullScreenMode.Windowed);yield return new WaitForSeconds(.4f);
@@ -74,12 +75,66 @@ namespace Ohajiki
             app.StartGame();
             Require(FindObjectsByType<HubView>(FindObjectsSortMode.None).Length==1,"duplicate tap cannot create extra hub");
             Require(app.Session==session && session.Energy==energy,"title does not reset session or spend energy");
+            Require(app.Hub.HasModal && !session.HasPlayerName,"name is required on first entry");
+            Click(HubButton("冒険をはじめる"));yield return null;
+            Require(app.Hub.HasModal && !session.HasPlayerName,"empty name is rejected");
+            app.EnterBattle();Require(app.Battle==null,"cannot battle before entering name");
+            Capture("06a-name-required");yield return null;
+            app.Hub.GetComponentInChildren<TMP_InputField>().text="テスト冒険者";
+            Click(HubButton("冒険をはじめる"));yield return null;
+            Require(session.PlayerName=="テスト冒険者" && !app.Hub.HasModal,"name confirmation opens home");
             Capture("06-home");yield return null;
             app.EnterBattle();yield return new WaitForSeconds(.6f);
             Require(app.Battle!=null && !app.Battle.View.Feedback.DamageCounterVisible,"battle opens with hidden damage UI");
             app.ReturnHome();yield return new WaitForSeconds(.3f);
             Require(app.Title==null && app.Hub.Page==HubPage.Home,"battle returns to home");
+            app.Hub.Navigate(HubPage.Settings);yield return null;
+            Capture("07-settings");yield return null;
+            Click(HubButton("プロフィール"));yield return null;
+            Require(session.PlayerId==null && session.PlayerTitle==null,"undefined account ID/title remain null");
+            Capture("08-profile");yield return null;
+            Click(HubButton("Favorite_1"));yield return null;
+            Click(HubButton("FavoriteSpirit_1"));yield return null;
+            Require(session.Favorite(1)==1,"favorite selected from inventory");
+            Click(HubButton("ひとこと変更"));yield return null;
+            app.Hub.GetComponentInChildren<TMP_InputField>().text="チェインをつなごう！";
+            Click(HubButton("保存"));yield return null;
+            Require(session.Greeting=="チェインをつなごう！","greeting saved");
+            Capture("09-profile-edited");yield return null;
+            Click(HubButton("戻る"));yield return null;
+            Click(HubButton("オプション"));yield return null;
+            var sliders=app.Hub.GetComponentsInChildren<UnityEngine.UI.Slider>();
+            Require(sliders.Length==3,"three volume channels");
+            sliders.Single(s=>s.name=="Volume_BGM").value=37;
+            Require(session.Volume(0)==37,"slider changes sound preference");
+            Canvas.ForceUpdateCanvases();
+            foreach(var slider in sliders)
+            {
+                float trackWidth=((RectTransform)slider.fillRect.parent).rect.width;
+                Require(Mathf.Abs(slider.fillRect.rect.width-trackWidth*slider.normalizedValue)<.1f,"volume fill stays within its track and reflects the value");
+            }
+            Capture("10-options");yield return null;
+            Click(HubButton("戻る"));yield return null;
+            app.Hub.Navigate(HubPage.Home);yield return null;
+            Click(HubButton("＞"));yield return null;
+            Require(app.Hub.GetComponentsInChildren<TMP_Text>().Any(t=>t.text==session.Config.catalog[1].displayName),"home cycles favorite");
+            Capture("11-favorite-home");yield return null;
+            app.Hub.Navigate(HubPage.Settings);yield return null;
+            Click(HubButton("タイトルへ"));yield return null;
+            Require(app.Title!=null && app.Hub==null && app.Session==session,"return to title preserves session");
+            app.StartGame();yield return null;
+            Require(!app.Hub.HasModal && session.Volume(0)==37,"name/options survive title round trip");
+            app.Hub.Navigate(HubPage.Settings);yield return null;
+            Click(HubButton("アカウント初期化"));yield return null;
+            Click(HubButton("戻る"));yield return null;
+            Require(app.Session==session && session.PlayerName=="テスト冒険者","reset cancellation preserves progress");
+            Click(HubButton("アカウント初期化"));yield return null;
+            Click(HubButton("決定"));yield return null;
+            Require(app.Title!=null && app.Hub==null && app.Session!=session,"confirmed reset returns to title");
+            Require(!app.Session.HasPlayerName && app.Session.Volume(0)==100 && app.Session.Favorite(1)==-1,"reset clears profile and options");
+            Capture("12-reset-title");yield return null;
             Debug.Log("TITLE SMOKE PASS: initial title/version, 3 sizes, backup open/close/disabled providers, modal input, double tap, fade to home, one EventSystem, session preserved, battle return, no SE. X URL inspected; external browser not launched by test.");
+            Debug.Log("PROFILE SMOKE PASS: mandatory name, blank rejection, name gate, owned favorites, home carousel, greeting, null ID/title, options sliders, title round trip, reset cancellation/confirmation.");
             Application.Quit(0);
         }
     }

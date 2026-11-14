@@ -139,11 +139,9 @@ namespace Ohajiki
                 }
                 if(!Simulation.Moving)
                 {
-                    // Settle the accumulated normal attack once, as the shot ends.
-                    // Refresh below updates HP text/bars immediately, without a drain tween.
-                    LastAction=State.ResolveNormal(enemyActing,actingSpirit,Simulation.Collected,Simulation.Matched,tuning,Simulation.DamageWeight);
+                    // Freeze the accumulated readout now; HP waits for the flight to arrive.
                     View.Feedback.LockTotal(CurrentNormalDamage());
-                    Enter(BattlePhase.Charging); View.SetStatus("ゾーンエフェクト → キャラスライド → スキル発動");
+                    Enter(BattlePhase.Charging); View.SetStatus("ゾーンエフェクト → 通常攻撃 → キャラスライド → スキル発動");
                 }
                 return;
             }
@@ -154,6 +152,13 @@ namespace Ohajiki
             switch(Phase)
             {
                 case BattlePhase.Charging:
+                    Enter(BattlePhase.DamageFlight);View.SetStatus("ためた力を、相手へ！");break;
+                case BattlePhase.DamageFlight:
+                    // One authoritative settlement on arrival, synchronized with the impact UI.
+                    LastAction=State.ResolveNormal(enemyActing,actingSpirit,Simulation.Collected,Simulation.Matched,tuning,Simulation.DamageWeight);
+                    View.ShowNormalImpact(LastAction);View.SetStatus("接触でためたダメージを解放！");
+                    Enter(BattlePhase.NormalImpact);break;
+                case BattlePhase.NormalImpact:
                     Enter(BattlePhase.CutIn);break;
                 case BattlePhase.CutIn:
                     LastAction=State.ResolveSkill();
@@ -235,7 +240,7 @@ namespace Ohajiki
             }
             Enter(BattlePhase.Finished);
             View.ShowOverlay(State.Won ? "VICTORY!" : "もう一度、挑戦！",
-                $"バトル終了\n\n報酬 EXP +{xp} / Coin +{coins}\nRank {Progress.Rank}  累計EXP {Progress.TotalExperience}\n参加スピリターにも経験値を獲得\n\n同属性でスキル、全接触で通常攻撃\n手札と反射角を変えて再挑戦！\n※報酬はアプリ終了まで保持","もう一度バトル");
+                $"バトル終了\n\n報酬 EXP +{xp} / Coin +{coins}\nRank {Progress.Rank}  累計EXP {Progress.TotalExperience}\n参加スピリターにも経験値を獲得\n\n同属性でスキル、全接触で通常攻撃\n手札と反射角を変えて再挑戦！\n※報酬はこの端末に自動保存","もう一度バトル");
         }
         public void Retire()
         {

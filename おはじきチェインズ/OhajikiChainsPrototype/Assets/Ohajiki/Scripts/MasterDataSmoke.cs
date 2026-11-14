@@ -36,6 +36,8 @@ namespace Ohajiki
             var data=app.Master;Require(data!=null&&data.sourceHash.Length==64,"generated master is loaded");
             Debug.Log("MASTER SNAPSHOT: SHA256 "+data.sourceHash+" / specialChargeProbabilities="+
                 string.Join(",",data.battle.specialChargeProbabilities.Select(p=>p.ToString("R",System.Globalization.CultureInfo.InvariantCulture))));
+            Debug.Log("MASTER ATTACKS: "+string.Join(",",data.home.catalog.Select(s=>s.baseAttack))+" / contactGrowth="+
+                data.battle.contactAttackFactor.ToString("R",System.Globalization.CultureInfo.InvariantCulture));
             Require(ReferenceEquals(app.Session.Config,data.home),"session uses imported catalog");
             Require(data.home.catalog.Length==24&&data.home.quests.quests.Length==25&&data.npcs.Length==25,"master counts survive serialization");
             Require(data.home.catalog[0].Power(5)==180&&data.home.catalog[8].Power(5)==1.7f,"new skill values survive build");

@@ -39,7 +39,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c8dd3144da46c194c944e369a1933c71, type: 2}
   - {fileID: 11400000, guid: 627a7c615b73b7243aa773ad37a4b8c7, type: 2}
   effectThresholds: 0100000003000000050000000a000000
-  contactAttackFactor: 0.15
+  contactAttackFactor: 0.05
   advantage: 1.2
   disadvantage: 0.8
   deceleration: 200
@@ -88,6 +88,12 @@ MonoBehaviour:
   damageNumberPunch: 0
   damageCounterSpeed: 24
   damageColorFullAt: 600
+  damageNumberTilt: -17
+  damageSizeStep: 500
+  damageSizeIncrement: 0.1
+  damageSizeMaximum: 1.5
+  damageBaseScale: 0.6
+  damagePulseSeconds: 0.18
   trailOpacity: 0.65
   damageBankShake: 0
   damageBankTilt: 0

@@ -83,5 +83,15 @@ namespace Ohajiki
             bool changed=observedDay!=Today;observedDay=Today;
             return ClaimDailyBonus()||changed;
         }
+        internal ShopSaveData CaptureSave()=>new ShopSaveData{
+            purchases=purchases.OrderBy(p=>p.Key,StringComparer.Ordinal).Select(p=>new CountSaveData{key=p.Key,count=p.Value}).ToArray(),
+            premiumMonthTicks=premiumMonth.Ticks,lastClaimTicks=lastClaim.Ticks};
+        internal void RestoreSave(ShopSaveData data)
+        {
+            if(data==null)return;
+            purchases.Clear();foreach(var value in data.purchases??Array.Empty<CountSaveData>())purchases[value.key]=value.count;
+            premiumMonth=new DateTime(data.premiumMonthTicks);lastClaim=new DateTime(data.lastClaimTicks);
+            observedDay=Today;pending=null;
+        }
     }
 }

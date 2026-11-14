@@ -37,7 +37,7 @@ namespace Ohajiki
     [CreateAssetMenu(menuName="Ohajiki/Shop Config")]
     public sealed class ShopConfig : ScriptableObject
     {
-        [Header("起動中のみ保持する仮購入・交換")]
+        [Header("端末に保存する仮購入・交換 / 実請求なし")]
         [Min(0)] public int startingShiningStones=20;
         [Min(0)] public int startingEventPoints;
         public bool eventActive;

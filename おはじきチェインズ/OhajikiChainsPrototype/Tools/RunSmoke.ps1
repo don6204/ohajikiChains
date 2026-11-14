@@ -7,10 +7,10 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $projectRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$buildRoot = Join-Path $projectRoot 'Build\20261114_DamageUI'
+$buildRoot = Join-Path $projectRoot 'Build\20261114_HpBarShakeDuration'
 if ($BuildDirectory) { $buildRoot = [System.IO.Path]::GetFullPath($BuildDirectory) }
 $playerPath = Join-Path $buildRoot 'OhajikiChains.exe'
-$reviewRoot = [System.IO.Path]::GetFullPath((Join-Path $projectRoot '..\Review\20261114_damage_ui'))
+$reviewRoot = [System.IO.Path]::GetFullPath((Join-Path $projectRoot '..\Review\20261114_hp_bar_shake_duration'))
 if ($ReviewDirectory) { $reviewRoot = [System.IO.Path]::GetFullPath($ReviewDirectory) }
 New-Item -ItemType Directory -Path $reviewRoot -Force | Out-Null
 if (-not (Test-Path -LiteralPath $playerPath -PathType Leaf)) { throw "Build missing: $playerPath" }

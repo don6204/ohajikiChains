@@ -46,7 +46,7 @@ namespace Ohajiki
             yield return new WaitForSeconds(.7f);
             var session=app.Session;var hub=app.Hub;
             Require(hub.Page==HubPage.Home,"home startup");
-            Click("設定");Require(hub.Page==HubPage.Settings,"settings opens");Click("ホームへ");Require(hub.Page==HubPage.Home,"settings returns home");
+            Click("設定");Require(hub.Page==HubPage.Settings,"settings opens");Click("ホーム");Require(hub.Page==HubPage.Home,"settings returns home");
             yield return Capture("01-home");
             Screen.SetResolution(480,800,FullScreenMode.Windowed);yield return new WaitForSeconds(.3f);yield return Capture("01-home-480x800");
             Screen.SetResolution(720,900,FullScreenMode.Windowed);yield return new WaitForSeconds(.3f);yield return Capture("01-home-720x900");

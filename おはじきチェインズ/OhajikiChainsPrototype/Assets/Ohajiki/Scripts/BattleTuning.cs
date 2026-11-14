@@ -15,7 +15,7 @@ namespace Ohajiki
         public SpiritDefinition[] enemyDeck = new SpiritDefinition[12];
         [Header("仕様書に記載の数値")]
         public int[] effectThresholds = { 1, 3, 5, 10 };
-        [Min(0)] public float contactAttackFactor = .15f;
+        [Min(0)] public float contactAttackFactor = .05f;
         [Min(0)] public float advantage = 1.2f;
         [Min(0)] public float disadvantage = .8f;
         [Header("ショット / 速度は各キャラのデータで設定")]
@@ -68,6 +68,12 @@ namespace Ohajiki
         [Min(1)] public float damageCounterSpeed=14;
         [Tooltip("ダメージ加算UIの数字が黄→オレンジ→赤になる表示上の基準。計算には影響しません")]
         [Min(1)] public int damageColorFullAt=600;
+        [Range(-180,180)] public float damageNumberTilt=-17;
+        [Min(1)] public int damageSizeStep=500;
+        [Min(0)] public float damageSizeIncrement=.1f;
+        [Range(1,1.5f)] public float damageSizeMaximum=1.5f;
+        [Range(.1f,.6f)] public float damageBaseScale=.6f;
+        [Min(.01f)] public float damagePulseSeconds=.18f;
         [Range(0,1)] public float trailOpacity=.38f;
         [HideInInspector] public float damageBankShake;
         [HideInInspector] public float damageBankTilt;
@@ -86,6 +92,12 @@ namespace Ohajiki
         public RankBand[] rankBands = { new RankBand(10,450,50), new RankBand(20,600,60), new RankBand(30,800,75), new RankBand(50,1000,100) };
         public bool Validate(out string error)
         {
+            if(float.IsNaN(contactAttackFactor) || float.IsInfinity(contactAttackFactor) || contactAttackFactor<0 ||
+                damageSizeStep<1 || damageSizeIncrement<0 || float.IsNaN(damageSizeIncrement) || float.IsInfinity(damageSizeIncrement) ||
+                damageSizeMaximum<1 || damageSizeMaximum>1.5f || float.IsNaN(damageSizeMaximum) ||
+                damageBaseScale<.1f || damageBaseScale>.6f || float.IsNaN(damageBaseScale) ||
+                damagePulseSeconds<=0 || float.IsNaN(damagePulseSeconds) || float.IsInfinity(damagePulseSeconds))
+            {error="ダメージ加算率または表示設定が不正です";return false;}
             foreach (var deck in new[] { playerDeck, enemyDeck })
             {
                 if (deck == null || deck.Length != SpiritDeck.Size) { error = "デッキは12体必要です"; return false; }

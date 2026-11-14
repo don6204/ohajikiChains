@@ -5,9 +5,9 @@ namespace Ohajiki
 {
     public static class BattleRules
     {
-        public const double HitDamageGrowth=1.02;
-        public static double HitDamageMultiplier(int hitNumber)=>hitNumber<=0?0:Math.Pow(HitDamageGrowth,hitNumber-1);
-        public static double ContactWeight(int contacts)=>contacts<=0?0:(Math.Pow(HitDamageGrowth,contacts)-1)/(HitDamageGrowth-1);
+        // First contact is full attack; subsequent contacts add the configured rate linearly.
+        public static double HitDamageMultiplier(int hitNumber,double increment=.05)=>hitNumber<=0?0:1+(hitNumber-1)*increment;
+        public static double ContactWeight(int contacts,double increment=.05)=>contacts<=0?0:contacts+contacts*(contacts-1d)*increment*.5;
         // Keep long combos monotone at the integer HP representation limit.
         public static int RoundDamage(double amount)=>amount<=0?0:amount>=int.MaxValue?int.MaxValue:(int)Math.Round(amount,MidpointRounding.ToEven);
         public static int EffectLevel(int count, BattleTuning tuning)
@@ -24,11 +24,11 @@ namespace Ohajiki
         public static int ContactDamage(int attack, int contacts, Element element, Element target, BattleTuning tuning) =>
             ContactDamage((float)attack, contacts, element, target, tuning);
         public static int ContactDamage(float attack,int contacts,Element element,Element target,BattleTuning tuning)=>
-            ContactDamage(attack,ContactWeight(contacts),element,target,tuning);
+            ContactDamage(attack,ContactWeight(contacts,tuning.contactAttackFactor),element,target,tuning);
         // damageWeight already includes each contact's own boost and hit multiplier.
         public static int ContactDamage(float attack,double damageWeight,Element element,Element target,BattleTuning tuning)=>
-            attack<=0 || damageWeight<=0 || tuning.contactAttackFactor<=0?0:
-            RoundDamage(attack*damageWeight*tuning.contactAttackFactor*Affinity(element,target,tuning));
+            attack<=0 || damageWeight<=0?0:
+            RoundDamage(attack*damageWeight*Affinity(element,target,tuning));
         public static int TotalHp(SpiritDefinition[] spirits)
         { int hp = 0; foreach (var spirit in spirits) hp += spirit.Hp; return hp; }
     }
@@ -173,8 +173,8 @@ namespace Ohajiki
             return ResolveSkill();
         }
         public ActionResult ResolveNormal(bool enemy, SpiritDefinition spirit, int contacts, int matched, BattleTuning tuning) =>
-            ResolveNormal(enemy, spirit, contacts, matched, tuning, BattleRules.ContactWeight(contacts));
-        // Legacy model API; the game controller now settles at shot end instead.
+            ResolveNormal(enemy, spirit, contacts, matched, tuning, BattleRules.ContactWeight(contacts,tuning.contactAttackFactor));
+        // Legacy model API; the game controller now settles at damage-flight arrival instead.
         // Cumulative mitigation preserves one action's
         // fixed guard budget and percentage rounding instead of charging them per hit.
         public int ApplyContactDamage(bool enemy,SpiritDefinition spirit,int cumulativeRawDamage)

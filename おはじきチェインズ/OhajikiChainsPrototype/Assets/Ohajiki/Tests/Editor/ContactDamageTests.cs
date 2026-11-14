@@ -60,11 +60,12 @@ namespace Ohajiki.Tests
         [Test] public void WeightedContactIncreaseDoesNotRetroactivelyBoostEarlierHits()
         {
             var state=new BattleState(tuning);
-            Assert.AreEqual(15,state.ApplyContactDamage(false,spirit,15));
-            Assert.AreEqual(23,state.ApplyContactDamage(false,spirit,38));
-            var normal=state.ResolveNormal(false,spirit,2,0,tuning,2.53);
-            Assert.AreEqual(38,normal.appliedNormalDamage);
-            Assert.AreEqual(1162,state.Enemy.Hp);
+            Assert.AreEqual(100,state.ApplyContactDamage(false,spirit,100));
+            Assert.AreEqual(158,state.ApplyContactDamage(false,spirit,258));
+            // 100 + 100 * 1.05 * 1.5 = 257.5, rounded once to 258.
+            var normal=state.ResolveNormal(false,spirit,2,0,tuning,2.575);
+            Assert.AreEqual(258,normal.appliedNormalDamage);
+            Assert.AreEqual(942,state.Enemy.Hp);
         }
         [Test] public void LethalContactClampsHpAndRejectsFurtherDamage()
         {

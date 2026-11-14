@@ -13,6 +13,8 @@ namespace Ohajiki
     {
         public event Action BattleRequested;
         public event Action<string> QuestRequested;
+        public event Action TitleRequested;
+        public event Action ResetRequested;
         public HubPage Page { get; private set; }
         public bool HasModal => modal != null;
         public string LastMessage { get; private set; }
@@ -66,14 +68,20 @@ namespace Ohajiki
                 navigationIcons[i]=ui.Rect(navigation[i].transform,"Navigation art",0,3,124,76);
                 skin.NavigationIcon(navigationIcons[i],i,HubWidgets.Accent);
             }
-            ui.Label(screen,"試作版 / データは終了時にリセットされます",32,3,656,20,12,HubWidgets.Muted,true);
+            ui.Label(screen,"試作版 / 進行状況はこの端末に自動保存されます",32,3,656,20,12,HubWidgets.Muted,true);
             Navigate(HubPage.Home); Resize();
+            if(!session.HasPlayerName)EditProfileText(true,true);
         }
         void Update()
         {
             Resize();calendarTimer-=Time.unscaledDeltaTime;
             UpdateFeatured();
-            if(calendarTimer<=0) {calendarTimer=1;if(session.Shop!=null && session.Shop.RefreshCalendar() && !HasModal)Render();}
+            if(calendarTimer<=0)
+            {
+                calendarTimer=1;
+                if(session.RefreshEnergy())RefreshHeader();
+                if(session.Shop!=null && session.Shop.RefreshCalendar() && !HasModal)Render();
+            }
         }
         void Resize()
         {
@@ -83,6 +91,7 @@ namespace Ohajiki
         }
         public void Navigate(HubPage destination)
         {
+            if(!session.HasPlayerName && HasModal)return;
             if(GachaMovie!=null)return;
             if(Page==HubPage.Deck && draft!=null && !draft.SequenceEqual(session.DeckCopy()) && destination!=HubPage.Deck)
             {
@@ -108,8 +117,7 @@ namespace Ohajiki
             Clear(content); CloseModal();
             if(Page!=HubPage.Home)ui.Panel(content,"AdventurePage",0,0,656,940,new Color(1,.98f,.88f,.96f));
             session.Shop?.RefreshCalendar();
-            account.text=$"Rank {session.Progress.Rank}　EXP {session.Progress.RankExperience}/{session.Progress.Needed(battleTuning)}";
-            resources.text=$"{PlayerSession.QuestRewardName(ShopRewardKind.Medals)} {session.Progress.Coins:N0}　宝石 {session.Gems:N0}　エネルギー {session.Energy}/{session.MaximumEnergy}";
+            RefreshHeader();
             int active=Page==HubPage.Settings?4:(Page==HubPage.Home||Page>=HubPage.Quests)?0:Page==HubPage.Shop?3:(Page==HubPage.Gacha||Page==HubPage.Banner)?2:1;
             for(int i=0;i<navigation.Length;i++)
             {
@@ -142,6 +150,11 @@ namespace Ohajiki
             ui.Label(content,title,22,864,612,74,36);ui.Label(content,subtitle,22,831,612,40,19,HubWidgets.Muted);
             skin.Image(content,"Heading gem",skin.Shard,630,904,14,24,SpiritUiSkin.Gold,true);
         }
+        void RefreshHeader()
+        {
+            account.text=$"Rank {session.Progress.Rank}　EXP {session.Progress.RankExperience}/{session.Progress.Needed(battleTuning)}";
+            resources.text=$"{PlayerSession.QuestRewardName(ShopRewardKind.Medals)} {session.Progress.Coins:N0}　宝石 {session.Gems:N0}　エネルギー {session.Energy}/{session.MaximumEnergy}";
+        }
         void DeckSwitcher(float y)
         {
             ui.Button(content,"＜",0,y,60,52,()=>{session.SwitchDeck(-1);Render();});
@@ -163,15 +176,22 @@ namespace Ohajiki
         void Home()
         {
             Heading("冒険の準備","はじいて、つないで、遺跡を冒険！");
-            int hero=session.DeckCopy()[0]; var spirit=session.Config.catalog[hero];
+            int hero=session.Favorite(favoritePage);if(hero<0){favoritePage=0;hero=session.Favorite(0);}
+            var spirit=session.Config.catalog[hero];
             var feature=ui.Panel(content,"FeaturedSpirit",0,489,656,322,new Color(1,.97f,.80f,.92f));
             skin.Halo(feature,new Vector2(501,157),264,Color.Lerp(HubWidgets.Elements[(int)spirit.element],Color.white,.25f));
             ui.Portrait(feature,spirit.portrait,350,5,290,310);
-            ui.Label(feature,"YOUR SPIRIT",24,255,330,36,18,HubWidgets.Elements[(int)spirit.element]);
+            ui.Label(feature,"お気に入り "+(favoritePage+1),24,255,330,36,18,HubWidgets.Elements[(int)spirit.element]);
             ui.Label(feature,spirit.displayName,24,190,335,60,38);
             ui.Label(feature,$"{elementNames[(int)spirit.element]}属性　Lv{session.Level(hero)}\nデッキHP {session.DeckHp:N0}",24,100,330,80,24);
             ui.Label(feature,"さあ、チェインをつなごう！",24,22,330,65,21,HubWidgets.Muted);
-            DeckSwitcher(422); DeckPreview(291);
+            ui.Button(content,"＜",0,422,60,52,()=>CycleFavorite(-1));
+            ui.Button(content,"お気に入りを変更",76,422,504,52,ShowProfile);
+            ui.Button(content,"＞",596,422,60,52,()=>CycleFavorite(1));
+            ui.Button(content,"お知らせ",0,344,320,56,ShowNews);
+            ui.Button(content,"プレゼントBOX",336,344,320,56,()=>ShowInformation("プレゼントBOX","受け取れるプレゼントはありません。"));
+            ui.Label(content,$"マイデッキ {session.ActiveDeck+1}　HP {session.DeckHp:N0}",0,252,656,48,25,null,true);
+            ui.Button(content,"デッキ編成",160,180,336,56,()=>Navigate(HubPage.Deck));
             ui.Button(content,"スピリットバトル　→",0,88,656,70,()=>{
                 if(session.Config.quests!=null)Navigate(HubPage.Quests);else BattleRequested?.Invoke();
             },true,HubWidgets.Accent);

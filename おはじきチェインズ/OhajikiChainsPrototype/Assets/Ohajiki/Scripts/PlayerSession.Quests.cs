@@ -50,6 +50,7 @@ namespace Ohajiki
             var quest=Config.quests.Find(id);
             if(Energy<quest.energyCost){reason="エネルギーが不足しています";return false;}
             Energy-=quest.energyCost;
+            QuestAttempts++;
             run=ActiveQuestRun=new QuestRun(quest,DeckCopy());return true;
         }
         public void AbandonQuest(QuestRun run)

@@ -41,7 +41,7 @@ MonoBehaviour:
   deckSlots: 3
   startingCoins: 5000
   startingGems: 0
-  maximumEnergy: 5
+  maximumEnergy: 10
   energyPerRank: 1
   energyRefillGems: 1
   baseFriendCapacity: 10

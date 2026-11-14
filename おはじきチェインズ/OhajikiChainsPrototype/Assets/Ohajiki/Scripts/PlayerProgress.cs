@@ -1,7 +1,7 @@
 using UnityEngine;
 namespace Ohajiki
 {
-    // Session-only until save and account specifications are supplied.
+    // Session model; persistent snapshots are owned by PrototypeApp.
     public sealed class PlayerProgress
     {
         // PrototypeBattle owns one of these as a field initializer; defer resource access until use.
@@ -14,6 +14,8 @@ namespace Ohajiki
         public long TotalExperience { get; private set; }
         public long RankExperience { get; private set; }
         public long Coins { get; private set; }
+        internal void Restore(int savedRank,long total,long rankXp,long coins)
+        {Rank=savedRank;TotalExperience=total;RankExperience=rankXp;Coins=coins;}
         internal void SetShopCoins(long value)
         {
             if(value<0)throw new System.ArgumentOutOfRangeException(nameof(value));
