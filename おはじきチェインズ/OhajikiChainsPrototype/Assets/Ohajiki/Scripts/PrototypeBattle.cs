@@ -23,7 +23,10 @@ namespace Ohajiki
         public bool Paused => paused;
         public bool Resolving => Phase == BattlePhase.Charging || Phase == BattlePhase.DamageFlight || Phase == BattlePhase.NormalImpact || Phase == BattlePhase.CutIn || Phase == BattlePhase.Impact;
         public ActionResult LastAction { get; private set; }
-        bool dragging, paused, showChain, enemyActing, rewardGranted;
+        enum ShotGesture { Idle, OnBall, Positioning, Aiming }
+        ShotGesture shotGesture;
+        Vector2 pointerDownWorld;
+        bool paused, showChain, enemyActing, rewardGranted;
         int enemySlot, heldSlot = -1;
         float phaseTime, heldTime;
         System.Random enemyRandom;
@@ -48,6 +51,7 @@ namespace Ohajiki
             var art = new Sprite[3];
             foreach(var spirit in tuning.playerDeck) if(art[(int)spirit.element] == null) art[(int)spirit.element] = spirit.portrait;
             View.Initialize(japaneseFont,art,tuning);
+            View.SetStageTitle(quest?.DisplayTitle);
             if(quest!=null&&quest.useEnemyPortrait)View.SetEnemyPortrait(quest.enemyPortrait);
             View.Selected += Select;
             View.Restarted += () => { if(embedded)RetryRequested?.Invoke(); else Restart(); };
@@ -73,11 +77,11 @@ namespace Ohajiki
             Simulation.AllCleared += OnAllCleared;
             State = new BattleState(tuning,quest!=null&&quest.IsPractice); Deck = new SpiritDeck(tuning.seed); EnemyDeck = new SpiritDeck(tuning.seed+1);
             enemyRandom = new System.Random(tuning.seed+2);
-            SelectedSlot = 0; dragging = paused = showChain = enemyActing = rewardGranted = false;
+            SelectedSlot = 0; shotGesture = ShotGesture.Idle; paused = showChain = enemyActing = rewardGranted = false;
             EndHold(); View.HideAim(); View.Feedback.ResetFeedback(); LastAction=default; PrepareEnemyCard();
             actingSpirit = PlayerCard; Phase = BattlePhase.Ready; phaseTime = 0;
             View.AnimateAction(Phase,0,actingSpirit,Simulation.Position,false);
-            View.SetStatus("手札長押しでスキル詳細 / ボールから上へスワイプ"); Refresh();
+            View.SetStatus("手札を長押しでスキル詳細"); Refresh();
         }
         void PrepareEnemyCard()
         {
@@ -87,7 +91,7 @@ namespace Ohajiki
         public void Select(int slot)
         {
             if(View.OverlayVisible || paused || Phase != BattlePhase.Ready || slot < 0 || slot >= SpiritDeck.HandSize) return;
-            SelectedSlot = slot; actingSpirit = PlayerCard; dragging = false; View.HideAim(); Refresh();
+            SelectedSlot = slot; actingSpirit = PlayerCard; shotGesture = ShotGesture.Idle; View.HideAim(); Refresh();
         }
         public bool Shoot(Vector2 direction)
         {
@@ -103,9 +107,9 @@ namespace Ohajiki
         public void TogglePause()
         {
             if(View.OverlayVisible || Phase == BattlePhase.Finished) return;
-            paused = !paused; dragging = false; EndHold(); View.HideAim();
+            paused = !paused; shotGesture = ShotGesture.Idle; EndHold(); View.HideAim();
             View.Feedback.SetPaused(paused);
-            View.SetStatus(paused ? "一時停止中：一時停止ボタンでもどる" : "再開しました"); Refresh();
+            View.SetStatus(paused ? "一時停止中" : "再開しました"); Refresh();
         }
         void BeginHold(int slot)
         {
@@ -114,7 +118,7 @@ namespace Ohajiki
         }
         void EndHold() { heldSlot = -1; heldTime = 0; if(View != null) View.HideDetails(); }
         void OnApplicationFocus(bool focus)
-        { if(!focus) { dragging = false; EndHold(); if(View != null) View.HideAim(); } }
+        { if(!focus) { shotGesture = ShotGesture.Idle; EndHold(); if(View != null) View.HideAim(); } }
         void Update()
         {
             if(View == null || View.OverlayVisible || paused || Phase == BattlePhase.Finished) return;
@@ -227,7 +231,7 @@ namespace Ohajiki
             if(quest!=null)
             {
                 var receipt=completeQuest?.Invoke(State.Won);
-                rewardGranted=true;paused=false;dragging=false;Simulation.CancelShot();
+                rewardGranted=true;paused=false;shotGesture=ShotGesture.Idle;Simulation.CancelShot();
                 View.Feedback.SetPaused(false);Enter(BattlePhase.Finished);
                 View.ShowOverlay(State.Won?"QUEST CLEAR!":"もう一度、挑戦！",receipt?.Summary??"このクエストは終了しています。","もう一度挑戦");
                 return;
@@ -249,20 +253,42 @@ namespace Ohajiki
         }
         void ReadPointer()
         {
-            var pointer = Pointer.current; if(pointer == null || View.DetailsVisible) return;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(View.Board,pointer.position.ReadValue(),null,out Vector2 point);
-            if(pointer.press.wasPressedThisFrame)
+            var pointer = Pointer.current;
+            if (pointer != null)
+                HandleShotPointer(pointer.position.ReadValue(), pointer.press.wasPressedThisFrame, pointer.press.wasReleasedThisFrame);
+        }
+        internal void HandleShotPointer(Vector2 screenPoint, bool pressed, bool released)
+        {
+            if (View.DetailsVisible || !View.TryBoardPointer(screenPoint, out Vector2 point, out bool onShotRail)) return;
+            if(pressed)
             {
-                if(Vector2.Distance(point,Simulation.Position) <= tuning.shotRadius+tuning.touchPadding) dragging = true;
-                else if(point.x >= 0 && point.x <= ShotSimulation.Width && Mathf.Abs(point.y-ShotSimulation.Height*tuning.launchInset) <= MasterConstants.GetFloat("PrototypeBattle.launchLineTouchHalfHeight",42))
-                { Simulation.SetLaunchX(point.x); Refresh(); }
+                shotGesture = ShotGesture.Idle;
+                if (!onShotRail) return;
+                pointerDownWorld = point;
+                shotGesture = Vector2.Distance(point, Simulation.Position) <= tuning.shotRadius + tuning.touchPadding
+                    ? ShotGesture.OnBall : ShotGesture.Positioning;
             }
-            if(dragging) View.SetAim(Simulation.Position,point-Simulation.Position);
-            if(pointer.press.wasReleasedThisFrame && dragging)
+            if (shotGesture == ShotGesture.Idle) return;
+            Vector2 swipe = point - pointerDownWorld;
+            if (shotGesture == ShotGesture.OnBall)
             {
-                dragging = false; View.HideAim();
-                if(!Shoot(point-Simulation.Position)) View.SetStatus("ボールから上方向へ、少し長めにスワイプしてください");
+                var travel = View.ProjectBoardPoint(point) - View.ProjectBoardPoint(pointerDownWorld);
+                // Ignore initial finger jitter before committing this gesture to the rail or the shot.
+                if (travel.sqrMagnitude >= 36f)
+                    shotGesture = View.IsAtRailHeight(point) && Mathf.Abs(travel.x) > Mathf.Abs(travel.y)
+                        ? ShotGesture.Positioning : ShotGesture.Aiming;
             }
+            if (shotGesture == ShotGesture.Positioning)
+            {
+                Simulation.SetLaunchX(point.x);
+                View.MoveProjectile(Simulation.Position, tuning.shotRadius);
+            }
+            else if (shotGesture == ShotGesture.Aiming) View.SetAim(Simulation.Position, swipe);
+            if (!released) return;
+            bool fire = shotGesture == ShotGesture.Aiming;
+            shotGesture = ShotGesture.Idle;
+            View.HideAim();
+            if (fire && !Shoot(swipe)) View.SetStatus("ボールから打ちたい方向へ、少し長めにスワイプしてください");
         }
         int CurrentNormalDamage() => BattleRules.ContactDamage(
             actingSpirit.Attack * (enemyActing ? State.Enemy.AttackMultiplier : State.Player.AttackMultiplier),
@@ -291,7 +317,7 @@ namespace Ohajiki
         {
             var charge=Simulation.Charges[index];
             int normalDamage=CurrentNormalDamage();
-            View.Feedback.Contact(charge.Position,charge.Element,same,Simulation.Collected,Simulation.Matched,normalDamage);
+            View.Feedback.Contact(View.ProjectBoardPoint(charge.Position),charge.Element,same,Simulation.Collected,Simulation.Matched,normalDamage);
             Refresh();
         }
         void Refresh() => View.Refresh(Simulation,Deck,State,tuning,SelectedSlot,showChain,actingSpirit,EnemyCard,Phase,paused,Progress);

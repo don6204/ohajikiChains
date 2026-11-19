@@ -24,8 +24,10 @@ namespace Ohajiki
             var player=(RectTransform)battle.View.transform.Find("Screen/PlayerFill");
             var enemy=(RectTransform)battle.View.transform.Find("Screen/Enemy/EnemyFill");
             Check(player!=null && enemy!=null,"both HP bars exist");
-            Check(Mathf.Abs(player.sizeDelta.x-648f*battle.State.Player.Hp/battle.State.Player.MaxHp)<.001f &&
-                Mathf.Abs(enemy.sizeDelta.x-246f*battle.State.Enemy.Hp/battle.State.Enemy.MaxHp)<.001f,
+            var playerTrack=(RectTransform)battle.View.transform.Find("Screen/PlayerBar");
+            var enemyTrack=(RectTransform)battle.View.transform.Find("Screen/Enemy/EnemyBar");
+            Check(Mathf.Abs(player.rect.width-playerTrack.rect.width*battle.State.Player.Hp/battle.State.Player.MaxHp)<.001f &&
+                Mathf.Abs(enemy.rect.width-enemyTrack.rect.width*battle.State.Enemy.Hp/battle.State.Enemy.MaxHp)<.001f,
                 "HP bars match model immediately, without gradual drain");
         }
         void CheckHpBarShake()
@@ -62,19 +64,29 @@ namespace Ohajiki
             var panel=battle.View.transform.Find("Screen/Impact readout");
             Check(panel!=null && panel.gameObject.activeInHierarchy,"impact readout is visible");
             var texts=panel.GetComponentsInChildren<TMP_Text>();
-            Check(texts.Any(text=>text.text=="DAMAGE") && texts.Any(text=>text.text==damage.ToString("N0")),
-                "impact readout shows the applied damage exactly");
+            Check(texts.Any(text=>text.text=="DAMAGE") &&
+                texts.Any(text=>text.text==damage.ToString("N0") && text.color==battle.View.Feedback.DamageColor(damage)),
+                "impact readout shows and colors the applied damage");
         }
         void CheckDamageLayout(RectTransform bank)
         {
             Canvas.ForceUpdateCanvases();
             var label=bank.GetComponentInChildren<TMP_Text>();label.ForceMeshUpdate();
             Check(!label.isTextOverflowing && label.textInfo.lineCount==1,"damage digits fit on one line");
-            var corners=new Vector3[4];bank.GetWorldCorners(corners);
+            var burst=bank.GetComponentInChildren<DamageCounterBurst>();
+            Check(burst!=null && !burst.raycastTarget,"comic burst renders behind the number without intercepting input");
+            var mesh=burst.canvasRenderer.GetMesh();
+            Check(mesh!=null && mesh.colors32.Length>0 &&
+                mesh.colors32.Contains((Color32)Color.white) && mesh.colors32.Distinct().Count()==2,
+                "rendered burst contains just its white fill and fixed ink outline");
+            var corners=new Vector3[4];burst.rectTransform.GetWorldCorners(corners);
             foreach(var corner in corners)Check(corner.x>=0 && corner.x<=Screen.width && corner.y>=0 && corner.y<=Screen.height,"damage burst stays on screen at maximum size");
             var enemyPanel=(RectTransform)battle.View.transform.Find("Screen/Enemy");
             var enemyCorners=new Vector3[4];enemyPanel.GetWorldCorners(enemyCorners);
             Check(corners[1].y<enemyCorners[0].y,"growing damage UI stays clear of the enemy HP panel");
+            var skill=(RectTransform)battle.View.transform.Find("Screen/EffectLevelViewport");
+            var skillCorners=new Vector3[4];skill.GetWorldCorners(skillCorners);
+            Check(corners[0].x>skillCorners[2].x,"growing damage UI stays to the right of the skill level");
         }
         void PrepareDurableCombatants()
         {
@@ -232,13 +244,14 @@ namespace Ohajiki
                 feedback.Contact(new Vector2(320,330),Element.Fire,true,++contact,0,damage);
                 Check(feedback.DisplayedDamage==damage,"damage updates immediately, independently of hit count");
                 Check(bank.GetComponentInChildren<TMP_Text>().text==damage.ToString(),"visible text is exact damage");
-                Check(feedback.DamageNumberScale.x>1.2f && feedback.BankScale==restingScale,"only digits pop; burst is stationary");
-                Check(feedback.DamageNumberPosition==numberPosition && feedback.BankPosition==bankPosition && feedback.BankRotation==bankRotation,"pop keeps all centers fixed");
+                Check(feedback.BankScale.x/restingScale.x>1.2f && feedback.DamageNumberScale==Vector3.one,
+                    "burst and digits share the same contact pop");
+                Check(Vector2.Distance(feedback.DamageNumberPosition,numberPosition)<.001f && feedback.BankPosition==bankPosition && feedback.BankRotation==bankRotation,"pop keeps all centers fixed");
                 yield return new WaitForEndOfFrame();Capture("00-damage-"+damage+"-pop");yield return null;
                 yield return new WaitForSeconds(.045f);
-                Check(feedback.DamageNumberPosition!=numberPosition && feedback.BankPosition==bankPosition && feedback.BankScale==restingScale,"only digits shake");
-                feedback.SetPaused(true);var frozen=feedback.DamageNumberScale;var frozenPosition=feedback.DamageNumberPosition;
-                yield return new WaitForSeconds(.2f);Check(feedback.DamageNumberScale==frozen && feedback.DamageNumberPosition==frozenPosition,"pause freezes damage animation");
+                Check(Vector2.Distance(feedback.DamageNumberPosition,numberPosition)>.001f && feedback.BankPosition==bankPosition,"only digits shake");
+                feedback.SetPaused(true);var frozen=feedback.BankScale;var frozenPosition=feedback.DamageNumberPosition;
+                yield return new WaitForSeconds(.2f);Check(feedback.BankScale==frozen && feedback.DamageNumberPosition==frozenPosition,"pause freezes burst and digits");
                 feedback.SetPaused(false);yield return new WaitForSeconds(.3f);
                 Check(feedback.DamageNumberScale==Vector3.one && feedback.BankScale==restingScale,"pop settles to same size");
                 float centerError=Vector2.Distance(feedback.DamageNumberPosition,numberPosition);
@@ -253,11 +266,11 @@ namespace Ohajiki
             {
                 feedback.BeginShot(false,Element.Fire);feedback.SetDamageCounterVisible(true);
                 feedback.Contact(Vector2.zero,Element.Fire,false,1,0,damageSteps[i]);
-                Check(Mathf.Abs(feedback.DamageSizeMultiplier-scales[i])<.0001f &&
-                    Mathf.Abs(feedback.BankScale.x/restingScale.x-scales[i])<.0001f,"500 damage size boundary "+damageSteps[i]);
+                Check(Mathf.Abs(feedback.DamageSizeMultiplier-scales[i])<.0001f,"500 damage size boundary "+damageSteps[i]);
                 Check(feedback.BankPosition==bankPosition && feedback.BankRotation==bankRotation,"growth keeps the burst center fixed");
                 CheckDamageLayout((RectTransform)bank);
                 yield return new WaitForSeconds(.25f);
+                Check(Mathf.Abs(feedback.BankScale.x/restingScale.x-scales[i])<.0001f,"burst and digits settle at the shared damage tier");
                 CheckDamageLayout((RectTransform)bank);
                 Capture("00-size-"+damageSteps[i]);yield return null;
             }
@@ -276,6 +289,21 @@ namespace Ohajiki
             Check(feedback.DamageCounterVisible,"color endpoint fixture is visible");
             Check(halfway.g<yellow.g && halfway.g>red.g && red.g<.15f,"yellow to orange to red follows damage");
             yield return new WaitForSeconds(.25f);Capture("00-damage-full-red");yield return null;
+            var flying=feedback.transform.Find("Flying damage number").GetComponent<TMP_Text>();
+            foreach(int amount in new[]{0,feedback.DamageColorFullAt/2,5064})
+            {
+                feedback.BeginShot(true,Element.Water);
+                feedback.LockTotal(amount);
+                feedback.AnimateDamageFlight(.75f,true);
+                flying.ForceMeshUpdate();
+                Check(flying.gameObject.activeInHierarchy && flying.text==amount.ToString("N0") &&
+                    flying.color==feedback.DamageNumberColor && flying.color!=Color.white,
+                    "the flying digits keep the locked damage color for "+amount);
+                var glyph=flying.textInfo.characterInfo[0];
+                Color32 tint=flying.textInfo.meshInfo[glyph.materialReferenceIndex].colors32[glyph.vertexIndex];
+                Check(tint.r>tint.b && tint.a>0, "the visible flying digit mesh is tinted");
+            }
+            yield return new WaitForSeconds(.8f);Capture("00-flight-5064");yield return null;
             feedback.BeginShot(true,Element.Water);
             Check(feedback.DisplayedDamage==0 && feedback.DamageNumberScale==Vector3.one && feedback.DamageNumberColor==yellow && feedback.BankScale==restingScale,"enemy shot resets damage, size, color and pulse");
 
@@ -484,7 +512,7 @@ namespace Ohajiki
             yield return new WaitForSeconds(.4f);
             if(FindObjectsByType<BattleFeedback>(FindObjectsSortMode.None).Length!=0 || FindObjectsByType<AudioSource>(FindObjectsSortMode.None).Length!=0)
             {Debug.LogError("FEEDBACK SMOKE: home cleanup");Application.Quit(2);yield break;}
-            Debug.Log("FEEDBACK SMOKE PASS: HP held through shot, zone and flight; applied once on damage arrival on both sides; short target-only HP bar shake, stationary screen/board/enemy panel, no shake for zero damage, exact bar reset and pause; cumulative damage UI, reference digit pop/shake, 500 damage/+10% max1.5, 3 resolutions, zero HP waits for complete impact/slide/skill, no early result/reward or following turn, retry and cleanup.");
+            Debug.Log("FEEDBACK SMOKE PASS: HP held through shot, zone and flight; applied once on damage arrival on both sides; short target-only HP bar shake, stationary screen/board/enemy panel, no shake for zero damage, exact bar reset and pause; white burst and damage digits pulse and grow together, 500 damage/+10% max1.5, 3 resolutions, zero HP waits for complete impact/slide/skill, no early result/reward or following turn, retry and cleanup.");
             Application.Quit(0);
         }
     }

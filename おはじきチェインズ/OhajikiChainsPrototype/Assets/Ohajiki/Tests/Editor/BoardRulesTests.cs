@@ -24,7 +24,7 @@ namespace Ohajiki.Tests
             sim.Charges[enemy?49:9].Special=SpecialCharge.HorizontalMissile;
             sim.Prepare(enemy,52);
             Assert.IsTrue(sim.Launch((enemy?Vector2.down:Vector2.up)*300,spirit));
-            for(int i=0;i<100&&sim.AllClearCount==0;i++)sim.Tick(.001f);
+            for(int i=0;i<3000&&sim.AllClearCount==0;i++)sim.Tick(.001f);
             Assert.AreEqual(1,sim.AllClearCount);
             return sim;
         }
@@ -56,6 +56,75 @@ namespace Ohajiki.Tests
             for(int i=0;i<64;i++){expected+=hit;hit+=tuning.contactAttackFactor;}
             Assert.AreEqual(expected,sim.DamageWeight,1e-6,"missile cascade shares the shot hit index");
             sim.Tick(.1f);Assert.AreEqual(1,sim.AllClearCount);Assert.AreEqual(1,sim.ResetCount);
+        }
+        [TestCase(false, false)] [TestCase(true, false)]
+        [TestCase(false, true)] [TestCase(true, true)]
+        public void RocketsTravelOutwardAndCollectOnArrivalEvenWhenTheSpiritStops(bool vertical, bool timeout)
+        {
+            var sim = new ShotSimulation(tuning);
+            foreach (var charge in sim.Charges) charge.Active = false;
+            int origin = 3 * tuning.boardColumns + 3;
+            int stride = vertical ? tuning.boardColumns : 1;
+            var source = sim.Charges[origin];
+            source.Active = true;
+            source.Special = vertical ? SpecialCharge.VerticalMissile : SpecialCharge.HorizontalMissile;
+            source.Element = Element.Water;
+            sim.Charges[0].Active = true; // Outside both lines.
+            sim.SpecialTriggered += (index, _) => {
+                if (index != origin) return;
+                for (int d = 1; d <= 2; d++)
+                {
+                    sim.Charges[origin - stride * d].Active = true;
+                    sim.Charges[origin + stride * d].Active = true;
+                }
+                if (timeout) tuning.maximumShotSeconds = .001f;
+                else tuning.stopSpeed = 2000;
+            };
+            sim.Prepare(false, source.Position.x);
+            Assert.IsTrue(sim.Launch(Vector2.up * 300, spirit));
+            for (int i = 0; i < 1000 && sim.Collected == 0; i++) sim.Tick(.001f);
+            Assert.IsFalse(sim.Projectiles[0].Active);
+            Assert.IsTrue(sim.Moving);
+            Assert.AreEqual(2, sim.Rockets.Count);
+            Assert.AreEqual(1, sim.Collected, "Launch consumes only the origin");
+            Vector2 axis = vertical ? Vector2.up : Vector2.right;
+            CollectionAssert.AreEquivalent(new[] { -axis, axis }, sim.Rockets.Select(r => r.Direction));
+            sim.Tick(.05f);
+            foreach (var rocket in sim.Rockets)
+            {
+                Assert.AreEqual(source.Element, rocket.Element);
+                int neighbor = origin + (rocket.Direction == axis ? stride : -stride);
+                Assert.Less(Vector2.Distance(rocket.Position,
+                    Vector2.Lerp(source.Position, sim.Charges[neighbor].Position, .5f)), 1f);
+            }
+            var paused = sim.Rockets.Select(r => r.Position).ToArray();
+            sim.Tick(0);
+            CollectionAssert.AreEqual(paused, sim.Rockets.Select(r => r.Position));
+            Assert.AreEqual(1, sim.Collected);
+            sim.Tick(.06f);
+            Assert.AreEqual(3, sim.Collected);
+            Assert.IsFalse(sim.Charges[origin - stride].Active || sim.Charges[origin + stride].Active);
+            Assert.IsTrue(sim.Charges[origin - stride * 2].Active && sim.Charges[origin + stride * 2].Active);
+            sim.Tick(.1f);
+            Assert.AreEqual(5, sim.Collected);
+            sim.Tick(2f);
+            Assert.IsFalse(sim.Moving);
+            Assert.IsEmpty(sim.Rockets);
+            Assert.IsTrue(sim.Charges[0].Active);
+        }
+        [Test] public void CancellingAnInFlightRocketLeavesUnreachedCellsUntouched()
+        {
+            var sim = new ShotSimulation(tuning);
+            sim.Charges[0].Special = SpecialCharge.HorizontalMissile;
+            sim.Prepare(false, sim.Charges[0].Position.x);
+            Assert.IsTrue(sim.Launch(Vector2.up * 300, spirit));
+            for (int i = 0; i < 1000 && sim.Collected == 0; i++) sim.Tick(.001f);
+            Assert.AreEqual(2, sim.Rockets.Count);
+            sim.CancelShot();
+            sim.Tick(5);
+            Assert.IsEmpty(sim.Rockets);
+            Assert.AreEqual(1, sim.Collected);
+            Assert.IsTrue(sim.Charges[1].Active);
         }
         [Test] public void MovingShotRefillsAfterFiveSecondsWithoutLosingItsAccumulatedAttack()
         {

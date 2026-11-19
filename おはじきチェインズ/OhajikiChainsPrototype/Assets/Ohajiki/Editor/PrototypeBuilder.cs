@@ -25,6 +25,7 @@ public static class PrototypeBuilder
         if (!File.Exists("Assets/TextMesh Pro/Resources/TMP Settings.asset"))
             throw new System.InvalidOperationException("Run PrototypeBuilder.ImportEssentials without -quit first, then build.");
         AssetDatabase.Refresh();
+        HomeUiAssets.Prepare();
         var hitTexture=(TextureImporter)AssetImporter.GetAtPath(Root+"Resources/UI/HitCounterBurst.png");
         if(hitTexture!=null && hitTexture.textureType!=TextureImporterType.Sprite)
         {
@@ -82,7 +83,7 @@ public static class PrototypeBuilder
         EditorSceneManager.SaveScene(scene, scenePath);
         EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(scenePath, true) };
         PlayerSettings.productName = "Ohajiki Chains Prototype";
-        PlayerSettings.bundleVersion = "8.5";
+        PlayerSettings.bundleVersion = "8.6";
         PlayerSettings.companyName = "OhajikiPrototype";
         PlayerSettings.defaultScreenWidth = 540; PlayerSettings.defaultScreenHeight = 960;
         PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
@@ -279,11 +280,11 @@ public static class PrototypeBuilder
         string chargePercentages=string.Join(", ",buildTuning.specialChargeProbabilities.Select(p=>
             (p*100).ToString("0.##",System.Globalization.CultureInfo.InvariantCulture)+"%"));
         string normalPercentage=((1-buildTuning.specialChargeProbabilities.Sum())*100).ToString("0.##",System.Globalization.CultureInfo.InvariantCulture);
-        const string output="Build/Windows_V8.5_α";
+        const string output="Build/Windows-V8.6_Rocket";
         Directory.CreateDirectory(output);
         var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
             scenes = new[] { Root + "Scenes/Prototype.unity" },
-            locationPathName = output+"/Windows_V8.5_α.exe",
+            locationPathName = output+"/Windows-V8.6.exe",
             target = BuildTarget.StandaloneWindows64, options = BuildOptions.None
         });
         if (report.summary.result != BuildResult.Succeeded) throw new System.Exception("Build failed: " + report.summary.result);
@@ -300,17 +301,20 @@ public static class PrototypeBuilder
         File.Copy("Docs/20261113_MasterData取込.txt",output+"/Docs/20261113_MasterData取込.txt",true);
         File.WriteAllText(output+"/build-info.txt","Ohajiki Chains "+PlayerSettings.bundleVersion+" / "+output+"\nUnity "+Application.unityVersion+
             "\nWindows x64 / Mono / D3D11\nEvent 3 / Showdown 3 x 3 / Challenge 5\nData input: "+dataInputStatus+
-            "\nCharge probabilities: "+chargePercentages+" (normal "+normalPercentage+"%); warp to opponent launch position."+
+            "\nCharge probabilities: "+chargePercentages+" (normal "+normalPercentage+"%); warp toward the opponent's last launch position within the active bounds."+
             "\n8x8 board; no screen shake; gold all-clear scroll 1.5 seconds; refill after 5 moving seconds."+
-            "\nCharge diameter 44; vertical centers 22%-78%; rims clear both launch zones."+
-            "\nDamage UI: cumulative normal damage, tilted digits pop/shake per reference video; fixed burst center; yellow to red at "+buildTuning.damageColorFullAt+" damage."+
-            "\nDamage UI size: +10% per 500 damage, capped at 1.5x. Latest planner reply supersedes the earlier 100-damage proposal."+
+            "\nCharge ball sprites from MasterData.xlsx: "+buildTuning.chargeSprites.Count(sprite => sprite != null)+
+            "\nThe shot lane and puzzle field share the red-brown and gold rim. After entering the puzzle field, spirit balls rebound inside its frame."+
+            "\nHorizontal and vertical rockets fly out from the triggering cell and collect other cells as they reach them."+
+            "\nDamage digits use a yellow-to-red gradient based on the displayed amount, reaching red at "+buildTuning.damageColorFullAt+" damage, including the number flying to the target."+
+            "\nThe white burst and its digits grow together by 10% per 500 damage, capped at 1.5x."+
             "\nNormal HP damage applies instantly once when the damage UI arrives. Target HP bar only: 5 UI units, 0.50-second decaying shake. No gradual drain. Shot -> zone -> normal damage flight -> impact -> slide -> skill damage readout."+
             "\nContact n: attack * (1 + (n-1) * "+buildTuning.contactAttackFactor.ToString("R",System.Globalization.CultureInfo.InvariantCulture)+") * affinity * current projectile boost. First hit 100%; linear growth; resets each shot."+
             "\nHP zero: finish the active shot, zone, flight, impact, slide and skill before showing results. First defeat is preserved. Flight completion settles normal HP damage once; later frames never reapply it."+
             "\nLocal persistence: player-save.bin, typed binary schema v1 (OHAJKSAV / little endian), SHA256, atomic replacement and binary backup. Automatic migration of v1.015 JSON saves without editing the original. No mid-battle resume."+
+            "\nHome UI: favorite spirit showcase, news and presents, and illustrated mission, spirit battle and multiplayer buttons; live profile, energy, rank, currencies and footer navigation."+
             "\nBuilt UTC: "+System.DateTime.UtcNow.ToString("O"));
-        File.Copy("Docs/Windows_V8.5_α.txt",output+"/変更内容と検証.txt",true);
+        File.Copy("Docs/Windows-V8.6.txt",output+"/変更内容と検証.txt",true);
         File.Copy("Docs/20261114_データ保存.txt",output+"/Docs/20261114_データ保存.txt",true);
         File.Copy("Docs/20261114_攻撃演出復元.txt",output+"/Docs/20261114_攻撃演出復元.txt",true);
         File.Copy("Docs/20261114_MasterData更新.txt",output+"/Docs/20261114_MasterData更新.txt",true);

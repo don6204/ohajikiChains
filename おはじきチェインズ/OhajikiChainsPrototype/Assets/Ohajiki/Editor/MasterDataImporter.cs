@@ -20,9 +20,9 @@ public static class MasterDataImporter
     public sealed class Stage : IDisposable
     {
         public MasterGameData Data;
-        public readonly List<ScriptableObject> Objects=new List<ScriptableObject>();
+        public readonly List<Object> Objects=new List<Object>();
         internal bool committed;
-        public T Add<T>(T value,string name) where T:ScriptableObject {value.name=name;Objects.Add(value);return value;}
+        public T Add<T>(T value,string name) where T:Object {value.name=name;Objects.Add(value);return value;}
         public void Dispose(){if(!committed)foreach(var item in Objects)if(item!=null)Object.DestroyImmediate(item);}
     }
     static readonly Dictionary<string,Skill> Skills=new Dictionary<string,Skill> {
@@ -148,7 +148,7 @@ public static class MasterDataImporter
             data.npcs=npcs.Values.ToArray();
             if(data.npcs.Length==0)throw new InvalidDataException("NPC: 敵編成が少なくとも1件必要です");
             data.battle.enemyDeck=data.npcs.First().deck;
-            ApplyCharges(book,data.battle);
+            ApplyCharges(book,data.battle,stage,Path.Combine(Path.GetDirectoryName(Path.GetFullPath(path)),"Texture"));
             ApplyQuests(book,data,npcs,spirits);
             ApplyGacha(book,data,spirits);
             if(!data.home.Validate(out string error)||!data.battle.Validate(out error)||!data.constants.Validate(out error))throw new InvalidDataException(error);
@@ -235,18 +235,54 @@ public static class MasterDataImporter
             spirit.experienceBase=(int)basis;spirit.experiencePerLevel=(int)growth;
         }
     }
-    static void ApplyCharges(MasterWorkbook book,BattleTuning battle)
+    static Sprite ChargeTexture(MasterWorkbook.Row row,Stage stage,string directory,Dictionary<string,Sprite> sprites)
+    {
+        const string field="cb_tex";
+        string reference=row.Get(field);
+        if(reference==null)return null;
+        if(reference.StartsWith("Assets/",StringComparison.Ordinal)||Guid.TryParseExact(reference,"N",out _))
+            return Texture(row,field);
+        string filename=Path.HasExtension(reference)?reference:reference+".png";
+        if(filename!=Path.GetFileName(filename)||filename.IndexOfAny(Path.GetInvalidFileNameChars())>=0||
+            !string.Equals(Path.GetExtension(filename),".png",StringComparison.OrdinalIgnoreCase))
+            throw row.Error(field,"Textureフォルダ内のPNGファイル名を指定してください: "+reference);
+        if(sprites.TryGetValue(filename,out var existing))return existing;
+        string path=Path.Combine(directory,filename);
+        if(!File.Exists(path))
+        {
+            string organizedPath=Path.Combine(directory,"ChargeBall",filename);
+            if(!File.Exists(organizedPath))throw row.Error(field,"テクスチャが見つかりません: "+path+" / "+organizedPath);
+            path=organizedPath;
+        }
+        string name=Path.GetFileNameWithoutExtension(filename);
+        // A 512 px icon typically occupies 30–44 screen pixels on the board.
+        var texture=stage.Add(new Texture2D(2,2,TextureFormat.RGBA32,true),name+" Texture");
+        if(!texture.LoadImage(File.ReadAllBytes(path)))throw row.Error(field,"PNGを読み込めません: "+path);
+        texture.filterMode=FilterMode.Trilinear;
+        texture.wrapMode=TextureWrapMode.Clamp;
+        var sprite=stage.Add(Sprite.Create(texture,new Rect(0,0,texture.width,texture.height),
+            new Vector2(.5f,.5f),100f,0,SpriteMeshType.FullRect),name);
+        sprites.Add(filename,sprite);
+        return sprite;
+    }
+    static void ApplyCharges(MasterWorkbook book,BattleTuning battle,Stage stage,string directory)
     {
         var rows=book.Table("チャージボール").OrderBy(r=>r.Int("number",1,7)).ToArray();
         if(rows.Length!=7)throw new InvalidDataException("チャージボールは通常と特殊6種が必要です");RequireUniqueOrder(rows);
         if(rows.Sum(r=>r.Int("app_rate",0,10000))!=10000)throw new InvalidDataException("チャージボールの出現率合計は10000が必要です");
         battle.specialChargeProbabilities=rows.Skip(1).Select(r=>Rate(r,"app_rate")).ToArray();
         var kinds=book.Index("チャージボール");
-        var combinations=new HashSet<string>();
+        var combinations=new HashSet<int>();
+        var sprites=new Dictionary<string,Sprite>(StringComparer.OrdinalIgnoreCase);
+        battle.chargeSprites=new Sprite[rows.Length*4];
         foreach(var row in book.Table("チャージボール種類"))
         {
-            string id=row.Required("exc_id");Require(kinds,id,row,"exc_id");int element=row.Int("type",0,3);
-            if(!combinations.Add(id+":"+element))throw row.Error("exc_id","属性と特殊種別の組が重複しています");
+            var kind=Require(kinds,row.Required("exc_id"),row,"exc_id");
+            var special=(SpecialCharge)(kind.Int("number",1,7)-1);
+            var element=(Element)row.Int("type",0,3);
+            int index=BattleTuning.ChargeSpriteIndex(special,element);
+            if(!combinations.Add(index))throw row.Error("exc_id","属性と特殊種別の組が重複しています");
+            battle.chargeSprites[index]=ChargeTexture(row,stage,directory,sprites);
         }
         if(combinations.Count!=28)throw new InvalidDataException("チャージボール種類は7種×4属性の28組が必要です");
     }
@@ -328,6 +364,7 @@ public static class MasterDataImporter
             bool oldMoved=false,newMoved=false;
             try
             {
+                var textureNames=stage.Data.battle.chargeSprites.Select(sprite=>sprite==null?null:sprite.name).ToArray();
                 AssetDatabase.CreateAsset(stage.Data,temporary);
                 foreach(var obj in stage.Objects.Where(o=>o!=stage.Data))AssetDatabase.AddObjectToAsset(obj,stage.Data);
                 EditorUtility.SetDirty(stage.Data);AssetDatabase.SaveAssets();
@@ -338,6 +375,9 @@ public static class MasterDataImporter
                 var saved=AssetDatabase.LoadAssetAtPath<MasterGameData>(OutputPath);
                 if(saved==null||saved.home==null||saved.battle==null||saved.constants==null||saved.home.catalog.Length!=stage.Data.home.catalog.Length)
                     throw new IOException("生成アセットの保存検証に失敗しました");
+                if(saved.battle.chargeSprites==null||!textureNames.SequenceEqual(saved.battle.chargeSprites.Select(
+                    sprite=>sprite==null||sprite.texture==null?null:sprite.name)))
+                    throw new IOException("チャージボールのSprite参照の保存検証に失敗しました");
                 if(!saved.home.Validate(out string error)||!saved.battle.Validate(out error)||!saved.constants.Validate(out error))
                     throw new IOException("生成アセットの再検証: "+error);
                 stage.committed=true;

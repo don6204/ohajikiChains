@@ -27,9 +27,8 @@ namespace Ohajiki
         Action modalCancelled;
         float calendarTimer;
         RectTransform screen,content,modal;
-        TMP_Text account,resources,toast;
+        TMP_Text toast;
         UnityEngine.UI.Button[] navigation;
-        RectTransform[] navigationIcons;
         List<int> draft;
         int elementFilter=-1,rarityFilter,sort,selectedSpirit,selectedMaterial,quantity=1,selectedBanner;
         int lastWidth,lastHeight;
@@ -41,34 +40,14 @@ namespace Ohajiki
             canvas=gameObject.AddComponent<Canvas>(); canvas.renderMode=RenderMode.ScreenSpaceOverlay;
             gameObject.AddComponent<UnityEngine.UI.GraphicRaycaster>();
             new GameObject("HubEventSystem",typeof(EventSystem),typeof(InputSystemUIInputModule)).transform.SetParent(transform);
-            screen=ui.Panel(transform,"HomeScreen",0,0,720,1280,new Color(.55f,.86f,1));
+            screen=ui.Panel(transform,"HomeScreen",0,0,720,1280,Color.white);
+            screen.gameObject.AddComponent<UnityEngine.UI.RectMask2D>();
             interaction=screen.gameObject.AddComponent<CanvasGroup>();
             screen.anchorMin=screen.anchorMax=screen.pivot=new Vector2(.5f,.5f); screen.anchoredPosition=Vector2.zero;
-            skin.Backdrop(screen,false);
-            ui.Panel(screen,"AdventureHeader",24,1127,672,131,new Color(1,.98f,.86f,.94f));
-            ui.Label(screen,"<color=#ED5518>おはじき</color><color=#127890>チェインズ</color>",38,1212,500,56,29);
-            ui.Label(screen,"ADVENTURE",522,1226,152,28,16,HubWidgets.Elements[1],true);
-            account=ui.Label(screen,"",32,1187,656,38,25);
-            resources=ui.Label(screen,"",32,1136,596,40,19);
-            resources.enableAutoSizing=true;resources.fontSizeMin=14;resources.fontSizeMax=19;
-            ui.Button(screen,"＋",634,1138,44,38,()=>RequestEnergyRefill()).name="Button_EnergyRefill";
-            content=ui.Rect(screen,"PageContent",32,160,656,940);
-            toast=ui.Label(screen,"",32,118,656,40,17,HubWidgets.Ink,true);
-            navigation=new UnityEngine.UI.Button[5];
-            navigationIcons=new RectTransform[5];
-            string[] names={"ホーム","スピリター","ガチャ","ショップ","設定"};
-            HubPage[] routes={HubPage.Home,HubPage.Spirits,HubPage.Gacha,HubPage.Shop,HubPage.Settings};
-            for(int i=0;i<5;i++)
-            {
-                int slot=i;
-                navigation[i]=ui.Button(screen,names[i],32+i*132,25,124,88,
-                    ()=>{if(slot<routes.Length)Navigate(routes[slot]);},true);
-                var navLabel=navigation[i].GetComponentInChildren<TMP_Text>();navLabel.fontSize=18;
-                navLabel.rectTransform.anchoredPosition=new Vector2(6,4);navLabel.rectTransform.sizeDelta=new Vector2(112,30);
-                navigationIcons[i]=ui.Rect(navigation[i].transform,"Navigation art",0,3,124,76);
-                skin.NavigationIcon(navigationIcons[i],i,HubWidgets.Accent);
-            }
-            ui.Label(screen,"試作版 / 進行状況はこの端末に自動保存されます",32,3,656,20,12,HubWidgets.Muted,true);
+            content=ui.Rect(screen,"PageContent",32,174,656,940);
+            CreateHeader();
+            toast=ui.Label(screen,"",32,145,656,28,16,HubWidgets.Ink,true);
+            CreateNavigation();
             Navigate(HubPage.Home); Resize();
             if(!session.HasPlayerName)EditProfileText(true,true);
         }
@@ -79,7 +58,7 @@ namespace Ohajiki
             if(calendarTimer<=0)
             {
                 calendarTimer=1;
-                if(session.RefreshEnergy())RefreshHeader();
+                session.RefreshEnergy();RefreshHeader();
                 if(session.Shop!=null && session.Shop.RefreshCalendar() && !HasModal)Render();
             }
         }
@@ -115,18 +94,10 @@ namespace Ohajiki
         {
             if(GachaMovie!=null)return;
             Clear(content); CloseModal();
-            if(Page!=HubPage.Home)ui.Panel(content,"AdventurePage",0,0,656,940,new Color(1,.98f,.88f,.96f));
+            toast.rectTransform.anchoredPosition = new Vector2(32, Page == HubPage.Home ? 980 : 145);
+            if(Page!=HubPage.Home && Page!=HubPage.Quests)ui.Panel(content,"AdventurePage",0,0,656,940,new Color(1,.98f,.88f,.96f));
             session.Shop?.RefreshCalendar();
             RefreshHeader();
-            int active=Page==HubPage.Settings?4:(Page==HubPage.Home||Page>=HubPage.Quests)?0:Page==HubPage.Shop?3:(Page==HubPage.Gacha||Page==HubPage.Banner)?2:1;
-            for(int i=0;i<navigation.Length;i++)
-            {
-                bool selected=i==active;Color fill=selected?HubWidgets.Accent:HubWidgets.PanelColor;
-                navigation[i].GetComponent<UnityEngine.UI.Image>().color=fill;
-                navigation[i].GetComponentInChildren<TMP_Text>().color=selected?Color.white:HubWidgets.Ink;
-                foreach(var icon in navigationIcons[i].GetComponentsInChildren<UnityEngine.UI.Image>())
-                    icon.color=icon.name=="Door"||icon.name=="Bag star"||icon.name=="Cog core"?fill:selected?Color.white:HubWidgets.Accent;
-            }
             Message("");
             switch(Page)
             {
@@ -150,11 +121,6 @@ namespace Ohajiki
             ui.Label(content,title,22,864,612,74,36);ui.Label(content,subtitle,22,831,612,40,19,HubWidgets.Muted);
             skin.Image(content,"Heading gem",skin.Shard,630,904,14,24,SpiritUiSkin.Gold,true);
         }
-        void RefreshHeader()
-        {
-            account.text=$"Rank {session.Progress.Rank}　EXP {session.Progress.RankExperience}/{session.Progress.Needed(battleTuning)}";
-            resources.text=$"{PlayerSession.QuestRewardName(ShopRewardKind.Medals)} {session.Progress.Coins:N0}　宝石 {session.Gems:N0}　エネルギー {session.Energy}/{session.MaximumEnergy}";
-        }
         void DeckSwitcher(float y)
         {
             ui.Button(content,"＜",0,y,60,52,()=>{session.SwitchDeck(-1);Render();});
@@ -172,31 +138,6 @@ namespace Ohajiki
                 ui.Portrait(card,spirit.portrait,15,27,74,84);
                 ui.Label(card,$"{elementNames[(int)spirit.element]} Lv{session.Level(id)}",2,2,100,25,16,HubWidgets.Elements[(int)spirit.element],true);
             }
-        }
-        void Home()
-        {
-            Heading("冒険の準備","はじいて、つないで、遺跡を冒険！");
-            int hero=session.Favorite(favoritePage);if(hero<0){favoritePage=0;hero=session.Favorite(0);}
-            var spirit=session.Config.catalog[hero];
-            var feature=ui.Panel(content,"FeaturedSpirit",0,489,656,322,new Color(1,.97f,.80f,.92f));
-            skin.Halo(feature,new Vector2(501,157),264,Color.Lerp(HubWidgets.Elements[(int)spirit.element],Color.white,.25f));
-            ui.Portrait(feature,spirit.portrait,350,5,290,310);
-            ui.Label(feature,"お気に入り "+(favoritePage+1),24,255,330,36,18,HubWidgets.Elements[(int)spirit.element]);
-            ui.Label(feature,spirit.displayName,24,190,335,60,38);
-            ui.Label(feature,$"{elementNames[(int)spirit.element]}属性　Lv{session.Level(hero)}\nデッキHP {session.DeckHp:N0}",24,100,330,80,24);
-            ui.Label(feature,"さあ、チェインをつなごう！",24,22,330,65,21,HubWidgets.Muted);
-            ui.Button(content,"＜",0,422,60,52,()=>CycleFavorite(-1));
-            ui.Button(content,"お気に入りを変更",76,422,504,52,ShowProfile);
-            ui.Button(content,"＞",596,422,60,52,()=>CycleFavorite(1));
-            ui.Button(content,"お知らせ",0,344,320,56,ShowNews);
-            ui.Button(content,"プレゼントBOX",336,344,320,56,()=>ShowInformation("プレゼントBOX","受け取れるプレゼントはありません。"));
-            ui.Label(content,$"マイデッキ {session.ActiveDeck+1}　HP {session.DeckHp:N0}",0,252,656,48,25,null,true);
-            ui.Button(content,"デッキ編成",160,180,336,56,()=>Navigate(HubPage.Deck));
-            ui.Button(content,"スピリットバトル　→",0,88,656,70,()=>{
-                if(session.Config.quests!=null)Navigate(HubPage.Quests);else BattleRequested?.Invoke();
-            },true,HubWidgets.Accent);
-            ui.Button(content,"マルチ（準備中）",0,20,320,50,null,false);
-            ui.Button(content,"ミッション（準備中）",336,20,320,50,null,false);
         }
         void Spirits()
         {

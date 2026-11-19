@@ -17,6 +17,9 @@ namespace Ohajiki
         public Sprite Plate,Border,Ball,Ring,Glow,Star,Shard,Burst,Fade;
         Sprite damageBurst;
         public Sprite DamageBurst => damageBurst!=null ? damageBurst : (damageBurst=MakeDamageBurst());
+        Sprite flatPlate,circle;
+        public Sprite FlatPlate => flatPlate!=null ? flatPlate : (flatPlate=Make(9,64));
+        public Sprite Circle => circle!=null ? circle : (circle=Make(10,128));
         Material outlineMaterial;
         readonly List<Sprite> sprites=new List<Sprite>();
         readonly List<Texture2D> textures=new List<Texture2D>();
@@ -35,7 +38,7 @@ namespace Ohajiki
             {
                 float px=(x+.5f)/size*2-1,py=(y+.5f)/size*2-1,r=Mathf.Sqrt(px*px+py*py),a=1,v=1;
                 Color color=Color.white;
-                if(kind<2)
+                if(kind<2 || kind==9)
                 {
                     var q=new Vector2(Mathf.Abs(px)-.73f,Mathf.Abs(py)-.73f);
                     float d=new Vector2(Mathf.Max(q.x,0),Mathf.Max(q.y,0)).magnitude+Mathf.Min(Mathf.Max(q.x,q.y),0)-.24f;
@@ -63,11 +66,12 @@ namespace Ohajiki
                     color=Color.Lerp(new Color(1,.49f,.08f),new Color(1,.95f,.46f),Mathf.Clamp01((py+1)*.65f));
                 }
                 if(kind==8)a=(py+1)*.5f;
+                if(kind==10)a=Mathf.Clamp01((.99f-r)*size*.5f);
                 pixels[y*size+x]=new Color(color.r*v,color.g*v,color.b*v,a);
             }
             texture.SetPixels(pixels);texture.Apply(false,true);textures.Add(texture);
             var sprite=Sprite.Create(texture,new Rect(0,0,size,size),new Vector2(.5f,.5f),100,0,SpriteMeshType.FullRect,
-                kind<2?new Vector4(18,18,18,18):Vector4.zero);
+                kind<2 || kind==9?new Vector4(18,18,18,18):Vector4.zero);
             sprites.Add(sprite);return sprite;
         }
         Sprite MakeDamageBurst()

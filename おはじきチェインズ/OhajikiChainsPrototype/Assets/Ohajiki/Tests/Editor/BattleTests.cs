@@ -124,7 +124,6 @@ namespace Ohajiki.Tests
                 foreach(var c in sim.Charges) c.Active=false;
                 sim.Prepare(enemy,312);
                 var direction=new Vector2(900,enemy?-100:100);
-                Assert.IsFalse(sim.Launch(-direction,tuning.playerDeck[0]));
                 Assert.IsTrue(sim.Launch(direction,tuning.playerDeck[0]));
                 bool bounced=false;
                 for(int i=0;i<1000 && sim.Moving;i++)
@@ -160,9 +159,107 @@ namespace Ohajiki.Tests
             Assert.IsTrue(sim.Charges.Skip(1).All(c=>c.Element==Element.Neutral));
             Assert.AreEqual(2,sim.ResetCount);
         }
+        [TestCase(0,25)] [TestCase(0,-25)] [TestCase(25,0)] [TestCase(-25,0)]
+        [TestCase(20,-15)] [TestCase(-20,-15)] [TestCase(20,15)] [TestCase(-20,15)]
+        public void PlayerLaunchesInSwipeDirectionAtMinimumDistance(float x,float y)
+        {
+            tuning.minimumSwipe=25;
+            var sim=new ShotSimulation(tuning);
+            var direction=new Vector2(x,y);
+            Assert.IsTrue(sim.Launch(direction,tuning.playerDeck[0]));
+            Assert.Greater(Vector2.Dot(sim.Velocity.normalized,direction.normalized),.9999f);
+        }
+        [Test] public void ShortOrInvalidSwipeCannotStartMoving()
+        {
+            var sim=new ShotSimulation(tuning);
+            var origin=sim.Position;
+            var directions=new[] { Vector2.zero,Vector2.down*float.Epsilon,Vector2.left*(tuning.minimumSwipe-.01f),
+                new Vector2(float.NaN,100),new Vector2(0,float.NegativeInfinity),new Vector2(float.MaxValue,float.MaxValue) };
+            foreach(var direction in directions)Assert.IsFalse(sim.Launch(direction,tuning.playerDeck[0]));
+            Assert.IsFalse(sim.Launch(Vector2.down*100,tuning.playerDeck[0],float.NaN));
+            Assert.IsFalse(sim.Moving);
+            Assert.AreEqual(origin,sim.Position);
+            Assert.AreEqual(Vector2.zero,sim.Velocity);
+        }
+        [Test] public void RearwardPlayerShotReflectsOffOwnWall()
+        {
+            var sim=new ShotSimulation(tuning);
+            foreach(var charge in sim.Charges)charge.Active=false;
+            float launchY=sim.Position.y;
+            Assert.IsTrue(sim.Launch(new Vector2(30,-100),tuning.playerDeck[0]));
+            sim.Tick(.005f);
+            Assert.Less(sim.Position.y,launchY);
+            for(int i=0;i<200 && sim.Position.y<=launchY;i++)
+            {
+                sim.Tick(.005f);
+                Assert.GreaterOrEqual(sim.Position.y,tuning.shotRadius);
+            }
+            Assert.Greater(sim.Position.y,launchY);
+            Assert.Greater(sim.Velocity.y,0);
+            Assert.Greater(sim.Velocity.x,0);
+        }
+        [TestCase(false)] [TestCase(true)]
+        public void EnteredShotBouncesOnAllFourInnerEdges(bool enemySide)
+        {
+            tuning.deceleration = 1;
+            var sim = new ShotSimulation(tuning);
+            foreach (var charge in sim.Charges) charge.Active = false;
+            sim.Prepare(enemySide, 312);
+            Assert.IsTrue(sim.Launch(new Vector2(150, enemySide ? -200 : 200), tuning.playerDeck[0]));
+            Rect field = sim.FieldCenterBounds;
+            bool entered = enemySide, left = false, right = false, bottom = false, top = false;
+            for (int i = 0; i < 480; i++)
+            {
+                var velocity = sim.Velocity;
+                sim.Tick(1f / 120);
+                entered |= sim.Position.y >= field.yMin && sim.Position.y <= field.yMax;
+                if (!entered) continue;
+                Assert.That(sim.Position.x, Is.InRange(field.xMin, field.xMax));
+                Assert.That(sim.Position.y, Is.InRange(field.yMin, field.yMax));
+                left |= velocity.x < 0 && sim.Velocity.x > 0;
+                right |= velocity.x > 0 && sim.Velocity.x < 0;
+                top |= velocity.y > 0 && sim.Velocity.y < 0;
+                bottom |= velocity.y < 0 && sim.Velocity.y > 0;
+            }
+            Assert.IsTrue(left && right && top && bottom);
+            sim.CancelShot();
+            sim.Prepare(false, 312);
+            float railY = sim.Position.y;
+            Assert.IsTrue(sim.Launch(Vector2.down * 300, tuning.playerDeck[0]));
+            sim.Tick(.005f);
+            Assert.Less(sim.Position.y, railY, "The next shot starts with an open entrance");
+        }
+        [Test] public void FirstRowSplitCannotSendTheBallOrClonesBackToTheRail()
+        {
+            tuning.deceleration = 1;
+            var sim = new ShotSimulation(tuning);
+            foreach (var charge in sim.Charges) charge.Active = false;
+            var first = sim.Charges[0];
+            first.Active = true;
+            first.Special = SpecialCharge.Split;
+            sim.Prepare(false, first.Position.x);
+            Assert.IsTrue(sim.Launch(Vector2.up * 300, tuning.playerDeck[0]));
+            for (int i = 0; i < 240 && sim.Collected == 0; i++) sim.Tick(1f / 1200);
+            Assert.AreEqual(tuning.specialSplitTotal, sim.Projectiles.Count);
+            float entryY = sim.Position.y;
+            Assert.Less(entryY, sim.FieldCenterBounds.yMin, "First contact is during entry");
+            var inside = new bool[sim.Projectiles.Count];
+            for (int i = 0; i < 600; i++)
+            {
+                sim.Tick(1f / 240);
+                for (int j = 0; j < inside.Length; j++)
+                {
+                    Vector2 pos = sim.Projectiles[j].Position;
+                    inside[j] |= pos.y >= sim.FieldCenterBounds.yMin;
+                    Assert.That(pos.y, Is.InRange(inside[j] ? sim.FieldCenterBounds.yMin : entryY, sim.FieldCenterBounds.yMax));
+                    Assert.That(pos.x, Is.InRange(sim.FieldCenterBounds.xMin, sim.FieldCenterBounds.xMax));
+                }
+            }
+            Assert.IsTrue(inside.All(value => value), "Every projectile finishes crossing the entrance");
+        }
         [Test] public void EnemyDirectionDoesNotDependOnPlayerSwipeSensitivity()
         {
-            tuning.minimumSwipe=1000; tuning.minimumForwardSwipe=900;
+            tuning.minimumSwipe=1000;
             var player=new ShotSimulation(tuning);
             Assert.IsFalse(player.Launch(Vector2.up*300,tuning.playerDeck[0]));
             var enemy=new ShotSimulation(tuning); enemy.Prepare(true,312);
@@ -173,7 +270,7 @@ namespace Ohajiki.Tests
         }
         [TestCase(false,false)] [TestCase(true,false)]
         [TestCase(false,true)] [TestCase(true,true)]
-        public void WarpUsesOpponentsLastLaunchOrInitialCenterWithoutChangingVelocity(bool enemySide,bool opponentHasShot)
+        public void WarpUsesNearestInFieldPointToOpponentsLaunchWithoutChangingVelocity(bool enemySide,bool opponentHasShot)
         {
             var sim=new ShotSimulation(tuning);
             Vector2 opponentPosition=new Vector2(ShotSimulation.Width/2,
@@ -196,7 +293,8 @@ namespace Ohajiki.Tests
             Assert.IsTrue(sim.Launch((enemySide?Vector2.down:Vector2.up)*300,tuning.playerDeck[0]));
             for(int i=0;i<240&&!triggered&&sim.Moving;i++)sim.Tick(1f/120);
             Assert.IsTrue(triggered,"The shot must actually contact the warp charge");
-            Assert.Less(Vector2.Distance(opponentPosition,arrival),.001f,"Warp target is the opponent's launch position");
+            opponentPosition.y = Mathf.Clamp(opponentPosition.y, sim.FieldCenterBounds.yMin, sim.FieldCenterBounds.yMax);
+            Assert.Less(Vector2.Distance(opponentPosition,arrival),.001f,"Warp keeps the launch column and lands inside the frame");
             Assert.AreEqual(before,after,"Warp preserves the incoming velocity after the normal contact reflection");
             Assert.AreEqual(1,sim.Collected);
         }

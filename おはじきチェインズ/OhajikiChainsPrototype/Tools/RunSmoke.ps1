@@ -4,14 +4,14 @@ param(
     [int]$TimeoutSeconds = 900,
     [string]$ReviewDirectory,
     [string]$BuildDirectory,
-    [string]$PlayerFileName = 'Windows_V8.5_α.exe'
+    [string]$PlayerFileName = 'Windows-V8.6.exe'
 )
 $ErrorActionPreference = 'Stop'
 $projectRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$buildRoot = Join-Path $projectRoot 'Build\Windows_V8.5_α'
+$buildRoot = Join-Path $projectRoot 'Build\Windows-V8.6_Rocket'
 if ($BuildDirectory) { $buildRoot = [System.IO.Path]::GetFullPath($BuildDirectory) }
 $playerPath = Join-Path $buildRoot $PlayerFileName
-$reviewRoot = [System.IO.Path]::GetFullPath((Join-Path $projectRoot '..\Review\Windows_V8.5_α'))
+$reviewRoot = [System.IO.Path]::GetFullPath((Join-Path $projectRoot '..\Review\Windows-V8.6_Rocket'))
 if ($ReviewDirectory) { $reviewRoot = [System.IO.Path]::GetFullPath($ReviewDirectory) }
 New-Item -ItemType Directory -Path $reviewRoot -Force | Out-Null
 if (-not (Test-Path -LiteralPath $playerPath -PathType Leaf)) { throw "Build missing: $playerPath" }

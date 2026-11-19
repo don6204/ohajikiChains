@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace Ohajiki
 {
@@ -27,6 +29,40 @@ namespace Ohajiki
         {
             yield return new WaitForEndOfFrame();Canvas.ForceUpdateCanvases();UiSmokeChecks.Validate(root);
             ScreenCapture.CaptureScreenshot(Path.Combine(output,name+".png"));yield return null;yield return new WaitForEndOfFrame();
+        }
+        static void Click(Transform root, string name)
+        {
+            var button = root.GetComponentsInChildren<UnityEngine.UI.Button>().Single(b => b.name == name && b.IsInteractable());
+            ExecuteEvents.Execute(button.gameObject, new PointerEventData(EventSystem.current) { button = PointerEventData.InputButton.Left },
+                ExecuteEvents.pointerClickHandler);
+        }
+        IEnumerator VerifyBattleMenu(QuestDefinition quest)
+        {
+            var battle = app.Battle;
+            var view = battle.View;
+            var name = view.transform.Find("Screen/BattleHeader/StageName").GetComponent<TMP_Text>();
+            Require(name.text == quest.DisplayTitle, "stage name follows selected quest");
+            var menu = view.transform.Find("Screen/BattleMenu");
+            Require(!menu.gameObject.activeSelf && battle.Shoot(Vector2.up * 300), "battle starts with menu closed");
+            Click(view.transform, "MenuButton");
+            Require(menu.gameObject.activeSelf && battle.Paused, "menu pauses an active shot");
+            Vector2 stopped = battle.Simulation.Position;
+            yield return Capture("05-battle-menu", view.gameObject);
+            Require(battle.Simulation.Position == stopped, "shot stays still in menu");
+            Click(menu, "ResumeButton");
+            yield return new WaitForSeconds(.12f);
+            Require(!menu.gameObject.activeSelf && !battle.Paused && battle.Simulation.Position != stopped, "menu resumes the same shot");
+            Click(view.transform, "MenuButton");
+            Click(menu, "RetryButton");
+            Require(app.Battle == null && app.Hub.HasModal && app.Hub.SelectedQuestId == quest.id, "retry opens quest confirmation");
+            Click(app.Hub.transform, "Button_決定");
+            yield return new WaitForSeconds(.3f);
+            Require(app.Battle != null && app.Battle.Phase == BattlePhase.Ready, "confirmed retry starts a fresh battle");
+            Click(app.Battle.View.transform, "MenuButton");
+            Click(app.Battle.View.transform, "ExitButton");
+            yield return null;
+            Require(app.Battle == null && app.Hub.Page == HubPage.QuestList, "retire returns to quest selection");
+            Debug.Log("BATTLE MENU PASS: stage title, pause/resume shot, confirmed retry and retirement.");
         }
         IEnumerator Flow()
         {
@@ -52,7 +88,7 @@ namespace Ohajiki
             app.EnterQuest("QUEST0000_0003_LV0");yield return new WaitForSeconds(.4f);
             Require(app.Battle!=null&&app.Battle.EnemyCard.level==50,"NPC slot level50 enters battle");
             yield return Capture("04-battle-null-art",app.Battle.View.gameObject);
-            app.ReturnHome();yield return new WaitForSeconds(.2f);
+            yield return VerifyBattleMenu(data.home.quests.Find("QUEST0000_0003_LV0"));
             Require(app.Session.TryBeginQuest("QUEST0000_0000_LV0",out var run,out var reason),reason);
             long coins=app.Session.Progress.Coins;int gems=app.Session.Gems;
             var receipt=app.Session.CompleteQuest(run,true,data.battle);

@@ -5,7 +5,7 @@ namespace Ohajiki
 {
     public enum SpecialCharge { None, AttackBoost, SpeedBoost, Split, VerticalMissile, HorizontalMissile, Warp }
 
-    public sealed class ShotSimulation
+    public sealed partial class ShotSimulation
     {
         public sealed class Charge
         {
@@ -20,6 +20,7 @@ namespace Ohajiki
             public Vector2 Velocity { get; internal set; }
             public bool Active { get; internal set; }
             public bool IsClone { get; internal set; }
+            internal bool EnteredField;
             internal float AttackMultiplier = 1;
         }
         public sealed class Trap
@@ -46,6 +47,7 @@ namespace Ohajiki
         public bool EnemySide { get; private set; }
         public IReadOnlyList<Projectile> Projectiles => projectileView;
         public IReadOnlyList<Trap> Traps => trapView;
+        public Rect FieldCenterBounds { get; }
         public event Action<int, bool> CollectedCharge;
         public event Action<int, SpecialCharge> SpecialTriggered;
         public event Action AllCleared;
@@ -56,6 +58,8 @@ namespace Ohajiki
         readonly IReadOnlyList<Projectile> projectileView;
         readonly IReadOnlyList<Trap> trapView;
         readonly Projectile primary = new Projectile();
+        readonly Rect fieldEntryBounds;
+        readonly Rect launchAreaBounds;
         readonly BattleTuning tuning;
         readonly System.Random random;
         SpiritDefinition actingSpirit;
@@ -68,14 +72,22 @@ namespace Ohajiki
         public ShotSimulation(BattleTuning tuning)
         {
             this.tuning = tuning;
+            FieldCenterBounds = BattleBoardGeometry.FieldBounds(tuning.launchInset, tuning.shotRadius);
+            fieldEntryBounds = BattleBoardGeometry.FieldBounds(tuning.launchInset, -tuning.shotRadius);
+            float r = tuning.shotRadius;
+            launchAreaBounds = Rect.MinMaxRect(r, r, Width - r, Height - r);
             random = new System.Random(tuning.seed);
             playerLaunchPosition = new Vector2(Width / 2, Height * tuning.launchInset);
             enemyLaunchPosition = new Vector2(Width / 2, Height * (1 - tuning.launchInset));
             projectileView = projectiles.AsReadOnly();
             trapView = traps.AsReadOnly();
+            Rockets = rockets.AsReadOnly();
+            rocketBounds = BattleBoardGeometry.FieldBounds(tuning.launchInset, 0);
             projectiles.Add(primary);
             Charges = new Charge[tuning.boardColumns * tuning.boardRows];
             float sideInset=MasterConstants.GetFloat("ShotSimulation.chargeSideInset",52);
+            rocketCellPitch = new Vector2((Width - 2 * sideInset) / (tuning.boardColumns - 1),
+                Height * (tuning.boardTop - tuning.boardBottom) / (tuning.boardRows - 1));
             for (int row = 0; row < tuning.boardRows; row++)
                 for (int col = 0; col < tuning.boardColumns; col++)
                     Charges[row * tuning.boardColumns + col] = new Charge {
@@ -116,11 +128,15 @@ namespace Ohajiki
                 Height * (enemySide ? 1 - tuning.launchInset : tuning.launchInset));
         }
         public void SetLaunchX(float x) { if (!Moving) Prepare(false, x); }
+        public static bool IsValidSwipe(Vector2 direction, float minimumDistance)
+        {
+            float length = direction.magnitude;
+            return length > Vector2.kEpsilon && length >= minimumDistance && !float.IsInfinity(length);
+        }
         public bool Launch(Vector2 direction, SpiritDefinition spirit, float speedMultiplier = 1)
         {
-            float forward = EnemySide ? -direction.y : direction.y;
-            if (Moving || spirit == null || !spirit.IsValid || direction.sqrMagnitude <= 0 || forward <= 0) return false;
-            if (!EnemySide && (direction.magnitude < tuning.minimumSwipe || forward < tuning.minimumForwardSwipe)) return false;
+            if (Moving || spirit == null || !spirit.IsValid || float.IsNaN(speedMultiplier) || float.IsInfinity(speedMultiplier)) return false;
+            if (!IsValidSwipe(direction, EnemySide ? 0 : tuning.minimumSwipe) || (EnemySide && direction.y >= 0)) return false;
             // Remember actual launches; a turn's temporary preparation must not overwrite the opponent's last shot position.
             if (EnemySide) enemyLaunchPosition = primary.Position; else playerLaunchPosition = primary.Position;
             actingSpirit = spirit;
@@ -132,6 +148,7 @@ namespace Ohajiki
             actionSplitUsed = false;
             projectiles.Clear();
             primary.AttackMultiplier = 1;
+            primary.EnteredField = fieldEntryBounds.Contains(primary.Position);
             primary.Velocity = direction.normalized * Mathf.Min(tuning.maximumShotSpeed, spirit.Speed * Mathf.Max(.01f, speedMultiplier));
             primary.Active = true;
             projectiles.Add(primary);
@@ -141,6 +158,7 @@ namespace Ohajiki
         public void ResetBoard()
         {
             allClearAt = -1;
+            rockets.Clear();
             foreach (var charge in Charges)
             {
                 if (charge.Active) continue;
@@ -153,31 +171,36 @@ namespace Ohajiki
         public void Tick(float dt)
         {
             if (!Moving || dt <= 0 || float.IsNaN(dt) || float.IsInfinity(dt)) return;
-            float remaining = Mathf.Min(dt, Mathf.Max(0, tuning.maximumShotSeconds - elapsed));
+            float remaining = dt;
             while (Moving && remaining > .000001f)
             {
                 float fastest = 1;
                 foreach (var projectile in projectiles)
                     if (projectile.Active) fastest = Mathf.Max(fastest, projectile.Velocity.magnitude);
                 float step = Mathf.Min(remaining, Mathf.Max(.001f, tuning.shotRadius) * .4f / fastest);
+                float shotTimeLeft = tuning.maximumShotSeconds - elapsed;
+                if (shotTimeLeft > .000001f) step = Mathf.Min(step, shotTimeLeft);
+                int flyingAtStart = rockets.Count;
+                if (flyingAtStart > 0) step = Mathf.Min(step, RocketCellSeconds / 4);
                 elapsed += step;
                 remaining -= step;
                 int count = projectiles.Count;
                 for (int i = 0; i < count && Moving; i++)
                     if (projectiles[i].Active) Advance(projectiles[i], step);
                 if (!Moving) return;
+                AdvanceRockets(flyingAtStart, step);
+                if (!Moving) return;
+                if (elapsed >= tuning.maximumShotSeconds - .000001f) StopProjectiles();
                 bool anyActive = false;
                 foreach (var projectile in projectiles) anyActive |= projectile.Active;
-                if (!anyActive || elapsed >= tuning.maximumShotSeconds - .000001f) FinishShot();
-                else if (AwaitingAllClearRefill && elapsed - allClearAt >= tuning.allClearRefillDelay)
+                if (!anyActive && rockets.Count == 0) FinishShot();
+                else if (anyActive && AwaitingAllClearRefill && elapsed - allClearAt >= tuning.allClearRefillDelay)
                     ResetBoard(); // Keep this shot's velocity, clones, contacts, skill level and damage.
             }
-            if (Moving && elapsed >= tuning.maximumShotSeconds - .000001f) FinishShot();
         }
         void Advance(Projectile projectile, float dt)
         {
-            projectile.Position += projectile.Velocity * dt;
-            ReflectWalls(projectile);
+            MoveWithinWalls(projectile, dt);
             float distance = tuning.shotRadius + tuning.chargeRadius;
             for (int i = 0; i < Charges.Length && Moving; i++)
             {
@@ -211,15 +234,24 @@ namespace Ohajiki
                 projectile.Active = false;
             }
         }
-        void ReflectWalls(Projectile projectile)
+        void MoveWithinWalls(Projectile projectile, float dt)
         {
-            float r = tuning.shotRadius;
-            Vector2 position = projectile.Position;
+            Vector2 previous = projectile.Position;
             Vector2 velocity = projectile.Velocity;
-            if (position.x < r) { position.x = r; velocity.x = Mathf.Abs(velocity.x); }
-            if (position.x > Width - r) { position.x = Width - r; velocity.x = -Mathf.Abs(velocity.x); }
-            if (position.y < r) { position.y = r; velocity.y = Mathf.Abs(velocity.y); }
-            if (position.y > Height - r) { position.y = Height - r; velocity.y = -Mathf.Abs(velocity.y); }
+            Vector2 position = previous + velocity * dt;
+            projectile.EnteredField |= fieldEntryBounds.Contains(position);
+            Rect bounds = projectile.EnteredField ? FieldCenterBounds : launchAreaBounds;
+            if (projectile.EnteredField)
+            {
+                // Close the entrance behind the advancing ball until its trailing edge clears the rim.
+                // A first-row contact or split can send it backwards while it still straddles the edge.
+                if (position.y > previous.y) bounds.yMin = Mathf.Min(previous.y, bounds.yMin);
+                if (position.y < previous.y) bounds.yMax = Mathf.Max(previous.y, bounds.yMax);
+            }
+            if (position.x < bounds.xMin) { position.x = bounds.xMin; velocity.x = Mathf.Abs(velocity.x); }
+            if (position.x > bounds.xMax) { position.x = bounds.xMax; velocity.x = -Mathf.Abs(velocity.x); }
+            if (position.y < bounds.yMin) { position.y = bounds.yMin; velocity.y = Mathf.Abs(velocity.y); }
+            if (position.y > bounds.yMax) { position.y = bounds.yMax; velocity.y = -Mathf.Abs(velocity.y); }
             projectile.Position = position;
             projectile.Velocity = velocity;
         }
@@ -249,16 +281,17 @@ namespace Ohajiki
                     break;
                 case SpecialCharge.VerticalMissile:
                 case SpecialCharge.HorizontalMissile:
-                    for (int i = 0; i < Charges.Length; i++)
-                    {
-                        bool sameLine = charge.Special == SpecialCharge.VerticalMissile
-                            ? i % tuning.boardColumns == index % tuning.boardColumns
-                            : i / tuning.boardColumns == index / tuning.boardColumns;
-                        if (sameLine) Collect(i, projectile);
-                    }
+                    LaunchRockets(index, projectile);
                     break;
                 case SpecialCharge.Warp:
-                    projectile.Position = EnemySide ? playerLaunchPosition : enemyLaunchPosition;
+                    Vector2 target = EnemySide ? playerLaunchPosition : enemyLaunchPosition;
+                    projectile.EnteredField |= fieldEntryBounds.Contains(target);
+                    if (projectile.EnteredField)
+                    {
+                        target.x = Mathf.Clamp(target.x, FieldCenterBounds.xMin, FieldCenterBounds.xMax);
+                        target.y = Mathf.Clamp(target.y, FieldCenterBounds.yMin, FieldCenterBounds.yMax);
+                    }
+                    projectile.Position = target;
                     break;
             }
             if (charge.Special != SpecialCharge.None) SpecialTriggered?.Invoke(index, charge.Special);
@@ -268,7 +301,7 @@ namespace Ohajiki
                 actionSplitUsed = true;
                 Split(projectile, actingSpirit.splitTotalProjectiles);
             }
-            // Missile recursion and split projectiles may clear the final cells in one step.
+            // Crossing rockets and split projectiles may reach the final cells in one step.
             // The pending timestamp makes this a single event for each emptied board.
             if (!Moving || AwaitingAllClearRefill) return;
             foreach (var remaining in Charges) if (remaining.Active) return;
@@ -278,6 +311,7 @@ namespace Ohajiki
         }
         void Split(Projectile source, int total)
         {
+            if (!source.Active) return;
             int count = Mathf.Clamp(total, 1, tuning.maximumProjectiles);
             for (int i = 1; i < count && projectiles.Count < tuning.maximumProjectiles; i++)
             {
@@ -289,6 +323,7 @@ namespace Ohajiki
                         velocity.x * Mathf.Sin(angle) + velocity.y * Mathf.Cos(angle)),
                     Active = true,
                     IsClone = true,
+                    EnteredField = source.EnteredField,
                     AttackMultiplier = source.AttackMultiplier
                 });
             }
@@ -325,6 +360,11 @@ namespace Ohajiki
         {
             Moving = false;
             allClearAt = -1;
+            rockets.Clear();
+            StopProjectiles();
+        }
+        void StopProjectiles()
+        {
             foreach (var projectile in projectiles)
             {
                 projectile.Active = false;

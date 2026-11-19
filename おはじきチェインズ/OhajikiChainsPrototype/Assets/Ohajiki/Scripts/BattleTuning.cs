@@ -33,6 +33,14 @@ namespace Ohajiki
         [Header("特殊チャージ / 攻撃・速度・分裂・縦・横・ワープの順")]
         [Tooltip("各枠の出現確率。通常チャージは残りの確率。合計1以下")]
         public float[] specialChargeProbabilities = { .05f, .05f, .05f, .05f, .05f, .10f };
+        [Tooltip("チャージボール種類シートの画像。各効果につき火・水・木・無の順")]
+        public Sprite[] chargeSprites = new Sprite[28];
+        public static int ChargeSpriteIndex(SpecialCharge special, Element element) => (int)special * 4 + (int)element;
+        public Sprite GetChargeSprite(SpecialCharge special, Element element)
+        {
+            int index = ChargeSpriteIndex(special, element);
+            return chargeSprites != null && index >= 0 && index < chargeSprites.Length ? chargeSprites[index] : null;
+        }
         [Min(1)] public float specialAttackMultiplier = 1.5f;
         [Min(1)] public float specialSpeedMultiplier = 2.5f;
         [Min(2)] public int specialSplitTotal = 3;

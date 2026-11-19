@@ -20,15 +20,20 @@ namespace Ohajiki
         SpiritUiSkin skin;
         BattleTuning tuning;
         RectTransform board,bank;
-        UnityEngine.UI.Image bankBurst,impactRing,impactBurst,beam,chargeOrb;
+        DamageCounterBurst bankBurst;
+        UnityEngine.UI.Image impactRing,impactBurst,beam,chargeOrb;
         UnityEngine.UI.Image[] impactRays;
         UnityEngine.UI.Image flightCore,flightGlow;
         UnityEngine.UI.Image[] flightTail;
         TMP_Text flightNumber;
         TMP_Text number,celebration,allClear;
         Burst[] bursts;
-        readonly Vector2 bankCenter=new Vector2(530,970);
-        readonly Vector2 numberCenter=new Vector2(190,130);
+        // Leave room for the entire burst at the highest size tier and peak contact pulse.
+        readonly Vector2 bankCenter = new Vector2(535, 928);
+        readonly Vector2 bankSize = new Vector2(322, 186);
+        Vector2 numberCenter => bankSize * .5f;
+        Vector2 playerHpTarget, enemyHpTarget;
+        public Vector2 HpTarget(bool player) => player ? playerHpTarget : enemyHpTarget;
         float NumberTilt=>tuning.damageNumberTilt;
         float DamageRestScale=>tuning.damageBaseScale;
         float DamagePulseSeconds=>tuning.damagePulseSeconds;
@@ -42,6 +47,8 @@ namespace Ohajiki
         public int ContactCount=>lastContacts;
         public int DisplayedDamage=>lastTarget;
         public int DamageColorFullAt=>Mathf.Max(1,tuning.damageColorFullAt);
+        internal Color DamageColor(int amount) => Color.Lerp(new Color(1,.88f,.08f),new Color(1,.08f,.035f),
+            (float)amount / DamageColorFullAt);
         // Planner-approved steps: 500 damage adds 10%, capped at +50%.
         public float DamageSizeMultiplier=>Mathf.Min(tuning.damageSizeMaximum,1+(lastTarget/Mathf.Max(1,tuning.damageSizeStep))*tuning.damageSizeIncrement);
         public bool DamageVisualsVisible=>flightNumber.gameObject.activeInHierarchy || impactBurst.color.a>0 || impactRing.color.a>0;
@@ -58,9 +65,12 @@ namespace Ohajiki
         public void SetDamageCounterVisible(bool visible)=>bank.gameObject.SetActive(visible);
         public int ActiveBursts {get {int n=0;foreach(var b in bursts)if(b.active)n++;return n;}}
         public int PoolCapacity=>bursts.Length;
-        public void Initialize(RectTransform board,TMP_FontAsset font,SpiritUiSkin skin,BattleTuning config)
+        public void Initialize(RectTransform board,TMP_FontAsset font,SpiritUiSkin skin,BattleTuning config,
+            RectTransform playerHpBar, RectTransform enemyHpBar, RectTransform rocketLayer)
         {
             this.board=board;this.skin=skin;tuning=config;ui=new HubWidgets(font);
+            playerHpTarget = transform.InverseTransformPoint(playerHpBar.TransformPoint(playerHpBar.rect.center));
+            enemyHpTarget = transform.InverseTransformPoint(enemyHpBar.TransformPoint(enemyHpBar.rect.center));
             bursts=new Burst[Mathf.Clamp(tuning.contactEffectPoolSize,4,32)];
             for(int i=0;i<bursts.Length;i++)
             {
@@ -75,11 +85,14 @@ namespace Ohajiki
                 b.number=Label(b.root,"",Vector2.zero,new Vector2(180,64),38,Color.white);
                 b.root.gameObject.SetActive(false);bursts[i]=b;
             }
+            // Keep the moving rockets legible above per-cell bursts and below the damage readout.
+            // Preserve the field-sized clip rectangle when transferring it from board to overlay.
+            rocketLayer.SetParent(transform, true);
             celebration=Label(transform,"",new Vector2(360,879),new Vector2(600,80),45,gold);
-            // Reference video: tilted digits pop and shake; the burst center stays fixed.
-            bank=ui.Rect(transform,"Damage counter",bankCenter.x,bankCenter.y,380,260);bank.pivot=new Vector2(.5f,.5f);
-            bankBurst=Graphic(bank,"Damage burst",Resources.Load<Sprite>("UI/HitCounterBurst")??skin.DamageBurst,numberCenter,1);
-            bankBurst.rectTransform.sizeDelta=new Vector2(380,260);
+            // The burst and tilted digits share a centered pop; the digits also shake locally.
+            bank=ui.Rect(transform,"Damage counter",bankCenter.x,bankCenter.y,bankSize.x,bankSize.y);bank.pivot=new Vector2(.5f,.5f);
+            bankBurst=ui.Rect(bank,"Damage burst",0,0,bankSize.x,bankSize.y).gameObject.AddComponent<DamageCounterBurst>();
+            bankBurst.raycastTarget=false;
             number=ui.Label(bank,"0",numberCenter.x,numberCenter.y,250,120,96,gold,true);
             number.rectTransform.pivot=new Vector2(.5f,.5f);
             number.fontStyle=FontStyles.Normal;
@@ -98,9 +111,10 @@ namespace Ohajiki
             for(int i=0;i<flightTail.Length;i++)flightTail[i]=Graphic(transform,"Damage comet tail",skin.Glow,Vector2.zero,100);
             flightGlow=Graphic(transform,"Damage comet glow",skin.Glow,Vector2.zero,180);
             flightCore=Graphic(transform,"Damage comet core",skin.Star,Vector2.zero,90);
-            flightNumber=Label(transform,"",Vector2.zero,new Vector2(230,110),64,Color.white);
+            flightNumber=Label(transform,"",Vector2.zero,new Vector2(230,110),64,DamageColor(0));
+            flightNumber.name="Flying damage number";
             flightNumber.enableAutoSizing=true;flightNumber.fontSizeMin=30;flightNumber.fontSizeMax=64;
-            var allClearViewport=ui.Rect(transform,"AllClearViewport",0,board.anchoredPosition.y+ShotSimulation.Height*.5f-100,720,200);
+            var allClearViewport=ui.Rect(transform,"AllClearViewport",0,521,720,200);
             allClearViewport.gameObject.AddComponent<UnityEngine.UI.RectMask2D>();
             allClear=Label(allClearViewport,"全消し",new Vector2(930,100),new Vector2(420,150),96,gold);
             allClear.gameObject.name="AllClearText";
@@ -146,13 +160,10 @@ namespace Ohajiki
         public void SetPaused(bool value)=>paused=value;
         void AnimateDamageCounter()
         {
-            bankBurst.color=Color.white;
-            number.color=Color.Lerp(new Color(1,.88f,.08f),new Color(1,.08f,.035f),
-                Mathf.Clamp01((float)lastTarget/DamageColorFullAt));
+            number.color=DamageColor(lastTarget);
             float pulse=1-Mathf.SmoothStep(0,1,Mathf.Clamp01(damagePulseAge/DamagePulseSeconds));
-            float scale=DamageRestScale*DamageSizeMultiplier;
+            float scale=DamageRestScale*DamageSizeMultiplier*(1+.24f*pulse);
             bank.localScale=new Vector3(scale,scale,1);
-            number.rectTransform.localScale=Vector3.one*(1+.24f*pulse);
             number.rectTransform.anchoredPosition=numberCenter+new Vector2(
                 Mathf.Sin(damagePulseAge*105)*3,Mathf.Sin(damagePulseAge*81)*2)*pulse;
             number.rectTransform.localRotation=Quaternion.Euler(0,0,NumberTilt);
@@ -176,15 +187,17 @@ namespace Ohajiki
             b.scale=(same?MasterConstants.GetFloat("BattleFeedback.sameContactScale",1.15f):MasterConstants.GetFloat("BattleFeedback.otherContactScale",.82f))*
                 (levelUp?MasterConstants.GetFloat("BattleFeedback.skillLevelUpScale",1.2f):1)*tuning.contactEffectIntensity;
             b.root.anchoredPosition=b.origin;b.root.gameObject.SetActive(true);
-            b.number.text=$"+{delta:N0}";b.number.color=same?new Color(1,.95f,.4f):Color.white;
+            b.number.text=$"+{delta:N0}";b.number.color=DamageColor(delta);
             AnimateBurst(b,0);
         }
         public void LockTotal(int total)
         {
             charging=true;lastTarget=total;lockAge=0;
             number.text=total.ToString("N0");AnimateDamageCounter();
+            flightNumber.text=number.text;
+            flightNumber.color=number.color;
             chargeStart=shotPosition;
-            celebration.text=$"{total:N0} DAMAGE";celebrateAge=0;celebration.color=gold;
+            celebration.text=$"{total:N0} DAMAGE";celebrateAge=0;celebration.color=number.color;
         }
         public void Impact(bool isSkill,bool isEnemy,bool support)
         {
@@ -194,7 +207,7 @@ namespace Ohajiki
             impactBurst.rectTransform.anchoredPosition=impactCenter;
             impactBurst.color=support?new Color(.6f,1,.68f):Color.white;
             bool targetBottom=support?!isEnemy:isEnemy;
-            impactRing.rectTransform.anchoredPosition=targetBottom?new Vector2(360,278):new Vector2(530,1115);
+            impactRing.rectTransform.anchoredPosition=HpTarget(targetBottom);
             impactRing.color=support?new Color(.12f,.78f,.4f):new Color(1,.42f,.03f);
             Vector2 delta=impactRing.rectTransform.anchoredPosition-bankCenter;
             beam.rectTransform.anchoredPosition=bankCenter;beam.rectTransform.sizeDelta=new Vector2(delta.magnitude,55);
@@ -209,13 +222,13 @@ namespace Ohajiki
         public void AnimateDamageFlight(float progress,bool isEnemy)
         {
             charging=false;chargeOrb.color=Color.clear;
-            Vector2 destination=isEnemy?new Vector2(360,278):new Vector2(530,1115);
+            Vector2 destination=HpTarget(isEnemy);
             float p=Mathf.SmoothStep(0,1,progress);
             Vector2 Position(float t)=>Vector2.Lerp(bankCenter,destination,t)+Vector2.down*Mathf.Sin(t*Mathf.PI)*(isEnemy?40:95);
             flightGlow.rectTransform.anchoredPosition=flightCore.rectTransform.anchoredPosition=Position(p);
             flightGlow.color=new Color(1,.68f,.04f,.9f);flightCore.color=Color.white;
             flightCore.rectTransform.localRotation=Quaternion.Euler(0,0,progress*340);
-            flightNumber.gameObject.SetActive(true);flightNumber.text=lastTarget.ToString("N0");
+            flightNumber.gameObject.SetActive(true);
             flightNumber.rectTransform.anchoredPosition=Position(p)+Vector2.up*52;
             flightNumber.rectTransform.localScale=Vector3.one*(1+Mathf.Sin(progress*Mathf.PI)*.15f);
             for(int i=0;i<flightTail.Length;i++)

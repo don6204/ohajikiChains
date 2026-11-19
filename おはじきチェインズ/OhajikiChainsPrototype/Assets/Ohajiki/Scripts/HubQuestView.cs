@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Ohajiki
 {
@@ -15,31 +16,49 @@ namespace Ohajiki
         { SelectedQuestId=id;Navigate(HubPage.QuestDetail); }
         void QuestMenu()
         {
-            Heading("スピリットバトル","行き先を選んで、冒険に出発しよう。");
-            for(int i=0;i<2;i++)
+            var board = skin.Image(content, "QuestMenuBoard", Resources.Load<Sprite>("UI/QuestMenuBoard"),
+                -32, -30, 720, 1026, Color.white).rectTransform;
+            QuestCategoryButton(board, QuestCategory.Main, new Rect(290, 362, 378, 501));
+            QuestCategoryButton(board, QuestCategory.Showdown, new Rect(36, 385, 241, 339));
+            QuestCategoryButton(board, QuestCategory.Challenge, new Rect(683, 385, 242, 339));
+            QuestCategoryButton(board, QuestCategory.Materials, new Rect(36, 747, 241, 382));
+            QuestCategoryButton(board, QuestCategory.Event, new Rect(290, 880, 378, 249));
+            QuestCategoryButton(board, QuestCategory.Practice, new Rect(683, 747, 242, 382));
+
+            var featured = session.Config.quests.quests.Where(q => q.banner != null && session.QuestAvailable(q.id, out _))
+                .OrderByDescending(q => q.category == QuestCategory.Event || q.category == QuestCategory.Showdown)
+                .FirstOrDefault();
+            if (featured != null)
             {
-                var category=i==0?QuestCategory.Event:QuestCategory.Showdown;
-                bool open=session.Config.quests.quests.Any(q=>q.category==category&&session.QuestAvailable(q.id,out _));
-                var banner=ui.Button(content,"",i*334,660,322,145,()=>OpenQuestCategory(category),open,HubWidgets.PanelColor).transform;
-                var spirit=session.Config.catalog[Mathf.Min(12+i,session.Config.catalog.Length-1)];
-                var preview=session.Config.quests.quests.FirstOrDefault(q=>q.category==category);
-                ui.Portrait(banner,preview!=null&&preview.useMasterRewards?preview.banner:spirit.portrait,210,0,106,140);
-                ui.Label(banner,open?"PICK UP":"COMING SOON",16,103,210,28,16,HubWidgets.Accent);
-                ui.Label(banner,i==0?"灯火祭の冒険":"守護者との決戦",16,53,205,50,23);
-                ui.Label(banner,i==0?"3つのステージへ":"3つの難易度に挑戦",16,14,205,34,16,HubWidgets.Muted);
+                var banner = QuestMenuImage(board, "Button_QuestFeatured", featured.banner, new Rect(58, 65, 843, 245));
+                banner.preserveAspect = true;
+                ChromeButton(banner, () => OpenQuest(featured.id));
             }
-            var list=ui.Scroll(content,0,100,656,540);
-            foreach(QuestCategory category in Enum.GetValues(typeof(QuestCategory)))
-            {
-                var entries=session.Config.quests.quests.Where(q=>q.category==category).ToArray();
-                bool available=entries.Any(q=>session.QuestAvailable(q.id,out _));
-                var row=ui.Row(list,116);
-                var card=ui.Button(row,"",0,0,640,116,()=>OpenQuestCategory(category),available).transform;
-                ui.Label(card,QuestCatalog.CategoryName(category),22,60,530,42,28);
-                ui.Label(card,available?QuestDescriptions[(int)category]:"開催期間外 / 次回開催をお楽しみに",22,17,570,40,18,HubWidgets.Muted);
-                ui.Label(card,available?"＞":"LOCK",564,65,62,32,18,HubWidgets.Accent,true);
-            }
-            ui.Button(content,"ホームへ",0,12,656,68,()=>Navigate(HubPage.Home));
+        }
+
+        // The card and banner bounds are measured from the top-left of the 960 x 1292 menu artwork.
+        Image QuestMenuImage(RectTransform board, string name, Sprite sprite, Rect bounds)
+        {
+            var image = skin.Image(board, name, sprite, 0, 0, 0, 0, Color.white);
+            var rect = image.rectTransform;
+            rect.anchorMin = new Vector2(bounds.xMin / 960f, 1 - bounds.yMax / 1292f);
+            rect.anchorMax = new Vector2(bounds.xMax / 960f, 1 - bounds.yMin / 1292f);
+            rect.offsetMin = rect.offsetMax = Vector2.zero;
+            return image;
+        }
+
+        void QuestCategoryButton(RectTransform board, QuestCategory category, Rect bounds)
+        {
+            var overlay = QuestMenuImage(board, "Button_QuestCategory_" + category, skin.FlatPlate, bounds);
+            overlay.type = Image.Type.Sliced;
+            var button = ChromeButton(overlay, () => OpenQuestCategory(category));
+            var colors = button.colors;
+            colors.normalColor = colors.selectedColor = Color.clear;
+            colors.highlightedColor = new Color(1, 1, 1, .10f);
+            colors.pressedColor = new Color(.23f, .12f, .05f, .22f);
+            colors.disabledColor = new Color(.25f, .22f, .17f, .43f);
+            button.colors = colors;
+            button.interactable = session.Config.quests.quests.Any(q => q.category == category && session.QuestAvailable(q.id, out _));
         }
         void QuestList()
         {

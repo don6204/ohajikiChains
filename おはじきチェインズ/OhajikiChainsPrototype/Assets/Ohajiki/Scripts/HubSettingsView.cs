@@ -58,14 +58,22 @@ namespace Ohajiki
         }
         void ShowNews()=>ShowInformation("お知らせ","新しいお知らせはありません。");
         void ShowHelp()=>ShowInformation("遊び方",
-            "手札を選び、発射位置を調整して上へスワイプ。\n同属性のチャージボールでスキルLv上昇。\n手札長押しでスキルを確認できます。\n\n"+
+            "手札と発射位置を選び、飛ばしたい方向へスワイプ。\n同属性のチャージボールでスキルLv上昇。\n手札長押しでスキルを確認できます。\n\n"+
             "接触ごとに通常攻撃の威力を加算し、\nダメージUIの着弾時にHPへまとめて反映します。\n\n"+
             "エネルギーは5分で1回復。\nヘッダーの＋から宝石で全回復できます。\n\n進行状況はこの端末に自動保存されます。\n戦闘の途中からの再開には対応していません。");
         void CycleFavorite(int delta)
         {
-            for(int i=0;i<3;i++)
-            {favoritePage=(favoritePage+delta+3)%3;if(session.Favorite(favoritePage)>=0)break;}
-            Render();
+            int count = favoriteDots.Length;
+            for (int step = 1; step < count; step++)
+            {
+                int slot = (favoritePage + delta * step + count) % count;
+                if (session.Favorite(slot) < 0) continue;
+                favoritePage = slot;
+                RefreshHomeFavorite();
+                return;
+            }
+            int emptySlot = (favoritePage + delta + count) % count;
+            ChooseFavorite(emptySlot, fromHome: true);
         }
         void PlainLabel(Transform parent,string value,float x,float y,float w,float h,int size=24)
         {
@@ -101,20 +109,29 @@ namespace Ohajiki
             ui.Label(modal,"記録・設定はこの試作版の起動中に保持されます。",48,168,624,44,18,HubWidgets.Muted,true);
             ModalBack(()=>{if(Page==HubPage.Home)Render();});
         }
-        void ChooseFavorite(int slot)
+        void ChooseFavorite(int slot, bool fromHome = false)
         {
             SettingsModal("お気に入り "+(slot+1)+" を選ぶ","FavoriteSelection");
             var list=ui.Scroll(modal,48,260,624,800);
             foreach(int id in session.FindSpirits(-1,0,0))
             {
                 int selected=id;var spirit=session.Config.catalog[id];var row=ui.Row(list,92);
-                var button=ui.Button(row,"",0,0,606,92,()=>{session.SetFavorite(slot,selected);ShowProfile();}).transform;
+                var button=ui.Button(row,"",0,0,606,92,()=>{
+                    if (!session.SetFavorite(slot,selected)) return;
+                    if (fromHome)
+                    {
+                        CloseModal();
+                        favoritePage = slot;
+                        RefreshHomeFavorite();
+                    }
+                    else ShowProfile();
+                }).transform;
                 button.name="Button_FavoriteSpirit_"+id;
                 ui.Portrait(button,spirit.portrait,12,8,66,76);
                 ui.Label(button,spirit.displayName+"　Lv"+session.Level(id),96,0,496,92,24);
             }
-            if(slot>0)ui.Button(modal,"この枠を未設定にする",100,168,520,64,()=>{session.SetFavorite(slot,-1);ShowProfile();});
-            ModalBack(ShowProfile);
+            if(slot>0 && !fromHome)ui.Button(modal,"この枠を未設定にする",100,168,520,64,()=>{session.SetFavorite(slot,-1);ShowProfile();});
+            ModalBack(fromHome ? null : (Action)ShowProfile);
         }
         void EditProfileText(bool name,bool required)
         {

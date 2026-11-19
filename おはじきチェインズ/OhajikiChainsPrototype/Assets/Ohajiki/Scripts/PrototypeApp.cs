@@ -175,7 +175,7 @@ namespace Ohajiki
             lastQuestId=null;
             if(!Session.TryEnterBattle())
             {
-                ReturnHome();Hub.Message("エネルギーが不足しています。自然回復を待つか、＋から回復できます。");return;
+                ReturnHome();Hub.Message("エネルギーが不足しています。自然回復を待つか、上部のエネルギー表示から回復できます。");return;
             }
             RemoveBattle();
             Hub.gameObject.SetActive(false);
